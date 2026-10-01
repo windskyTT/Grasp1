@@ -1,0 +1,27 @@
+阅读最新的代码和上一轮对话的代码，对比两个版本代码，进行代码修改
+
+机器人模型：
+Grasp1 本地 assets
+
+抓取物体：
+Grasp1 本地 assets
+
+桌子：
+NVIDIA Isaac Sim 远程服务器
+→ table_instanceable.usd
+
+地面：
+GroundPlaneCfg()
+
+21
+在ur5_allegro_cfg.py
+有一个后续需要同步处理的点：既然 USD importer 会把 . 改成 _，
+那么目前 robot_profile.py 中类似 link_3.0、link_3.0_tip 的 
+IsaacLab runtime body names 也需要做 USD 名称适配。
+否则后续 keypoints.py 使用 find_bodies() 时会找不到这些 body。
+这个问题建议在生成任务 keypoints.py 之前统一解决
+
+
+22
+完整 Teacher rollout 未验证：物体槽位仍待具体任务填充；、
+远程桌面 USD 的材质也仍未覆盖旧任务的桌面摩擦值 0.2

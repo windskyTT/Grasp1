@@ -18,6 +18,7 @@ parser.add_argument(
 )
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
 parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+parser.add_argument("--steps", type=int, default=None, help="Stop after this many control steps.")
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
@@ -36,6 +37,7 @@ import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
 
 import Grasp1.tasks  # noqa: F401
+from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
 
 
 def main():
@@ -44,6 +46,8 @@ def main():
     env_cfg = parse_env_cfg(
         args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
     )
+    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+        env_cfg.set_num_envs(env_cfg.scene.num_envs)
     # create environment
     env = gym.make(args_cli.task, cfg=env_cfg)
 
@@ -53,14 +57,17 @@ def main():
     # reset environment
     env.reset()
     # simulate environment
-    while simulation_app.is_running():
+    step_count = 0
+    while simulation_app.is_running() and (args_cli.steps is None or step_count < args_cli.steps):
         # run everything in inference mode
         with torch.inference_mode():
             # sample actions from -1 to 1
             actions = 2 * torch.rand(env.action_space.shape, device=env.unwrapped.device) - 1
             # apply actions
             env.step(actions)
+            step_count += 1
 
+    print(f"[INFO]: Completed {step_count} control steps.")
     # close the simulator
     env.close()
 

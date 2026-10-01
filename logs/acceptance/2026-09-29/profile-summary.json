@@ -1,0 +1,125 @@
+{
+  "kernel_total_us": 1072310.4139999985,
+  "top_kernels": [
+    {
+      "name": "artiSolveInternalConstraintsTGS1T",
+      "duration_us": 533150.0169999982,
+      "count": 3300,
+      "percent": 49.71974626369702
+    },
+    {
+      "name": "stepArticulation1TTGS",
+      "duration_us": 227462.39900000073,
+      "count": 3200,
+      "percent": 21.212365004598478
+    },
+    {
+      "name": "artiPropagateRigidImpulsesAndSolveSelfConstraintsTGS1T",
+      "duration_us": 52251.76899999994,
+      "count": 3300,
+      "percent": 4.872821182915418
+    },
+    {
+      "name": "solveBlockUnified",
+      "duration_us": 32926.14299999973,
+      "count": 3498,
+      "percent": 3.070579430183523
+    },
+    {
+      "name": "propagateAverageSolverBodyVelocityTGS",
+      "duration_us": 18366.797999999824,
+      "count": 3200,
+      "percent": 1.712824734349717
+    },
+    {
+      "name": "markActiveSlabTGS",
+      "duration_us": 12956.415999999923,
+      "count": 2508,
+      "percent": 1.2082710221631718
+    },
+    {
+      "name": "artiPropagateVelocityTGS",
+      "duration_us": 11443.818999999836,
+      "count": 3498,
+      "percent": 1.0672114017163552
+    },
+    {
+      "name": "artiPropagateImpulses2TGS",
+      "duration_us": 11061.772999999917,
+      "count": 3498,
+      "percent": 1.0315830990334793
+    },
+    {
+      "name": "computeUnconstrainedAccelerationsLaunch1T",
+      "duration_us": 10677.419000000005,
+      "count": 100,
+      "percent": 0.995739560168071
+    },
+    {
+      "name": "computeMassMatrix1T",
+      "duration_us": 10185.384999999995,
+      "count": 100,
+      "percent": 0.9498541529598545
+    },
+    {
+      "name": "computeUnconstrainedSpatialInertiaLaunchPartial1T",
+      "duration_us": 10180.622000000001,
+      "count": 100,
+      "percent": 0.9494099718777902
+    },
+    {
+      "name": "radixSortMultiCalculateRanksLaunchWithCount",
+      "duration_us": 9981.766999999993,
+      "count": 800,
+      "percent": 0.9308654350157236
+    },
+    {
+      "name": "artiSolveInternalTendonAndMimicJointConstraints1T",
+      "duration_us": 9617.804999999908,
+      "count": 3300,
+      "percent": 0.8969235842933744
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char*, 2ul> >(int, at::native::CUDAFunctorOnSelf_add<float>, std::array<char*, 2ul>)",
+      "duration_us": 8205.042000000592,
+      "count": 6435,
+      "percent": 0.7651741410767091
+    },
+    {
+      "name": "setupInternalConstraintLaunch1T",
+      "duration_us": 7936.353,
+      "count": 100,
+      "percent": 0.7401171243311279
+    },
+    {
+      "name": "radixSortMultiBlockLaunchWithCount",
+      "duration_us": 7367.550000000074,
+      "count": 800,
+      "percent": 0.6870725028694987
+    },
+    {
+      "name": "computeUnconstrainedVelocities1TLaunch",
+      "duration_us": 7312.829000000001,
+      "count": 100,
+      "percent": 0.6819694096526802
+    },
+    {
+      "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+      "duration_us": 7022.1590000003325,
+      "count": 5120,
+      "percent": 0.6548625200613171
+    },
+    {
+      "name": "updateBodiesLaunch1T",
+      "duration_us": 6396.4090000000015,
+      "count": 100,
+      "percent": 0.5965072162397194
+    },
+    {
+      "name": "computeUnconstrainedSpatialInertiaLaunch1T",
+      "duration_us": 5984.373000000001,
+      "count": 100,
+      "percent": 0.5580821487759989
+    }
+  ]
+}

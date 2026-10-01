@@ -104,6 +104,7 @@ from isaaclab_tasks.utils.hydra import hydra_task_config
 logger = logging.getLogger(__name__)
 
 import Grasp1.tasks  # noqa: F401
+from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -117,6 +118,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # override configurations with non-hydra CLI arguments
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
+    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+        env_cfg.set_num_envs(env_cfg.scene.num_envs)
     agent_cfg.max_iterations = (
         args_cli.max_iterations if args_cli.max_iterations is not None else agent_cfg.max_iterations
     )

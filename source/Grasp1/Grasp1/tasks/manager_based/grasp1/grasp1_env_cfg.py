@@ -1,180 +1,98 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
+"""UR5 + Allegro Teacher 的共享场景与仿真基础配置。"""
 
-import math
+from __future__ import annotations
+
+from dataclasses import MISSING
+from typing import Final
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
-from isaaclab.managers import EventTermCfg as EventTerm
-from isaaclab.managers import ObservationGroupCfg as ObsGroup
-from isaaclab.managers import ObservationTermCfg as ObsTerm
-from isaaclab.managers import RewardTermCfg as RewTerm
-from isaaclab.managers import SceneEntityCfg
-from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
+from Grasp1.utils.paths import ASSETS_DIR
 
-from . import mdp
-
-##
-# Pre-defined configs
-##
-
-from isaaclab_assets.robots.cartpole import CARTPOLE_CFG  # isort:skip
+from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
 
 
-##
-# Scene definition
-##
+CONTROL_DT: Final[float] = 0.2
+TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
+TABLE_HEIGHT: Final[float] = 0.771
 
 
 @configclass
 class Grasp1SceneCfg(InteractiveSceneCfg):
-    """Configuration for a cart-pole scene."""
+    """每个环境包含机器人、物体槽位和桌子；地面与灯光由场景共享。"""
 
-    # ground plane
+    # 地面平面及其静态摩擦、动态摩擦和恢复系数。
     ground = AssetBaseCfg(
-        prim_path="/World/ground",
-        spawn=sim_utils.GroundPlaneCfg(size=(100.0, 100.0)),
+        prim_path="/World/GroundPlane",
+        spawn=sim_utils.GroundPlaneCfg(
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                static_friction=0.8,
+                dynamic_friction=0.8,
+                restitution=0.0,
+            ),
+        ),
     )
 
-    # robot
-    robot: ArticulationCfg = CARTPOLE_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+    # 将机器人 articulation 配置放入每个并行环境各自的 Robot prim 下。
+    robot: ArticulationCfg = UR5_ALLEGRO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
-    # lights
+    # 具体物体 USD 和初始姿态由任务配置；原抓取物体具有可动关节。
+    # MISSING 表示此共享场景类要求具体任务配置提供物体 articulation。
+    object: ArticulationCfg = MISSING
+
+    # 桌面碰撞体去掉 USD 根姿态后，Z 范围为 [-1.003, -0.003] m，
+    # XY 中心为 (0, 0.1561)。旋转 90° 后平移，使顶面高度为 0.771 m、
+    # 中心为原任务的 (0.2, -0.75152)，桌脚落在地面。
+    # 本地 USD 引用原桌子并添加 kinematic 刚体，使 GPU 接触过滤可读取桌面接触。
+    table = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/Table",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=str(ASSETS_DIR / "table" / "table.usda"),
+            scale=(1.0, 1.0, 0.771),
+        ),
+        init_state=AssetBaseCfg.InitialStateCfg(
+            pos=(0.3561, -0.75152, 0.773313),
+            rot=(0.70710678, 0.0, 0.0, 0.70710678),
+        ),
+    )
+
+    # 场景穹顶灯，为所有环境提供统一的环境光照。
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
-        spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=500.0),
+        spawn=sim_utils.DomeLightCfg(
+            color=(0.75, 0.75, 0.75),
+            intensity=2500.0,
+        ),
     )
-
-
-##
-# MDP settings
-##
-
-
-@configclass
-class ActionsCfg:
-    """Action specifications for the MDP."""
-
-    joint_effort = mdp.JointEffortActionCfg(asset_name="robot", joint_names=["slider_to_cart"], scale=100.0)
-
-
-@configclass
-class ObservationsCfg:
-    """Observation specifications for the MDP."""
-
-    @configclass
-    class PolicyCfg(ObsGroup):
-        """Observations for policy group."""
-
-        # observation terms (order preserved)
-        joint_pos_rel = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel_rel = ObsTerm(func=mdp.joint_vel_rel)
-
-        def __post_init__(self) -> None:
-            self.enable_corruption = False
-            self.concatenate_terms = True
-
-    # observation groups
-    policy: PolicyCfg = PolicyCfg()
-
-
-@configclass
-class EventCfg:
-    """Configuration for events."""
-
-    # reset
-    reset_cart_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]),
-            "position_range": (-1.0, 1.0),
-            "velocity_range": (-0.5, 0.5),
-        },
-    )
-
-    reset_pole_position = EventTerm(
-        func=mdp.reset_joints_by_offset,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]),
-            "position_range": (-0.25 * math.pi, 0.25 * math.pi),
-            "velocity_range": (-0.25 * math.pi, 0.25 * math.pi),
-        },
-    )
-
-
-@configclass
-class RewardsCfg:
-    """Reward terms for the MDP."""
-
-    # (1) Constant running reward
-    alive = RewTerm(func=mdp.is_alive, weight=1.0)
-    # (2) Failure penalty
-    terminating = RewTerm(func=mdp.is_terminated, weight=-2.0)
-    # (3) Primary task: keep pole upright
-    pole_pos = RewTerm(
-        func=mdp.joint_pos_target_l2,
-        weight=-1.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"]), "target": 0.0},
-    )
-    # (4) Shaping tasks: lower cart velocity
-    cart_vel = RewTerm(
-        func=mdp.joint_vel_l1,
-        weight=-0.01,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"])},
-    )
-    # (5) Shaping tasks: lower pole angular velocity
-    pole_vel = RewTerm(
-        func=mdp.joint_vel_l1,
-        weight=-0.005,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["cart_to_pole"])},
-    )
-
-
-@configclass
-class TerminationsCfg:
-    """Termination terms for the MDP."""
-
-    # (1) Time out
-    time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    # (2) Cart out of bounds
-    cart_out_of_bounds = DoneTerm(
-        func=mdp.joint_pos_out_of_manual_limit,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["slider_to_cart"]), "bounds": (-3.0, 3.0)},
-    )
-
-
-##
-# Environment configuration
-##
 
 
 @configclass
 class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
-    # Scene settings
-    scene: Grasp1SceneCfg = Grasp1SceneCfg(num_envs=4096, env_spacing=4.0)
-    # Basic settings
-    observations: ObservationsCfg = ObservationsCfg()
-    actions: ActionsCfg = ActionsCfg()
-    events: EventCfg = EventCfg()
-    # MDP settings
-    rewards: RewardsCfg = RewardsCfg()
-    terminations: TerminationsCfg = TerminationsCfg()
+    """共享仿真参数；动作、观测和奖励等由具体任务配置。"""
 
-    # Post initialization
+    # 随机数种子，供环境和训练组件初始化随机过程。
+    seed = 1
+
+    # 并行场景配置；默认创建 1 个环境，环境之间间隔 3 米。
+    scene: Grasp1SceneCfg = Grasp1SceneCfg(num_envs=1, env_spacing=3.0)
+
     def __post_init__(self) -> None:
-        """Post initialization."""
-        # general settings
-        self.decimation = 2
-        self.episode_length_s = 5
-        # viewer settings
-        self.viewer.eye = (8.0, 0.0, 5.0)
-        # simulation settings
-        self.sim.dt = 1 / 120
+        """在配置对象初始化后设置仿真频率、渲染频率和物理材质。"""
+
+        # 物理仿真每步 0.01 秒；每 20 个仿真步执行一次控制动作。
+        self.sim.dt = 0.01
+        self.decimation = 20  # control_dt = 0.01 × 20 = 0.2 s
+
+        # 每个回合持续 4 秒；渲染间隔与控制间隔一致。
+        self.episode_length_s = 4.0
         self.sim.render_interval = self.decimation
+
+        # 对应旧 world 默认材质；远程桌面 USD 的独立材质不受此值覆盖。
+        self.sim.physics_material = sim_utils.RigidBodyMaterialCfg(
+            static_friction=0.8,
+            dynamic_friction=0.8,
+            restitution=0.0,
+        )

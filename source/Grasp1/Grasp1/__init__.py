@@ -3,12 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""
-Python module serving as a project/extension template.
-"""
+"""Grasp1 package.
 
-# Register Gym environments.
-from .tasks import *
-
-# Register UI extensions.
-from .ui_extension_example import *
+Import ``Grasp1.tasks`` after launching Isaac Sim to register Gym environments.
+The UI extension is loaded from ``Grasp1.ui_extension_example`` by Kit.
+"""
