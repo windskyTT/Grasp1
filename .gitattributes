@@ -13,3 +13,4 @@
 
 *.bat text eol=crlf
 logs/acceptance/2026-09-29/torch-profile.json filter=lfs diff=lfs merge=lfs -text
+logs/acceptance/2026-10-01/perf-cache/profile-before.json filter=lfs diff=lfs merge=lfs -text

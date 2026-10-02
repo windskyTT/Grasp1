@@ -1,0 +1,413 @@
+{
+  "num_envs": 1,
+  "resets": 1,
+  "baseline": false,
+  "ik_success": 1,
+  "ik_total": 1,
+  "collision_fallback": 0,
+  "post_fallback_collision": 0,
+  "object_support_error_min": 0.0,
+  "object_support_error_max": 0.0,
+  "relative_vectors": [
+    [
+      0.7247176766395569,
+      -0.17079269886016846,
+      0.015988588333129883
+    ]
+  ],
+  "root_positions": [
+    [
+      -0.193900004029274,
+      -0.7515199780464172,
+      0.7710024118423462
+    ]
+  ],
+  "root_quaternions": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "sensors": {
+    "teacher_af_contact_0": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_0": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_1": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_1": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_2": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_2": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_3": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_3": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_4": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_4": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_5": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_5": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_6": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_6": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_7": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_7": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_8": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_8": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_9": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_9": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_10": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_10": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_11": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_11": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_af_contact_12": {
+      "filters": [
+        "/World/envs/env_.*/Object/.*top"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_table_contact_12": {
+      "filters": [
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        1,
+        3
+      ]
+    },
+    "teacher_arm_contact_0": {
+      "filters": [
+        "/World/envs/env_.*/Object/top",
+        "/World/envs/env_.*/Object/bottom",
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        3,
+        3
+      ]
+    },
+    "teacher_arm_contact_1": {
+      "filters": [
+        "/World/envs/env_.*/Object/top",
+        "/World/envs/env_.*/Object/bottom",
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        3,
+        3
+      ]
+    },
+    "teacher_arm_contact_2": {
+      "filters": [
+        "/World/envs/env_.*/Object/top",
+        "/World/envs/env_.*/Object/bottom",
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        3,
+        3
+      ]
+    },
+    "teacher_arm_contact_3": {
+      "filters": [
+        "/World/envs/env_.*/Object/top",
+        "/World/envs/env_.*/Object/bottom",
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        3,
+        3
+      ]
+    },
+    "teacher_arm_contact_4": {
+      "filters": [
+        "/World/envs/env_.*/Object/top",
+        "/World/envs/env_.*/Object/bottom",
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        3,
+        3
+      ]
+    },
+    "teacher_arm_contact_5": {
+      "filters": [
+        "/World/envs/env_.*/Object/top",
+        "/World/envs/env_.*/Object/bottom",
+        "/World/envs/env_.*/Table"
+      ],
+      "shape": [
+        1,
+        1,
+        3,
+        3
+      ]
+    }
+  },
+  "base_bounds": [
+    {
+      "min": [
+        -0.26747940480709076,
+        -0.8615199774503708,
+        0.771000012522336
+      ],
+      "max": [
+        -0.12026670575141907,
+        -0.6779685765504837,
+        0.7950027119368315
+      ]
+    }
+  ]
+}

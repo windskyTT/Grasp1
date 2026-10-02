@@ -43,7 +43,7 @@ from .keypoints import hand_keypoints_w
 # Source constants
 # -----------------------------------------------------------------------------
 
-SOURCE_OBJECT_SUPPORT_Z: Final[float] = 0.773
+SOURCE_STABLE_SUPPORT_HEIGHT: Final[float] = 0.771
 STABLE_STATE_HEIGHT_OFFSET: Final[float] = 0.005
 SOURCE_TRAINING_DATASET: Final[str] = "new_training_set"
 
@@ -52,6 +52,12 @@ XY_ANGLE_MAX: Final[float] = -0.3 * math.pi
 XY_DISTANCE_MIN: Final[float] = 0.45
 XY_DISTANCE_MAX: Final[float] = 0.75
 XY_ABS_X_LIMIT: Final[float] = 0.25
+
+# 源 URDF 的 platform2ur5_joint 使用 yaw=-1.57；移除平台后，源工作
+# 坐标系需先 Rz(+1.57) 转入 base_link，再经真实 robot root 转入世界系。
+_SOURCE_TO_BASE_QUAT: Final[tuple[float, float, float, float]] = (
+    math.cos(1.57 / 2.0), 0.0, 0.0, math.sin(1.57 / 2.0),
+)
 
 BIAS_DISTANCE_THRESHOLD: Final[float] = 0.07
 BIAS_RANGE: Final[float] = 0.05
@@ -149,8 +155,8 @@ def initialize_teacher_data(
     ``ObservationManager`` probes the policy observation before startup events
     in IsaacLab 2.3.2.  The observation term therefore normally creates
     ``env._teacher_object_metadata`` and ``env._teacher_affordance_points_o``
-    first.  This function reuses that exact point sample.  It can also lazily
-    create the metadata if the observation implementation changes.
+    first. This function reuses that exact point sample and lowest-point
+    metadata, then uploads reset mesh triangles and stable states once.
     """
     del env_ids
 
@@ -165,8 +171,9 @@ def initialize_teacher_data(
     joint_ids = _resolve_controlled_joint_ids(robot)
 
     unique_names = tuple(dict.fromkeys(names))
+    object_index = {name: index for index, name in enumerate(unique_names)}
     object_ids = torch.tensor(
-        [unique_names.index(name) for name in names],
+        [object_index[name] for name in names],
         device=env.device,
         dtype=torch.long,
     )
@@ -194,12 +201,9 @@ def initialize_teacher_data(
             f"{tuple(cached_points.shape)}."
         )
 
-    lowest_values: list[float] = []
-    for name in names:
-        lowest_path = object_asset_dir(dataset_name, name) / "lowest_point_new.txt"
-        if not lowest_path.is_file():
-            raise FileNotFoundError(f"Missing lowest-point file: {lowest_path}")
-        lowest_values.append(float(lowest_path.read_text(encoding="utf-8").strip()))
+    # Observation 初始化已读取最低点；重复物体无需再次访问文件。
+    metadata = env._teacher_object_metadata
+    lowest_values = [metadata[name].lowest_point for name in names]
 
     lowest = torch.tensor(
         lowest_values,
@@ -207,9 +211,8 @@ def initialize_teacher_data(
         dtype=robot.data.joint_pos.dtype,
     )
 
-    # Keep triangle soups on CPU. Only the object group currently being reset
-    # is copied to GPU.  This avoids permanently pinning all ShapeNet meshes in
-    # VRAM.
+    # 全部 float32 triangles：训练集约 0.87 MiB，ShapeNet 约 6.17 MiB。
+    # 启动时一次搬到 GPU，partial reset 仅索引对应物体，保留 process=False 语义。
     try:
         import trimesh
     except ImportError as exc:
@@ -217,7 +220,7 @@ def initialize_teacher_data(
             "Teacher reset geometry requires trimesh during startup."
         ) from exc
 
-    triangles_cpu: dict[str, torch.Tensor] = {}
+    triangles: dict[str, torch.Tensor] = {}
     stable_states_cpu: dict[str, torch.Tensor] = {}
 
     for name in unique_names:
@@ -236,15 +239,24 @@ def initialize_teacher_data(
         if not isinstance(mesh, trimesh.Trimesh) or mesh.faces.shape[0] == 0:
             raise ValueError(f"Invalid triangular affordance mesh: {mesh_path}")
 
-        triangles_cpu[name] = torch.as_tensor(
+        triangles[name] = torch.as_tensor(
             np.asarray(mesh.triangles),
-            device="cpu",
-            dtype=torch.float32,
+            device=env.device,
+            dtype=robot.data.joint_pos.dtype,
         )
 
         stable_path = _stable_state_path(dataset_name, name)
         if stable_path.is_file():
             stable_states_cpu[name] = _load_stable_state(stable_path)
+
+    # stable state 按环境排好序并一次搬到 GPU；缺失状态只在确实请求评估时报告。
+    missing_stable_state = torch.zeros(7)
+    stable_states = torch.stack(
+        [stable_states_cpu.get(name, missing_stable_state) for name in names]
+    ).to(device=env.device, dtype=robot.data.joint_pos.dtype)
+    stable_state_available = torch.tensor(
+        [name in stable_states_cpu for name in names], device=env.device, dtype=torch.bool
+    )
 
     env._teacher_reset_data = {
         "dataset_name": dataset_name,
@@ -253,8 +265,9 @@ def initialize_teacher_data(
         "unique_names": unique_names,
         "lowest": lowest,
         "points": cached_points,
-        "triangles_cpu": triangles_cpu,
-        "stable_states_cpu": stable_states_cpu,
+        "triangles": triangles,
+        "stable_states": stable_states,
+        "stable_state_available": stable_state_available,
         "joint_ids": joint_ids,
         "joint_pos": robot.data.default_joint_pos.clone(),
         "object_pose": torch.zeros(
@@ -314,6 +327,12 @@ def _ensure_initialized(
 # -----------------------------------------------------------------------------
 # Source object sampling
 # -----------------------------------------------------------------------------
+
+def _source_workspace_quat_w(robot, ids: torch.Tensor) -> torch.Tensor:
+    """返回源物体采样/相机工作坐标系相对世界系的旋转。"""
+    root_quat = robot.data.root_quat_w[ids]
+    return quat_mul(root_quat, root_quat.new_tensor(_SOURCE_TO_BASE_QUAT).expand(len(ids), -1))
+
 
 def _sample_object_xy(
     count: int,
@@ -376,9 +395,9 @@ def _sample_object_xy(
 def _sample_object_pose(
     env,
     ids: torch.Tensor,
-    names: tuple[str, ...],
     *,
     non_uniform_sampling: bool,
+    support_height: float,
     use_stable_states: bool,
     stable_state_height_offset: float,
 ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -402,27 +421,31 @@ def _sample_object_pose(
     )
 
     object_pose = torch.zeros((len(ids), 7), device=env.device, dtype=dtype)
+    # 保留源距离/角度分布，将源 -Y 工作区旋转到当前底座前方。
+    workspace_quat = _source_workspace_quat_w(robot, ids)
     object_pose[:, :2] = xy
+    object_pose[:, :3] = (
+        quat_apply(workspace_quat, object_pose[:, :3]) + robot.data.root_pos_w[ids]
+    )
 
     if use_stable_states:
-        stable_cache = data["stable_states_cpu"]
-        missing = [name for name in names if name not in stable_cache]
-        if missing:
+        missing_ids = ids[~data["stable_state_available"][ids]]
+        if missing_ids.numel() > 0:
+            missing = tuple(dict.fromkeys(data["object_names"][index] for index in missing_ids.cpu().tolist()))
             raise FileNotFoundError(
                 "Stable-state reset requested, but no valid <object>.npy was "
-                f"loaded for: {tuple(dict.fromkeys(missing))}."
+                f"loaded for: {missing}."
             )
-
-        stable = torch.stack(
-            [stable_cache[name] for name in names],
-            dim=0,
-        ).to(device=env.device, dtype=dtype)
+        stable = data["stable_states"][ids]
 
         # quantitative_eval.py resamples X/Y and copies only stable Z + quat.
-        object_pose[:, 2] = stable[:, 2] + stable_state_height_offset
+        object_pose[:, 2] = (
+            stable[:, 2] - SOURCE_STABLE_SUPPORT_HEIGHT
+            + support_height + stable_state_height_offset
+        )
         object_pose[:, 3:7] = stable[:, 3:7]
     else:
-        object_pose[:, 2] = SOURCE_OBJECT_SUPPORT_Z - data["lowest"][ids]
+        object_pose[:, 2] = support_height - data["lowest"][ids]
 
         yaw = (
             torch.rand(len(ids), device=env.device, dtype=dtype) * 2.0 - 1.0
@@ -430,7 +453,8 @@ def _sample_object_pose(
         object_pose[:, 3] = (yaw * 0.5).cos()
         object_pose[:, 6] = (yaw * 0.5).sin()
 
-    object_pose[:, :3] += env.scene.env_origins[ids]
+    object_pose[:, 3:7] = quat_mul(workspace_quat, object_pose[:, 3:7])
+    object_pose[:, 2] += env.scene.env_origins[ids, 2]
 
     quaternion_norm = torch.linalg.vector_norm(
         object_pose[:, 3:7],
@@ -456,10 +480,11 @@ def _visible_points(
     data = env._teacher_reset_data
     dtype = object_pose.dtype
 
-    camera_w = (
-        object_pose.new_tensor(camera_position)
-        + env.scene.env_origins[ids]
-    )
+    robot = env.scene["robot"]
+    camera_w = quat_apply(
+        _source_workspace_quat_w(robot, ids),
+        object_pose.new_tensor(camera_position).expand(len(ids), -1),
+    ) + robot.data.root_pos_w[ids]
     camera_o = geometry.world_points_to_object(
         camera_w[:, None, :],
         object_pose[:, :3],
@@ -474,16 +499,12 @@ def _visible_points(
         if group.numel() == 0:
             continue
 
-        triangles = data["triangles_cpu"][name].to(
-            device=env.device,
-            dtype=dtype,
-        )
+        triangles = data["triangles"][name]
         visible_o[group] = geometry.visible_points(
             data["points"][ids[group]],
             triangles,
             camera_o[group],
         )
-        del triangles
 
     return geometry.object_points_to_world(
         visible_o,
@@ -496,26 +517,15 @@ def _solver_base_pose(
     robot,
     ids: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Return the analytic-UR5 solver base pose in world coordinates.
+    """以新 USD 的 base_link root 位姿构造解析 UR5 的 base 坐标系。
 
-    The original reset code used::
-
-        ur5_to_world =
-            [[0,-1,0],
-             [1, 0,0],
-             [0, 0,1]]
-
-        p_solver = ur5_to_world.T @ (p_world - [0,0,0.771])
-
-    Therefore the solver frame itself has ``R_world_solver = Rz(+pi/2)`` and
-    translation ``z=0.771`` relative to the source robot root/world frame.
+    移除旧平台后 root 就是 base_link，不再添加平台的 0.771 m 高度。
+    UR5 DH/base 与 ROS base_link 相差 Rz(pi)，对应 URDF 中保留的
+    base_link-base_fixed_joint；DH 参数及 IK 算法保持不变。
     """
     root_pose = robot.data.root_link_pose_w[ids]
-
-    base_offset = root_pose.new_tensor((0.0, 0.0, 0.771)).expand(len(ids), -1)
-    base_pos = root_pose[:, :3] + quat_apply(root_pose[:, 3:7], base_offset)
-
-    half_yaw = math.pi / 4.0
+    base_pos = root_pose[:, :3]
+    half_yaw = math.pi / 2.0
     base_quat_local = root_pose.new_tensor(
         (math.cos(half_yaw), 0.0, 0.0, math.sin(half_yaw))
     ).expand(len(ids), -1)
@@ -538,10 +548,11 @@ def _solve_pregrasp(
     """Generate, solve and rank batched UR5 pre-grasp candidates."""
     dtype = visible_w.dtype
 
-    camera_w = (
-        torch.tensor(camera_position, device=env.device, dtype=dtype)
-        + env.scene.env_origins[ids]
-    )
+    robot = env.scene["robot"]
+    camera_w = quat_apply(
+        _source_workspace_quat_w(robot, ids),
+        torch.tensor(camera_position, device=env.device, dtype=dtype).expand(len(ids), -1),
+    ) + robot.data.root_pos_w[ids]
     direction = geometry.approach_direction(
         visible_w,
         camera_w,
@@ -553,7 +564,6 @@ def _solve_pregrasp(
         visible_w,
     )
 
-    robot = env.scene["robot"]
     base_pos, base_rotation = _solver_base_pose(robot, ids)
 
     targets = geometry.wrist_poses_for_ur5_ik(
@@ -604,6 +614,7 @@ def _write_reset_state(
     object_pose: torch.Tensor,
 ) -> None:
     """Write robot/object state and hold targets at the reset pose."""
+    env._teacher_runtime_features.invalidate(env_ids)
     robot = env.scene["robot"]
     obj = env.scene["object"]
 
@@ -676,7 +687,8 @@ def _apply_collision_fallback(
         return
 
     safe = ~collision
-    origins = env.scene.env_origins[ids]
+    robot = env.scene["robot"]
+    base_positions = robot.data.root_pos_w[ids]
 
     for local_index in (
         torch.nonzero(collision, as_tuple=False)
@@ -704,11 +716,10 @@ def _apply_collision_fallback(
 
             joint_pos[local_index] = joint_pos[chosen]
 
-            # Source copies environment-local object pose. Translate between
-            # IsaacLab clone origins before copying.
-            chosen_local_position = object_pose[chosen, :3] - origins[chosen]
+            # 将同物体安全姿态按真实 robot root 平移到目标环境。
+            chosen_local_position = object_pose[chosen, :3] - base_positions[chosen]
             object_pose[local_index, :3] = (
-                chosen_local_position + origins[local_index]
+                chosen_local_position + base_positions[local_index]
             )
             object_pose[local_index, 3:7] = object_pose[chosen, 3:7]
             continue
@@ -719,8 +730,12 @@ def _apply_collision_fallback(
         for column, joint_id in enumerate(ur5_joint_ids):
             joint_pos[local_index, joint_id] = fallback[column]
 
-        object_pose[local_index, 0] = origins[local_index, 0] + _FALLBACK_OBJECT_XY[0]
-        object_pose[local_index, 1] = origins[local_index, 1] + _FALLBACK_OBJECT_XY[1]
+        fallback_offset = object_pose.new_tensor((*_FALLBACK_OBJECT_XY, 0.0)).unsqueeze(0)
+        fallback_xy = quat_apply(
+            _source_workspace_quat_w(robot, ids[local_index : local_index + 1]),
+            fallback_offset,
+        )[0, :2]
+        object_pose[local_index, :2] = base_positions[local_index, :2] + fallback_xy
 
 
 # -----------------------------------------------------------------------------
@@ -735,6 +750,7 @@ def reset_teacher(
     biased: bool,
     top: bool,
     non_uniform_sampling: bool,
+    support_height: float,
     camera_position: tuple[float, float, float],
     sample_num: int,
     length_score_coeff: float,
@@ -756,14 +772,11 @@ def reset_teacher(
     _ensure_initialized(env, dataset_name, names_all)
     data = env._teacher_reset_data
 
-    ids_cpu = ids.detach().cpu().tolist()
-    names = tuple(names_all[index] for index in ids_cpu)
-
     object_pose, angles = _sample_object_pose(
         env,
         ids,
-        names,
         non_uniform_sampling=non_uniform_sampling,
+        support_height=support_height,
         use_stable_states=use_stable_states,
         stable_state_height_offset=stable_state_height_offset,
     )
@@ -889,11 +902,7 @@ def apply_object_position_bias(
         return
 
     obj = env.scene["object"]
-    top_ids, resolved = obj.find_bodies("top", preserve_order=True)
-    if len(top_ids) != 1 or resolved[0] != "top":
-        raise RuntimeError(f"Object body 'top' must resolve exactly once: {resolved}.")
-
-    top_pose = obj.data.body_link_pose_w[ids, top_ids[0]]
+    top_pose = obj.data.body_link_pose_w[ids, env._teacher_body_indices.object_top]
     hand_points_w = hand_keypoints_w(env)[ids]
 
     # Compare in object/top frame, matching observe_vision_new's dis_info.
@@ -924,12 +933,13 @@ def apply_object_position_bias(
     # Environment.hpp::switch_obj_pos changes only X/Y.
     pose[:, :2] += data["bias"][selected, :2]
     obj.write_root_pose_to_sim(pose, env_ids=selected)
+    env._teacher_runtime_features.invalidate(selected)
 
     data["bias_pending"][selected] = False
 
 
 __all__ = [
-    "SOURCE_OBJECT_SUPPORT_Z",
+    "SOURCE_STABLE_SUPPORT_HEIGHT",
     "STABLE_STATE_HEIGHT_OFFSET",
     "SOURCE_TRAINING_DATASET",
     "BIAS_DISTANCE_THRESHOLD",

@@ -30,21 +30,20 @@ import torch
 
 from isaaclab.assets import Articulation
 from isaaclab.managers import ManagerTermBase
-from isaaclab.sensors import ContactSensor
 from isaaclab.utils.math import quat_apply
 
 from Grasp1.robots.robot_profile import (
     ARM_CONTACT_LINK_NAMES,
     HAND_CONTACT_LINK_NAMES,
-    HAND_KEYPOINT_COUNT,
-    UR5_JOINT_NAMES,
-    UR5_LINK_NAMES,
 )
 
 from .keypoints import (
     arm_keypoints_w,
     hand_keypoints_w,
 )
+
+from .observations import nearest_affordance_vectors_w
+from .runtime import filtered_contact_impulses
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -139,33 +138,6 @@ def _resolve_body_id(
     return int(body_ids[0])
 
 
-def _resolve_joint_ids(
-    asset: Articulation,
-    joint_names: tuple[str, ...],
-) -> tuple[int, ...]:
-    """Resolve literal joint names while preserving source order."""
-    runtime_names = tuple(name.replace(".", "_") for name in joint_names)
-    expressions = [re.escape(name) for name in runtime_names]
-
-    try:
-        joint_ids, resolved_names = asset.find_joints(
-            expressions,
-            preserve_order=True,
-        )
-    except ValueError as exc:
-        raise RuntimeError(
-            f"Failed to resolve joints {runtime_names}."
-        ) from exc
-
-    if tuple(resolved_names) != runtime_names:
-        raise RuntimeError(
-            "Joint ordering mismatch: "
-            f"expected={runtime_names}, resolved={tuple(resolved_names)}."
-        )
-
-    return tuple(int(index) for index in joint_ids)
-
-
 def _weighted(
     values: torch.Tensor,
     weights: Sequence[float],
@@ -193,100 +165,12 @@ def _clip_hand_impulses(
     return torch.minimum(values.clamp_min(0.0), high)
 
 
-def _get_contact_sensor(
-    env: ManagerBasedRLEnv,
-    sensor_name: str,
-) -> ContactSensor:
-    """Return one configured ContactSensor."""
-    try:
-        sensor = env.scene[sensor_name]
-    except KeyError as exc:
-        raise RuntimeError(
-            f"Missing ContactSensor {sensor_name!r}. "
-            "Use the task-30 teacher_env_cfg.py sensor wiring."
-        ) from exc
-
-    if not isinstance(sensor, ContactSensor):
-        raise TypeError(
-            f"{sensor_name!r} must be ContactSensor, got {type(sensor)!r}."
-        )
-    if sensor.num_bodies != 1:
-        raise RuntimeError(
-            f"{sensor_name!r} must monitor exactly one body; "
-            f"got {sensor.num_bodies}: {sensor.body_names}."
-        )
-    return sensor
-
-
 def _filtered_impulses(
     env: ManagerBasedRLEnv,
     prefix: str,
-    count: int,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Return total, tangential and normal impulse magnitudes ``[N,count]``.
-
-    Filtered force tensors have shape ``[N, 1, M, 3]``.  The source code first
-    accumulates contact impulse vectors for each robot body and then takes the
-    vector norm, so forces are summed across all filter bodies before the norm.
-
-    Returns:
-        ``(total_impulse, tangential_impulse, normal_impulse)``.
-    """
-    total_columns: list[torch.Tensor] = []
-    tangential_columns: list[torch.Tensor] = []
-    normal_columns: list[torch.Tensor] = []
-
-    for index in range(count):
-        sensor = _get_contact_sensor(env, f"{prefix}{index}")
-
-        normal_force = sensor.data.force_matrix_w
-        friction_force = sensor.data.friction_forces_w
-
-        if normal_force is None:
-            raise RuntimeError(
-                f"{prefix}{index} has no force_matrix_w. "
-                "Check filter_prim_paths_expr."
-            )
-        if friction_force is None:
-            raise RuntimeError(
-                f"{prefix}{index} has no friction_forces_w. "
-                "Set track_friction_forces=True."
-            )
-        if (
-            normal_force.ndim != 4
-            or friction_force.ndim != 4
-            or normal_force.shape[1] != 1
-            or friction_force.shape[1] != 1
-        ):
-            raise RuntimeError(
-                "Teacher filtered ContactSensor tensors must have shape "
-                "[N,1,M,3]. Got "
-                f"normal={tuple(normal_force.shape)}, "
-                f"friction={tuple(friction_force.shape)}."
-            )
-
-        # ContactSensor uses zero for pairs without contact. Leave non-finite
-        # physics output visible to the task's invalid-state termination.
-        normal_vector = normal_force[:, 0, :, :].sum(dim=1)
-        tangential_vector = friction_force[:, 0, :, :].sum(dim=1)
-        total_vector = normal_vector + tangential_vector
-
-        dt = env.physics_dt
-        total_columns.append(
-            torch.linalg.vector_norm(total_vector, dim=-1) * dt
-        )
-        tangential_columns.append(
-            torch.linalg.vector_norm(tangential_vector, dim=-1) * dt
-        )
-        normal_columns.append(
-            torch.linalg.vector_norm(normal_vector, dim=-1) * dt
-        )
-
-    return (
-        torch.stack(total_columns, dim=-1),
-        torch.stack(tangential_columns, dim=-1),
-        torch.stack(normal_columns, dim=-1),
-    )
+    """读取当前控制步共享的 total/tangential/normal impulse [N,K]。"""
+    return filtered_contact_impulses(env, prefix)[:3]
 
 
 # -----------------------------------------------------------------------------
@@ -302,24 +186,19 @@ def affordance_reward(
     Source ``train.py`` uses ``dis_info[:, 1:17]``.  Keypoint zero is therefore
     excluded; the configured weight for it is also zero.
     """
-    # Observation term already owns the sampled affordance points and returns
-    # the 17 nearest-point vectors in slots 102:153. Their norms are invariant
-    # under the object-to-world rotation used there.
-    vectors_w = env.observation_manager.compute_group("policy")[:, 102:153]
-    nearest_distance = torch.linalg.vector_norm(
-        vectors_w.reshape(env.num_envs, HAND_KEYPOINT_COUNT, 3),
-        dim=-1,
-    )
+    # Reward 与 observation 共用当前控制步的最近点向量，不重算 policy 观测。
+    vectors_w = nearest_affordance_vectors_w(env)
+    nearest_distance = torch.linalg.vector_norm(vectors_w, dim=-1)
     return -_weighted(nearest_distance, finger_weights)
 
 
 def table_reward(
     env: ManagerBasedRLEnv,
     finger_weights: tuple[float, ...],
-    table_height: float,
+    support_height: float,
 ) -> torch.Tensor:
     """Hand/table proximity metric from ``train.py``."""
-    heights = hand_keypoints_w(env)[..., 2] - table_height
+    heights = hand_keypoints_w(env)[..., 2] - support_height
     heights = heights.clamp(
         TABLE_HEIGHT_CLIP_MIN,
         TABLE_HEIGHT_CLIP_MAX,
@@ -333,14 +212,14 @@ def table_reward(
 
 def arm_height_reward(
     env: ManagerBasedRLEnv,
-    table_height: float,
+    support_height: float,
 ) -> torch.Tensor:
     """Arm/table proximity metric using the source observation slice 89:93.
 
     The six arm heights occupy observation indices 87:93, so source
     ``obs_new_r[:, 89:93]`` intentionally selects only keypoints 2:6.
     """
-    heights = arm_keypoints_w(env)[:, 2:6, 2] - table_height
+    heights = arm_keypoints_w(env)[:, 2:6, 2] - support_height
     heights = heights.clamp(
         TABLE_HEIGHT_CLIP_MIN,
         TABLE_HEIGHT_CLIP_MAX,
@@ -362,7 +241,6 @@ def affordance_contact_reward(
     total_impulse, _, _ = _filtered_impulses(
         env,
         AFFORDANCE_CONTACT_SENSOR_PREFIX,
-        NUM_HAND_CONTACTS,
     )
     contacts = (total_impulse > CONTACT_THRESHOLD).to(total_impulse.dtype)
     return _weighted(contacts, contact_weights) / NUM_HAND_CONTACTS
@@ -376,7 +254,6 @@ def affordance_impulse_reward(
     _, tangential_impulse, _ = _filtered_impulses(
         env,
         AFFORDANCE_CONTACT_SENSOR_PREFIX,
-        NUM_HAND_CONTACTS,
     )
     return _weighted(
         _clip_hand_impulses(tangential_impulse),
@@ -395,7 +272,6 @@ def push_reward(
     _, _, normal_impulse = _filtered_impulses(
         env,
         AFFORDANCE_CONTACT_SENSOR_PREFIX,
-        NUM_HAND_CONTACTS,
     )
 
     palm_push = torch.clamp_min(
@@ -425,7 +301,6 @@ def table_contact_reward(
     total_impulse, _, _ = _filtered_impulses(
         env,
         TABLE_CONTACT_SENSOR_PREFIX,
-        NUM_HAND_CONTACTS,
     )
     contacts = (total_impulse > CONTACT_THRESHOLD).to(total_impulse.dtype)
     return _weighted(contacts, contact_weights) / NUM_HAND_CONTACTS
@@ -439,7 +314,6 @@ def table_impulse_reward(
     total_impulse, _, _ = _filtered_impulses(
         env,
         TABLE_CONTACT_SENSOR_PREFIX,
-        NUM_HAND_CONTACTS,
     )
     return _weighted(
         _clip_hand_impulses(total_impulse),
@@ -458,7 +332,6 @@ def arm_contact_reward(
     total_impulse, _, _ = _filtered_impulses(
         env,
         ARM_CONTACT_SENSOR_PREFIX,
-        NUM_ARM_CONTACTS,
     )
     contacts = (total_impulse > CONTACT_THRESHOLD).to(total_impulse.dtype)
     return torch.linalg.vector_norm(contacts, dim=-1)
@@ -471,7 +344,6 @@ def arm_impulse_reward(
     total_impulse, _, _ = _filtered_impulses(
         env,
         ARM_CONTACT_SENSOR_PREFIX,
-        NUM_ARM_CONTACTS,
     )
     return torch.linalg.vector_norm(total_impulse, dim=-1)
 
@@ -485,17 +357,10 @@ def arm_collision_reward(
     only the object/table filtered pair. The arm sensors use unfiltered
     ``current_contact_time`` to reproduce this distinction.
     """
-    flags: list[torch.Tensor] = []
-
-    for index in range(NUM_ARM_CONTACTS):
-        sensor = _get_contact_sensor(
-            env,
-            f"{ARM_CONTACT_SENSOR_PREFIX}{index}",
-        )
-
-        flags.append(sensor.data.current_contact_time[:, 0] > 0.0)
-
-    contacts_arm_all = torch.stack(flags, dim=-1)
+    sensors = env._teacher_runtime_features.contact_sensors[ARM_CONTACT_SENSOR_PREFIX]
+    contacts_arm_all = torch.stack(
+        [sensor.data.current_contact_time[:, 0] > 0.0 for sensor in sensors], dim=-1
+    )
 
     # Source global_state[124:128] == contacts_arm_all[1:5].
     return contacts_arm_all[:, 1:5].to(
@@ -512,10 +377,7 @@ def _wrist_frame_velocity_w(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Return source hand-base-frame linear and angular velocity in world."""
     robot = _require_articulation(env, "robot")
-    wrist_body_id = _resolve_body_id(
-        robot,
-        UR5_LINK_NAMES[-1],
-    )
+    wrist_body_id = env._teacher_body_indices.wrist
 
     wrist_pose_w = robot.data.body_link_pose_w[:, wrist_body_id, :]
     linear_velocity_w = robot.data.body_link_lin_vel_w[:, wrist_body_id, :]
@@ -572,7 +434,7 @@ def _object_top_velocity(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Return object ``top`` link linear/angular world velocity."""
     obj = _require_articulation(env, "object")
-    top_body_id = _resolve_body_id(obj, "top")
+    top_body_id = env._teacher_body_indices.object_top
 
     return (
         obj.data.body_link_lin_vel_w[:, top_body_id, :],
@@ -654,10 +516,7 @@ def arm_joint_vel_reward_(
 ) -> torch.Tensor:
     """UR5 joint-velocity metric from ``Environment.hpp``."""
     robot = _require_articulation(env, "robot")
-    joint_ids = _resolve_joint_ids(
-        robot,
-        UR5_JOINT_NAMES,
-    )
+    joint_ids = env._teacher_body_indices.arm_joints
 
     velocity = robot.data.joint_vel[
         :,

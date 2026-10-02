@@ -1,0 +1,16 @@
+ M assets/robots/ur5_allegro/configuration/ur5_allegro_base.usd
+ M assets/robots/ur5_allegro/configuration/ur5_allegro_physics.usd
+ M assets/robots/ur5_allegro/configuration/ur5_allegro_robot.usd
+ M assets/robots/ur5_allegro/ur5_allegro.urdf
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/terminations.py
+?? "docs/\344\274\230\345\214\2261.md"
+?? "docs/\346\233\264\346\215\242\346\241\214\345\255\220.md"
+?? logs/acceptance/2026-10-01/
+?? logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_14-46-17/
+?? logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_15-09-59/
+?? outputs/2026-10-01/

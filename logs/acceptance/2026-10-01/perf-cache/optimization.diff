@@ -1,0 +1,961 @@
+--- before/mdp/keypoints.py
++++ after/mdp/keypoints.py
+@@ -7,6 +7,7 @@
+ from __future__ import annotations
+ 
+ import re
++from dataclasses import dataclass
+ from typing import TYPE_CHECKING
+ 
+ import torch
+@@ -38,18 +39,51 @@
+ _TIP_OFFSETS_Z = (0.0267, 0.0267, 0.0267, 0.0423)
+ 
+ 
++@dataclass(frozen=True)
++class TeacherBodyIndices:
++    """由已加载 USD 解析的静态索引；与环境同寿命，不跨 articulation 共用。"""
++
++    hand: list[int]
++    arm: list[int]
++    wrist: int
++    object_top: int
++    arm_joints: list[int]
++
++
++def initialize_teacher_body_indices(env: ManagerBasedRLEnv) -> None:
++    """在 observation term 初始化时解析名称，保持源关键点与动作关节顺序。"""
++    robot = env.scene["robot"]
++    hand_ids, _ = robot.find_bodies(
++        [re.escape(name) for name in _HAND_BODY_NAMES], preserve_order=True
++    )
++    arm_ids, _ = robot.find_bodies(
++        [re.escape(name) for name in ARM_KEYPOINT_LINK_NAMES], preserve_order=True
++    )
++    top_ids, _ = env.scene["object"].find_bodies(["top"], preserve_order=True)
++    env._teacher_body_indices = TeacherBodyIndices(
++        hand=[hand_ids[index] for index in _HAND_BODY_SELECT],
++        arm=arm_ids,
++        wrist=arm_ids[-1],
++        object_top=top_ids[0],
++        arm_joints=list(env.action_manager.get_term("teacher")._joint_ids[:6]),
++    )
++
++
+ def hand_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
+     """重建并返回世界坐标系下的 17 个手部关键点，形状为 ``[N, 17, 3]``。
+ 
+-    ``N`` 是并行环境数。先解析去重后的 parent 刚体，再按原 Teacher 顺序取位姿；
++    ``N`` 是并行环境数。用初始化时缓存的 parent 索引按原 Teacher 顺序取位姿；
+     wrist/tool 和指尖关键点的局部固定偏移经刚体朝向旋转后加到 parent 位置上。
+     """
++    return env._teacher_runtime_features.get(
++        "hand_keypoints_w", lambda ids: _hand_keypoints_w(env, ids)
++    )
++
++
++def _hand_keypoints_w(env: ManagerBasedRLEnv, ids: slice | torch.Tensor) -> torch.Tensor:
++    """用缓存索引重建本次需要更新的手部关键点行。"""
+     robot = env.scene["robot"]
+-    # 按 USD 刚体名称查询 parent link，并要求查询结果保持传入名称的顺序。
+-    body_ids, _ = robot.find_bodies([re.escape(name) for name in _HAND_BODY_NAMES], preserve_order=True)
+-    # 将去重后的 body 索引重新排列成 17 个关键点各自对应的 parent 索引。
+-    ordered_ids = [body_ids[index] for index in _HAND_BODY_SELECT]
+-    body_poses = robot.data.body_link_pose_w[:, ordered_ids, :]
++    body_poses = robot.data.body_link_pose_w[ids][:, env._teacher_body_indices.hand, :]
+     positions = body_poses[..., :3]
+     orientations = body_poses[..., 3:7]
+ 
+@@ -68,11 +102,10 @@
+ def arm_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
+     """按 robot_profile 顺序返回世界系下六个 UR5 关键点位置 ``[N, 6, 3]``。"""
+     robot = env.scene["robot"]
+-    # 使用 URDF 对应连杆名查找刚体，并保持六个手臂关键点的语义顺序。
+-    body_ids, _ = robot.find_bodies(
+-        [re.escape(name) for name in ARM_KEYPOINT_LINK_NAMES], preserve_order=True
++    return env._teacher_runtime_features.get(
++        "arm_keypoints_w",
++        lambda ids: robot.data.body_link_pose_w[ids][:, env._teacher_body_indices.arm, :3],
+     )
+-    return robot.data.body_link_pose_w[:, body_ids, :3]
+ 
+ 
+ def keypoints_w_to_object(
+@@ -92,17 +125,22 @@
+ def _object_top_pose_w(env: ManagerBasedRLEnv) -> tuple[torch.Tensor, torch.Tensor]:
+     """取得原 Teacher 使用的 ``top`` 刚体世界位姿，返回位置和 wxyz 四元数。"""
+     obj = env.scene["object"]
+-    # 获取 top 刚体索引；即使物体 articulation 包含多个刚体，也明确使用 top frame。
+-    body_ids, _ = obj.find_bodies(["top"], preserve_order=True)
+-    pose = obj.data.body_link_pose_w[:, body_ids[0], :]
++    pose = env._teacher_runtime_features.get(
++        "object_top_pose_w",
++        lambda ids: obj.data.body_link_pose_w[ids, env._teacher_body_indices.object_top, :].clone(),
++    )
+     return pose[:, :3], pose[:, 3:7]
+ 
+ 
+ def hand_keypoints_o(env: ManagerBasedRLEnv) -> torch.Tensor:
+     """返回物体 ``top`` 坐标系下的 17 个手部关键点 ``[N, 17, 3]``。"""
+     # 取物体参考位姿，并将世界系手部关键点转换到物体系。
+-    object_pos_w, object_quat_w = _object_top_pose_w(env)
+-    return keypoints_w_to_object(hand_keypoints_w(env), object_pos_w, object_quat_w)
++    def compute(ids: slice | torch.Tensor) -> torch.Tensor:
++        """仅转换已失效环境的手部关键点。"""
++        object_pos_w, object_quat_w = _object_top_pose_w(env)
++        return keypoints_w_to_object(hand_keypoints_w(env)[ids], object_pos_w[ids], object_quat_w[ids])
++
++    return env._teacher_runtime_features.get("hand_keypoints_o", compute)
+ 
+ 
+ def arm_keypoints_o(env: ManagerBasedRLEnv) -> torch.Tensor:
+--- before/mdp/observations.py
++++ after/mdp/observations.py
+@@ -56,8 +56,12 @@
+ from .keypoints import (
+     arm_keypoints_w,
+     hand_keypoints_w,
+-    keypoints_w_to_object,
++    hand_keypoints_o,
++    initialize_teacher_body_indices,
++    _object_top_pose_w,
+ )
++
++from .runtime import TeacherRuntimeFeatures, filtered_contact_impulses
+ 
+ if TYPE_CHECKING:
+     from isaaclab.envs import ManagerBasedRLEnv
+@@ -220,6 +224,24 @@
+     return int(body_ids[0])
+ 
+ 
++def nearest_affordance_vectors_w(env: ManagerBasedRLEnv) -> torch.Tensor:
++    """共享当前步世界系最近 affordance 向量 [N,17,3]，不计算完整观测。"""
++    def compute(ids: slice | torch.Tensor) -> torch.Tensor:
++        """只为本次失效行计算最近点；成对距离仅作为临时张量。"""
++        _, object_quat_w = _object_top_pose_w(env)
++        hand_positions_o = hand_keypoints_o(env)[ids]
++        points_o = env._teacher_affordance_points_o[ids]
++        nearest_index = torch.cdist(hand_positions_o, points_o).argmin(dim=-1)
++        nearest_points_o = torch.gather(
++            points_o, dim=1, index=nearest_index.unsqueeze(-1).expand(-1, -1, 3)
++        )
++        vectors_o = nearest_points_o - hand_positions_o
++        quaternions = object_quat_w[ids, None, :].expand(-1, HAND_KEYPOINT_COUNT, -1)
++        return quat_apply(quaternions.reshape(-1,4), vectors_o.reshape(-1,3)).reshape_as(vectors_o)
++
++    return env._teacher_runtime_features.get("affordance_vectors_w", compute)
++
++
+ # -----------------------------------------------------------------------------
+ # Stateful Manager observation
+ # -----------------------------------------------------------------------------
+@@ -236,6 +258,8 @@
+ 
+         self._robot = env.scene["robot"]
+         self._object = env.scene["object"]
++        initialize_teacher_body_indices(env)
++        env._teacher_runtime_features = TeacherRuntimeFeatures(env)
+ 
+         if not isinstance(self._robot, Articulation):
+             raise TypeError(
+@@ -301,7 +325,6 @@
+         )
+ 
+         # Cache and validate the 13 one-body filtered contact sensors.
+-        sensors: list[ContactSensor] = []
+         for (
+             sensor_name,
+             expected_body_name,
+@@ -338,15 +361,9 @@
+                     f"resolved={sensor.body_names[0]!r}."
+                 )
+ 
+-            sensors.append(sensor)
+-
+-        self._affordance_contact_sensors = tuple(
+-            sensors
+-        )
+-
+         # Geometry has to be available for ObservationManager's initial
+         # dimension probe, which occurs before startup events.
+-        self._affordance_points_o = _load_affordance_points(env)
++        _load_affordance_points(env)
+ 
+         # Source reset_state():
+         #   wrist_mat_r_init = current wrist matrix
+@@ -375,6 +392,7 @@
+         if env_ids is None:
+             env_ids = slice(None)
+ 
++        self._env._teacher_runtime_features.invalidate(env_ids)
+         self._needs_wrist_init[env_ids] = True
+         self._previous_wrist_euler[env_ids] = 0.0
+ 
+@@ -417,63 +435,7 @@
+         "no contact", not an invalid robot state, so both force components are
+         sanitized before they enter the policy observation.
+         """
+-        impulse_columns: list[torch.Tensor] = []
+-
+-        for sensor in self._affordance_contact_sensors:
+-            normal_force = sensor.data.force_matrix_w
+-            friction_force = (
+-                sensor.data.friction_forces_w
+-            )
+-
+-            if normal_force is None:
+-                raise RuntimeError(
+-                    "Teacher filtered ContactSensor has no force_matrix_w. "
+-                    "Check filter_prim_paths_expr."
+-                )
+-            if friction_force is None:
+-                raise RuntimeError(
+-                    "Teacher filtered ContactSensor has no "
+-                    "friction_forces_w. Set track_friction_forces=True."
+-                )
+-
+-            if (
+-                normal_force.shape[1:3] != (1, 1)
+-                or friction_force.shape[1:3] != (1, 1)
+-            ):
+-                raise RuntimeError(
+-                    "Teacher affordance contact sensors must be "
+-                    "one-body-to-one-filter sensors. Got "
+-                    f"normal={tuple(normal_force.shape)}, "
+-                    f"friction={tuple(friction_force.shape)}."
+-                )
+-
+-            total_force_w = (
+-                torch.nan_to_num(
+-                    normal_force[:, 0, 0, :],
+-                    nan=0.0,
+-                    posinf=0.0,
+-                    neginf=0.0,
+-                )
+-                + torch.nan_to_num(
+-                    friction_force[:, 0, 0, :],
+-                    nan=0.0,
+-                    posinf=0.0,
+-                    neginf=0.0,
+-                )
+-            )
+-
+-            impulse_columns.append(
+-                torch.linalg.vector_norm(
+-                    total_force_w,
+-                    dim=-1,
+-                )
+-                * env.physics_dt
+-            )
+-
+-        impulses = torch.stack(
+-            impulse_columns,
+-            dim=-1,
+-        )
++        impulses = filtered_contact_impulses(env, "teacher_af_contact_")[3]
+         contacts = (
+             impulses > CONTACT_IMPULSE_THRESHOLD
+         ).to(impulses.dtype)
+@@ -573,71 +535,10 @@
+     def _affordance_vectors(
+         self,
+         env: ManagerBasedRLEnv,
+-        hand_positions_w: torch.Tensor,
+     ) -> torch.Tensor:
+         """Return flattened 17x3 nearest-affordance vectors in world frame."""
+-        object_pose_w = (
+-            self._object.data.body_link_pose_w[
+-                :,
+-                self._object_top_body_id,
+-                :,
+-            ]
+-        )
+-
+-        hand_positions_o = (
+-            keypoints_w_to_object(
+-                hand_positions_w,
+-                object_pose_w[:, :3],
+-                object_pose_w[:, 3:7],
+-            )
+-        )
+-
+-        affordance_points_o = getattr(
+-            env,
+-            "_teacher_affordance_points_o",
+-            self._affordance_points_o,
+-        )
+-
+-        distances = torch.cdist(
+-            hand_positions_o,
+-            affordance_points_o,
+-        )
+-        nearest_index = distances.argmin(
+-            dim=-1
+-        )
+-
+-        nearest_points_o = torch.gather(
+-            affordance_points_o,
+-            dim=1,
+-            index=nearest_index.unsqueeze(-1).expand(
+-                -1,
+-                -1,
+-                3,
+-            ),
+-        )
+-
+-        vectors_o = (
+-            nearest_points_o
+-            - hand_positions_o
+-        )
+-
+-        object_quat_w = (
+-            object_pose_w[:, None, 3:7]
+-            .expand(
+-                -1,
+-                HAND_KEYPOINT_COUNT,
+-                -1,
+-            )
+-        )
+-
+-        vectors_w = quat_apply(
+-            object_quat_w.reshape(-1, 4),
+-            vectors_o.reshape(-1, 3),
+-        )
+-
+-        return vectors_w.reshape(
+-            env.num_envs,
+-            TEACHER_AFFORDANCE_OBSERVATION_DIM,
++        return nearest_affordance_vectors_w(env).reshape(
++            env.num_envs, TEACHER_AFFORDANCE_OBSERVATION_DIM
+         )
+ 
+     def __call__(
+@@ -701,7 +602,6 @@
+         affordance_vectors = (
+             self._affordance_vectors(
+                 env,
+-                hand_positions_w,
+             )
+         )
+ 
+--- before/mdp/rewards.py
++++ after/mdp/rewards.py
+@@ -30,21 +30,20 @@
+ 
+ from isaaclab.assets import Articulation
+ from isaaclab.managers import ManagerTermBase
+-from isaaclab.sensors import ContactSensor
+ from isaaclab.utils.math import quat_apply
+ 
+ from Grasp1.robots.robot_profile import (
+     ARM_CONTACT_LINK_NAMES,
+     HAND_CONTACT_LINK_NAMES,
+-    HAND_KEYPOINT_COUNT,
+-    UR5_JOINT_NAMES,
+-    UR5_LINK_NAMES,
+ )
+ 
+ from .keypoints import (
+     arm_keypoints_w,
+     hand_keypoints_w,
+ )
++
++from .observations import nearest_affordance_vectors_w
++from .runtime import filtered_contact_impulses
+ 
+ if TYPE_CHECKING:
+     from isaaclab.envs import ManagerBasedRLEnv
+@@ -139,33 +138,6 @@
+     return int(body_ids[0])
+ 
+ 
+-def _resolve_joint_ids(
+-    asset: Articulation,
+-    joint_names: tuple[str, ...],
+-) -> tuple[int, ...]:
+-    """Resolve literal joint names while preserving source order."""
+-    runtime_names = tuple(name.replace(".", "_") for name in joint_names)
+-    expressions = [re.escape(name) for name in runtime_names]
+-
+-    try:
+-        joint_ids, resolved_names = asset.find_joints(
+-            expressions,
+-            preserve_order=True,
+-        )
+-    except ValueError as exc:
+-        raise RuntimeError(
+-            f"Failed to resolve joints {runtime_names}."
+-        ) from exc
+-
+-    if tuple(resolved_names) != runtime_names:
+-        raise RuntimeError(
+-            "Joint ordering mismatch: "
+-            f"expected={runtime_names}, resolved={tuple(resolved_names)}."
+-        )
+-
+-    return tuple(int(index) for index in joint_ids)
+-
+-
+ def _weighted(
+     values: torch.Tensor,
+     weights: Sequence[float],
+@@ -193,100 +165,12 @@
+     return torch.minimum(values.clamp_min(0.0), high)
+ 
+ 
+-def _get_contact_sensor(
+-    env: ManagerBasedRLEnv,
+-    sensor_name: str,
+-) -> ContactSensor:
+-    """Return one configured ContactSensor."""
+-    try:
+-        sensor = env.scene[sensor_name]
+-    except KeyError as exc:
+-        raise RuntimeError(
+-            f"Missing ContactSensor {sensor_name!r}. "
+-            "Use the task-30 teacher_env_cfg.py sensor wiring."
+-        ) from exc
+-
+-    if not isinstance(sensor, ContactSensor):
+-        raise TypeError(
+-            f"{sensor_name!r} must be ContactSensor, got {type(sensor)!r}."
+-        )
+-    if sensor.num_bodies != 1:
+-        raise RuntimeError(
+-            f"{sensor_name!r} must monitor exactly one body; "
+-            f"got {sensor.num_bodies}: {sensor.body_names}."
+-        )
+-    return sensor
+-
+-
+ def _filtered_impulses(
+     env: ManagerBasedRLEnv,
+     prefix: str,
+-    count: int,
+ ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+-    """Return total, tangential and normal impulse magnitudes ``[N,count]``.
+-
+-    Filtered force tensors have shape ``[N, 1, M, 3]``.  The source code first
+-    accumulates contact impulse vectors for each robot body and then takes the
+-    vector norm, so forces are summed across all filter bodies before the norm.
+-
+-    Returns:
+-        ``(total_impulse, tangential_impulse, normal_impulse)``.
+-    """
+-    total_columns: list[torch.Tensor] = []
+-    tangential_columns: list[torch.Tensor] = []
+-    normal_columns: list[torch.Tensor] = []
+-
+-    for index in range(count):
+-        sensor = _get_contact_sensor(env, f"{prefix}{index}")
+-
+-        normal_force = sensor.data.force_matrix_w
+-        friction_force = sensor.data.friction_forces_w
+-
+-        if normal_force is None:
+-            raise RuntimeError(
+-                f"{prefix}{index} has no force_matrix_w. "
+-                "Check filter_prim_paths_expr."
+-            )
+-        if friction_force is None:
+-            raise RuntimeError(
+-                f"{prefix}{index} has no friction_forces_w. "
+-                "Set track_friction_forces=True."
+-            )
+-        if (
+-            normal_force.ndim != 4
+-            or friction_force.ndim != 4
+-            or normal_force.shape[1] != 1
+-            or friction_force.shape[1] != 1
+-        ):
+-            raise RuntimeError(
+-                "Teacher filtered ContactSensor tensors must have shape "
+-                "[N,1,M,3]. Got "
+-                f"normal={tuple(normal_force.shape)}, "
+-                f"friction={tuple(friction_force.shape)}."
+-            )
+-
+-        # ContactSensor uses zero for pairs without contact. Leave non-finite
+-        # physics output visible to the task's invalid-state termination.
+-        normal_vector = normal_force[:, 0, :, :].sum(dim=1)
+-        tangential_vector = friction_force[:, 0, :, :].sum(dim=1)
+-        total_vector = normal_vector + tangential_vector
+-
+-        dt = env.physics_dt
+-        total_columns.append(
+-            torch.linalg.vector_norm(total_vector, dim=-1) * dt
+-        )
+-        tangential_columns.append(
+-            torch.linalg.vector_norm(tangential_vector, dim=-1) * dt
+-        )
+-        normal_columns.append(
+-            torch.linalg.vector_norm(normal_vector, dim=-1) * dt
+-        )
+-
+-    return (
+-        torch.stack(total_columns, dim=-1),
+-        torch.stack(tangential_columns, dim=-1),
+-        torch.stack(normal_columns, dim=-1),
+-    )
++    """读取当前控制步共享的 total/tangential/normal impulse [N,K]。"""
++    return filtered_contact_impulses(env, prefix)[:3]
+ 
+ 
+ # -----------------------------------------------------------------------------
+@@ -302,14 +186,9 @@
+     Source ``train.py`` uses ``dis_info[:, 1:17]``.  Keypoint zero is therefore
+     excluded; the configured weight for it is also zero.
+     """
+-    # Observation term already owns the sampled affordance points and returns
+-    # the 17 nearest-point vectors in slots 102:153. Their norms are invariant
+-    # under the object-to-world rotation used there.
+-    vectors_w = env.observation_manager.compute_group("policy")[:, 102:153]
+-    nearest_distance = torch.linalg.vector_norm(
+-        vectors_w.reshape(env.num_envs, HAND_KEYPOINT_COUNT, 3),
+-        dim=-1,
+-    )
++    # Reward 与 observation 共用当前控制步的最近点向量，不重算 policy 观测。
++    vectors_w = nearest_affordance_vectors_w(env)
++    nearest_distance = torch.linalg.vector_norm(vectors_w, dim=-1)
+     return -_weighted(nearest_distance, finger_weights)
+ 
+ 
+@@ -362,7 +241,6 @@
+     total_impulse, _, _ = _filtered_impulses(
+         env,
+         AFFORDANCE_CONTACT_SENSOR_PREFIX,
+-        NUM_HAND_CONTACTS,
+     )
+     contacts = (total_impulse > CONTACT_THRESHOLD).to(total_impulse.dtype)
+     return _weighted(contacts, contact_weights) / NUM_HAND_CONTACTS
+@@ -376,7 +254,6 @@
+     _, tangential_impulse, _ = _filtered_impulses(
+         env,
+         AFFORDANCE_CONTACT_SENSOR_PREFIX,
+-        NUM_HAND_CONTACTS,
+     )
+     return _weighted(
+         _clip_hand_impulses(tangential_impulse),
+@@ -395,7 +272,6 @@
+     _, _, normal_impulse = _filtered_impulses(
+         env,
+         AFFORDANCE_CONTACT_SENSOR_PREFIX,
+-        NUM_HAND_CONTACTS,
+     )
+ 
+     palm_push = torch.clamp_min(
+@@ -425,7 +301,6 @@
+     total_impulse, _, _ = _filtered_impulses(
+         env,
+         TABLE_CONTACT_SENSOR_PREFIX,
+-        NUM_HAND_CONTACTS,
+     )
+     contacts = (total_impulse > CONTACT_THRESHOLD).to(total_impulse.dtype)
+     return _weighted(contacts, contact_weights) / NUM_HAND_CONTACTS
+@@ -439,7 +314,6 @@
+     total_impulse, _, _ = _filtered_impulses(
+         env,
+         TABLE_CONTACT_SENSOR_PREFIX,
+-        NUM_HAND_CONTACTS,
+     )
+     return _weighted(
+         _clip_hand_impulses(total_impulse),
+@@ -458,7 +332,6 @@
+     total_impulse, _, _ = _filtered_impulses(
+         env,
+         ARM_CONTACT_SENSOR_PREFIX,
+-        NUM_ARM_CONTACTS,
+     )
+     contacts = (total_impulse > CONTACT_THRESHOLD).to(total_impulse.dtype)
+     return torch.linalg.vector_norm(contacts, dim=-1)
+@@ -471,7 +344,6 @@
+     total_impulse, _, _ = _filtered_impulses(
+         env,
+         ARM_CONTACT_SENSOR_PREFIX,
+-        NUM_ARM_CONTACTS,
+     )
+     return torch.linalg.vector_norm(total_impulse, dim=-1)
+ 
+@@ -485,17 +357,10 @@
+     only the object/table filtered pair. The arm sensors use unfiltered
+     ``current_contact_time`` to reproduce this distinction.
+     """
+-    flags: list[torch.Tensor] = []
+-
+-    for index in range(NUM_ARM_CONTACTS):
+-        sensor = _get_contact_sensor(
+-            env,
+-            f"{ARM_CONTACT_SENSOR_PREFIX}{index}",
+-        )
+-
+-        flags.append(sensor.data.current_contact_time[:, 0] > 0.0)
+-
+-    contacts_arm_all = torch.stack(flags, dim=-1)
++    sensors = env._teacher_runtime_features.contact_sensors[ARM_CONTACT_SENSOR_PREFIX]
++    contacts_arm_all = torch.stack(
++        [sensor.data.current_contact_time[:, 0] > 0.0 for sensor in sensors], dim=-1
++    )
+ 
+     # Source global_state[124:128] == contacts_arm_all[1:5].
+     return contacts_arm_all[:, 1:5].to(
+@@ -512,10 +377,7 @@
+ ) -> tuple[torch.Tensor, torch.Tensor]:
+     """Return source hand-base-frame linear and angular velocity in world."""
+     robot = _require_articulation(env, "robot")
+-    wrist_body_id = _resolve_body_id(
+-        robot,
+-        UR5_LINK_NAMES[-1],
+-    )
++    wrist_body_id = env._teacher_body_indices.wrist
+ 
+     wrist_pose_w = robot.data.body_link_pose_w[:, wrist_body_id, :]
+     linear_velocity_w = robot.data.body_link_lin_vel_w[:, wrist_body_id, :]
+@@ -572,7 +434,7 @@
+ ) -> tuple[torch.Tensor, torch.Tensor]:
+     """Return object ``top`` link linear/angular world velocity."""
+     obj = _require_articulation(env, "object")
+-    top_body_id = _resolve_body_id(obj, "top")
++    top_body_id = env._teacher_body_indices.object_top
+ 
+     return (
+         obj.data.body_link_lin_vel_w[:, top_body_id, :],
+@@ -654,10 +516,7 @@
+ ) -> torch.Tensor:
+     """UR5 joint-velocity metric from ``Environment.hpp``."""
+     robot = _require_articulation(env, "robot")
+-    joint_ids = _resolve_joint_ids(
+-        robot,
+-        UR5_JOINT_NAMES,
+-    )
++    joint_ids = env._teacher_body_indices.arm_joints
+ 
+     velocity = robot.data.joint_vel[
+         :,
+--- before/mdp/events.py
++++ after/mdp/events.py
+@@ -155,8 +155,8 @@
+     ``ObservationManager`` probes the policy observation before startup events
+     in IsaacLab 2.3.2.  The observation term therefore normally creates
+     ``env._teacher_object_metadata`` and ``env._teacher_affordance_points_o``
+-    first.  This function reuses that exact point sample.  It can also lazily
+-    create the metadata if the observation implementation changes.
++    first. This function reuses that exact point sample and lowest-point
++    metadata, then uploads reset mesh triangles and stable states once.
+     """
+     del env_ids
+ 
+@@ -171,8 +171,9 @@
+     joint_ids = _resolve_controlled_joint_ids(robot)
+ 
+     unique_names = tuple(dict.fromkeys(names))
++    object_index = {name: index for index, name in enumerate(unique_names)}
+     object_ids = torch.tensor(
+-        [unique_names.index(name) for name in names],
++        [object_index[name] for name in names],
+         device=env.device,
+         dtype=torch.long,
+     )
+@@ -200,12 +201,9 @@
+             f"{tuple(cached_points.shape)}."
+         )
+ 
+-    lowest_values: list[float] = []
+-    for name in names:
+-        lowest_path = object_asset_dir(dataset_name, name) / "lowest_point_new.txt"
+-        if not lowest_path.is_file():
+-            raise FileNotFoundError(f"Missing lowest-point file: {lowest_path}")
+-        lowest_values.append(float(lowest_path.read_text(encoding="utf-8").strip()))
++    # Observation 初始化已读取最低点；重复物体无需再次访问文件。
++    metadata = env._teacher_object_metadata
++    lowest_values = [metadata[name].lowest_point for name in names]
+ 
+     lowest = torch.tensor(
+         lowest_values,
+@@ -213,9 +211,8 @@
+         dtype=robot.data.joint_pos.dtype,
+     )
+ 
+-    # Keep triangle soups on CPU. Only the object group currently being reset
+-    # is copied to GPU.  This avoids permanently pinning all ShapeNet meshes in
+-    # VRAM.
++    # 全部 float32 triangles：训练集约 0.87 MiB，ShapeNet 约 6.17 MiB。
++    # 启动时一次搬到 GPU，partial reset 仅索引对应物体，保留 process=False 语义。
+     try:
+         import trimesh
+     except ImportError as exc:
+@@ -223,7 +220,7 @@
+             "Teacher reset geometry requires trimesh during startup."
+         ) from exc
+ 
+-    triangles_cpu: dict[str, torch.Tensor] = {}
++    triangles: dict[str, torch.Tensor] = {}
+     stable_states_cpu: dict[str, torch.Tensor] = {}
+ 
+     for name in unique_names:
+@@ -242,15 +239,24 @@
+         if not isinstance(mesh, trimesh.Trimesh) or mesh.faces.shape[0] == 0:
+             raise ValueError(f"Invalid triangular affordance mesh: {mesh_path}")
+ 
+-        triangles_cpu[name] = torch.as_tensor(
++        triangles[name] = torch.as_tensor(
+             np.asarray(mesh.triangles),
+-            device="cpu",
+-            dtype=torch.float32,
++            device=env.device,
++            dtype=robot.data.joint_pos.dtype,
+         )
+ 
+         stable_path = _stable_state_path(dataset_name, name)
+         if stable_path.is_file():
+             stable_states_cpu[name] = _load_stable_state(stable_path)
++
++    # stable state 按环境排好序并一次搬到 GPU；缺失状态只在确实请求评估时报告。
++    missing_stable_state = torch.zeros(7)
++    stable_states = torch.stack(
++        [stable_states_cpu.get(name, missing_stable_state) for name in names]
++    ).to(device=env.device, dtype=robot.data.joint_pos.dtype)
++    stable_state_available = torch.tensor(
++        [name in stable_states_cpu for name in names], device=env.device, dtype=torch.bool
++    )
+ 
+     env._teacher_reset_data = {
+         "dataset_name": dataset_name,
+@@ -259,8 +265,9 @@
+         "unique_names": unique_names,
+         "lowest": lowest,
+         "points": cached_points,
+-        "triangles_cpu": triangles_cpu,
+-        "stable_states_cpu": stable_states_cpu,
++        "triangles": triangles,
++        "stable_states": stable_states,
++        "stable_state_available": stable_state_available,
+         "joint_ids": joint_ids,
+         "joint_pos": robot.data.default_joint_pos.clone(),
+         "object_pose": torch.zeros(
+@@ -388,7 +395,6 @@
+ def _sample_object_pose(
+     env,
+     ids: torch.Tensor,
+-    names: tuple[str, ...],
+     *,
+     non_uniform_sampling: bool,
+     support_height: float,
+@@ -423,18 +429,14 @@
+     )
+ 
+     if use_stable_states:
+-        stable_cache = data["stable_states_cpu"]
+-        missing = [name for name in names if name not in stable_cache]
+-        if missing:
++        missing_ids = ids[~data["stable_state_available"][ids]]
++        if missing_ids.numel() > 0:
++            missing = tuple(dict.fromkeys(data["object_names"][index] for index in missing_ids.cpu().tolist()))
+             raise FileNotFoundError(
+                 "Stable-state reset requested, but no valid <object>.npy was "
+-                f"loaded for: {tuple(dict.fromkeys(missing))}."
++                f"loaded for: {missing}."
+             )
+-
+-        stable = torch.stack(
+-            [stable_cache[name] for name in names],
+-            dim=0,
+-        ).to(device=env.device, dtype=dtype)
++        stable = data["stable_states"][ids]
+ 
+         # quantitative_eval.py resamples X/Y and copies only stable Z + quat.
+         object_pose[:, 2] = (
+@@ -497,16 +499,12 @@
+         if group.numel() == 0:
+             continue
+ 
+-        triangles = data["triangles_cpu"][name].to(
+-            device=env.device,
+-            dtype=dtype,
+-        )
++        triangles = data["triangles"][name]
+         visible_o[group] = geometry.visible_points(
+             data["points"][ids[group]],
+             triangles,
+             camera_o[group],
+         )
+-        del triangles
+ 
+     return geometry.object_points_to_world(
+         visible_o,
+@@ -616,6 +614,7 @@
+     object_pose: torch.Tensor,
+ ) -> None:
+     """Write robot/object state and hold targets at the reset pose."""
++    env._teacher_runtime_features.invalidate(env_ids)
+     robot = env.scene["robot"]
+     obj = env.scene["object"]
+ 
+@@ -773,13 +772,9 @@
+     _ensure_initialized(env, dataset_name, names_all)
+     data = env._teacher_reset_data
+ 
+-    ids_cpu = ids.detach().cpu().tolist()
+-    names = tuple(names_all[index] for index in ids_cpu)
+-
+     object_pose, angles = _sample_object_pose(
+         env,
+         ids,
+-        names,
+         non_uniform_sampling=non_uniform_sampling,
+         support_height=support_height,
+         use_stable_states=use_stable_states,
+@@ -907,11 +902,7 @@
+         return
+ 
+     obj = env.scene["object"]
+-    top_ids, resolved = obj.find_bodies("top", preserve_order=True)
+-    if len(top_ids) != 1 or resolved[0] != "top":
+-        raise RuntimeError(f"Object body 'top' must resolve exactly once: {resolved}.")
+-
+-    top_pose = obj.data.body_link_pose_w[ids, top_ids[0]]
++    top_pose = obj.data.body_link_pose_w[ids, env._teacher_body_indices.object_top]
+     hand_points_w = hand_keypoints_w(env)[ids]
+ 
+     # Compare in object/top frame, matching observe_vision_new's dis_info.
+@@ -942,6 +933,7 @@
+     # Environment.hpp::switch_obj_pos changes only X/Y.
+     pose[:, :2] += data["bias"][selected, :2]
+     obj.write_root_pose_to_sim(pose, env_ids=selected)
++    env._teacher_runtime_features.invalidate(selected)
+ 
+     data["bias_pending"][selected] = False
+ 
+--- before/mdp/runtime.py
++++ after/mdp/runtime.py
+@@ -0,0 +1,120 @@
++"""Teacher 控制步内的共享小张量；只供物理步结束后的 MDP 读取。"""
++
++from __future__ import annotations
++
++from collections.abc import Callable, Sequence
++from typing import TYPE_CHECKING
++
++import torch
++
++from isaaclab.sensors import ContactSensor
++from Grasp1.robots.robot_profile import ARM_CONTACT_LINK_NAMES, HAND_CONTACT_LINK_NAMES
++
++if TYPE_CHECKING:
++    from isaaclab.envs import ManagerBasedRLEnv
++
++EnvIds = slice | torch.Tensor
++Feature = torch.Tensor | tuple[torch.Tensor, ...]
++
++
++class TeacherRuntimeFeatures:
++    """环境私有的按步缓存，不保留 cdist 的完整成对距离张量。
++
++    Isaac Lab 在物理积分后、termination/reward 前递增 common_step_counter。
++    新控制步首次读取时清空动态结果，因此 reward 不会读取上一控制步的数据。
++    reset、碰撞回退及 bias 写状态时显式 invalidate；partial reset 的下一次
++    读取只重算对应行，其它环境的缓存行保持原值。静态名称索引另行保存。
++    """
++
++    def __init__(self, env: ManagerBasedRLEnv) -> None:
++        """绑定环境与控制步计数器，建立空的动态结果和待更新行集合。"""
++        self._env = env
++        self._step = env.common_step_counter
++        self._values: dict[str, Feature] = {}
++        self._pending: dict[str, list[torch.Tensor]] = {}
++        # 只解析/校验一次 sensor 对象；每步读取其最新的 GPU data。
++        self.contact_sensors: dict[str, tuple[ContactSensor, ...]] = {}
++        for prefix, count in (
++            ("teacher_af_contact_", len(HAND_CONTACT_LINK_NAMES)),
++            ("teacher_table_contact_", len(HAND_CONTACT_LINK_NAMES)),
++            ("teacher_arm_contact_", len(ARM_CONTACT_LINK_NAMES)),
++        ):
++            sensors = tuple(env.scene[f"{prefix}{index}"] for index in range(count))
++            for sensor in sensors:
++                if not isinstance(sensor, ContactSensor) or sensor.num_bodies != 1:
++                    raise RuntimeError("Teacher contact sensors must monitor exactly one body.")
++                normal, friction = sensor.data.force_matrix_w, sensor.data.friction_forces_w
++                if normal is None or friction is None:
++                    raise RuntimeError("Teacher contact sensors require filtered normal/friction forces.")
++                if normal.ndim != 4 or friction.ndim != 4 or normal.shape[1] != 1 or friction.shape[1] != 1:
++                    raise RuntimeError("Teacher filtered contact tensors must have shape [N,1,M,3].")
++                if prefix == "teacher_af_contact_" and (normal.shape[1:3] != (1, 1) or friction.shape[1:3] != (1, 1)):
++                    raise RuntimeError("Teacher affordance sensors must be one-body-to-one-filter sensors.")
++            self.contact_sensors[prefix] = sensors
++
++    def _update_step(self) -> None:
++        """每个新控制步丢弃上一控制步结果；比较 Python 计数器，不同步 GPU。"""
++        step = self._env.common_step_counter
++        if step != self._step:
++            self._values.clear()
++            self._pending.clear()
++            self._step = step
++
++    def invalidate(self, env_ids: EnvIds | Sequence[int] | None = None) -> None:
++        """状态写入后标记失效；None/slice 为全量 reset，Tensor 为指定环境。"""
++        self._update_step()
++        if env_ids is None or isinstance(env_ids, slice):
++            self._values.clear()
++            self._pending.clear()
++        else:
++            env_ids = torch.as_tensor(env_ids, device=self._env.device, dtype=torch.long)
++            for name in self._values:
++                self._pending.setdefault(name, []).append(env_ids)
++
++    def get(self, name: str, compute: Callable[[EnvIds], Feature]) -> Feature:
++        """首次读取计算结果；同一步复用，失效的 partial reset 行按需更新。"""
++        self._update_step()
++        if name not in self._values:
++            self._values[name] = compute(slice(None))
++        elif name in self._pending:
++            pending = self._pending.pop(name)
++            ids = pending[0] if len(pending) == 1 else torch.cat(pending).unique()
++            updated = compute(ids)
++            cached = self._values[name]
++            if isinstance(cached, tuple):
++                for target, source in zip(cached, updated, strict=True):
++                    target[ids] = source
++            else:
++                cached[ids] = updated
++        return self._values[name]
++
++
++def filtered_contact_impulses(env: ManagerBasedRLEnv, prefix: str) -> tuple[torch.Tensor, ...]:
++    """各接触组每步只整理一次，返回 total/tangential/normal [N,K]。
++
++    affordance 组另返回原 observation 所需的 sanitized total；奖励仍使用
++    未清理的力，保持两条原有路径对非有限值的不同处理。
++    """
++    cache = env._teacher_runtime_features
++
++    def compute(ids: EnvIds) -> tuple[torch.Tensor, ...]:
++        """按传感器原顺序 stack，在 filter body 维求和后取模并乘 physics_dt。"""
++        sensors = cache.contact_sensors[prefix]
++        normal = torch.stack([sensor.data.force_matrix_w[ids, 0] for sensor in sensors], dim=1)
++        friction = torch.stack([sensor.data.friction_forces_w[ids, 0] for sensor in sensors], dim=1)
++        normal_vector = normal.sum(dim=2)
++        tangential_vector = friction.sum(dim=2)
++        result = (
++            torch.linalg.vector_norm(normal_vector + tangential_vector, dim=-1) * env.physics_dt,
++            torch.linalg.vector_norm(tangential_vector, dim=-1) * env.physics_dt,
++            torch.linalg.vector_norm(normal_vector, dim=-1) * env.physics_dt,
++        )
++        if prefix == "teacher_af_contact_":
++            safe_total = (
++                torch.nan_to_num(normal[:, :, 0], nan=0.0, posinf=0.0, neginf=0.0)
++                + torch.nan_to_num(friction[:, :, 0], nan=0.0, posinf=0.0, neginf=0.0)
++            )
++            result += (torch.linalg.vector_norm(safe_total, dim=-1) * env.physics_dt,)
++        return result
++
++    return cache.get(f"contact/{prefix}", compute)
+--- before/teacher_env_cfg.py
++++ after/teacher_env_cfg.py
+@@ -373,6 +373,7 @@
+ 
+     # 原始奖励系数为 -0.0，因此保留该项但将权重设为 0。
+     push_reward = RewTerm(
++        # Isaac Lab 2.3.2 RewardManager.compute 已跳过零权重项，保留定义与日志列。
+         func=f"{_MDP}.rewards:push_reward",
+         weight=0.0,
+     )

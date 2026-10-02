@@ -1,0 +1,529 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   assets/robots/ur5_allegro/configuration/ur5_allegro_base.usd
+	modified:   assets/robots/ur5_allegro/configuration/ur5_allegro_physics.usd
+	modified:   assets/robots/ur5_allegro/configuration/ur5_allegro_robot.usd
+	modified:   assets/robots/ur5_allegro/ur5_allegro.urdf
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/terminations.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	assets/robots/ur5_allegro/.asset_hash
+	assets/robots/ur5_allegro/config.yaml
+	"docs/\346\233\264\346\215\242\346\241\214\345\255\220.md"
+	logs/acceptance/2026-10-01/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_14-46-17/
+	outputs/2026-10-01/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/assets/robots/ur5_allegro/configuration/ur5_allegro_base.usd b/assets/robots/ur5_allegro/configuration/ur5_allegro_base.usd
+index a32304a..1a09897 100644
+--- a/assets/robots/ur5_allegro/configuration/ur5_allegro_base.usd
++++ b/assets/robots/ur5_allegro/configuration/ur5_allegro_base.usd
+@@ -1,3 +1,3 @@
+ version https://git-lfs.github.com/spec/v1
+-oid sha256:6e6fa647a8afb21709f854d1edcde305e2c0a4f76977df75d5671e8ecb1c0c6a
+-size 24694302
++oid sha256:888fabb078c1af6424961858c5b30aff5606a30c097483d1f63e5389b30067fd
++size 8470975
+diff --git a/assets/robots/ur5_allegro/configuration/ur5_allegro_physics.usd b/assets/robots/ur5_allegro/configuration/ur5_allegro_physics.usd
+index daa7d6f..b385a37 100644
+--- a/assets/robots/ur5_allegro/configuration/ur5_allegro_physics.usd
++++ b/assets/robots/ur5_allegro/configuration/ur5_allegro_physics.usd
+@@ -1,3 +1,3 @@
+ version https://git-lfs.github.com/spec/v1
+-oid sha256:72cff0c1a61d4e451850e1cc40bb443e721b0667a47901d1ccebf54a500598fd
+-size 9837
++oid sha256:415bc35b359dd0eed8da4b4be6a5a193d1eba845a966a49fbb1e763dc03cf8a7
++size 9209
+diff --git a/assets/robots/ur5_allegro/configuration/ur5_allegro_robot.usd b/assets/robots/ur5_allegro/configuration/ur5_allegro_robot.usd
+index 1d12b4b..26fe42c 100644
+--- a/assets/robots/ur5_allegro/configuration/ur5_allegro_robot.usd
++++ b/assets/robots/ur5_allegro/configuration/ur5_allegro_robot.usd
+@@ -1,3 +1,3 @@
+ version https://git-lfs.github.com/spec/v1
+-oid sha256:610fecd83e69f459ef58d389363dbf6b014a7585941342070232884e5ef59a1a
+-size 2789
++oid sha256:2420bdef247ffb53fd5d36badf4b315a0b2224abcc55847ca89a3583a1786bfa
++size 2679
+diff --git a/assets/robots/ur5_allegro/ur5_allegro.urdf b/assets/robots/ur5_allegro/ur5_allegro.urdf
+index 9161084..f65d3f7 100755
+--- a/assets/robots/ur5_allegro/ur5_allegro.urdf
++++ b/assets/robots/ur5_allegro/ur5_allegro.urdf
+@@ -1020,63 +1020,4 @@
+     <child link="link_15.0_tip"/>
+     <origin rpy="0 0 0" xyz="0 0 0.0423"/>
+   </joint>
+-  <!-- ly add: Allegro Hand -->
+-
+-  <!-- ly add: platform -->
+-  <link name="world"></link>
+-  <link
+-    name="platform_base_link">
+-    <inertial>
+-      <origin
+-        xyz="0.23866 -0.0018349 0.30694"
+-        rpy="0 0 0" />
+-      <mass
+-        value="100" />
+-      <inertia
+-        ixx="1.65006434644742"
+-        ixy="-0.000408772605278627"
+-        ixz="0.0483178937212822"
+-        iyy="4.02315462619992"
+-        iyz="-0.000120223922225659"
+-        izz="5.22125227955039" />
+-    </inertial>
+-    <visual>
+-      <origin
+-        xyz="0 0 0"
+-        rpy="-1.57 0.0 -1.57" />
+-      <geometry>
+-        <mesh
+-          filename="platform_meshes/base_link.STL" />
+-      </geometry>
+-      <material
+-        name="">
+-        <color
+-          rgba="1 1 1 1" />
+-      </material>
+-    </visual>
+-  </link>
+-
+-  <!-- 0.55 0.75152 0.0 -->
+-  <joint name="worldur5_to_base" type="fixed">
+-    <parent link="world"/>
+-    <child link="platform_base_link"/>
+-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+-    <!-- <origin rpy="-1.57 0.0 -1.57" xyz="0.0 0.0 0.0"/> -->
+-  </joint>
+-
+-  <link name="Link_1"> </link>
+-  <joint name="Link_1" type="fixed">
+-    <origin xyz="0 0 0.771" rpy="0 0 0" />
+-    <parent link="platform_base_link" />
+-    <child link="Link_1" />
+-    <axis xyz="0 0 0" />
+-  </joint>
+-
+-
+-  <!-- <link name="world"/> -->
+-  <joint name="platform2ur5_joint" type="fixed">
+-    <parent link="Link_1"/>
+-    <child link="base_link"/>
+-    <origin rpy="0.0 0.0 -1.57" xyz="0.0 0.0 0.0"/>
+-  </joint>
+ </robot>
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+index f691394..fd86078 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+@@ -34,7 +34,7 @@ from Grasp1.robots.robot_profile import (
+ from Grasp1.utils.paths import object_asset_dir
+ 
+ from ... import mdp
+-from ...grasp1_env_cfg import CONTROL_DT, TABLE_CENTER_XY, TABLE_HEIGHT, Grasp1EnvCfg
++from ...grasp1_env_cfg import CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
+ 
+ 
+ # -----------------------------------------------------------------------------
+@@ -65,11 +65,11 @@ TOP_DOWN_GRASP: Final[bool] = False
+ NON_UNIFORM_SAMPLING: Final[bool] = True
+ OBJECT_BIAS_DISTANCE_THRESHOLD: Final[float] = 0.07
+ 
+-# 预抓取候选生成使用的相机位置和候选数量。
++# 相机相对真实 UR5 base 的平移；保留源相机相对桌面的高度与工作方向。
+ CAMERA_POSITION: Final[tuple[float, float, float]] = (
+     0.035,
+     -0.58,
+-    1.531,
++    1.531 - SUPPORT_HEIGHT,
+ )
+ 
+ PREGRASP_SAMPLE_NUM: Final[int] = 10
+@@ -174,7 +174,7 @@ def _build_teacher_object_cfg(
+             pos=(
+                 TABLE_CENTER_XY[0],
+                 TABLE_CENTER_XY[1],
+-                TABLE_HEIGHT + 0.15,
++                SUPPORT_HEIGHT + 0.15,
+             ),
+             rot=(1.0, 0.0, 0.0, 0.0),
+             joint_pos={".*": 0.0},
+@@ -222,7 +222,7 @@ class TeacherObservationsCfg:
+         # 由 teacher_observation 统一构造策略所需的拼接观测向量。
+         teacher = ObsTerm(
+             func=f"{_MDP}.observations:teacher_observation",
+-            params={"table_height": TABLE_HEIGHT},
++            params={"support_height": SUPPORT_HEIGHT},
+         )
+         def __post_init__(self) -> None:
+             """关闭观测噪声，并将该组各观测项拼接成单个向量。"""
+@@ -264,6 +264,7 @@ class TeacherEventsCfg:
+             "biased": BIASED_POINT_CLOUD,
+             "top": TOP_DOWN_GRASP,
+             "non_uniform_sampling": NON_UNIFORM_SAMPLING,
++            "support_height": SUPPORT_HEIGHT,
+             "camera_position": CAMERA_POSITION,
+             "sample_num": PREGRASP_SAMPLE_NUM,
+             "length_score_coeff": PREGRASP_LENGTH_SCORE_COEFF,
+@@ -331,7 +332,7 @@ class TeacherRewardsCfg:
+         weight=_isaaclab_reward_weight(-0.03),
+         params={
+             "finger_weights": FINGER_REWARD_WEIGHTS,
+-            "table_height": TABLE_HEIGHT,
++            "support_height": SUPPORT_HEIGHT,
+         },
+     )
+     # 惩罚手部与桌面发生接触。
+@@ -351,7 +352,7 @@ class TeacherRewardsCfg:
+     arm_height_reward = RewTerm(
+         func=f"{_MDP}.rewards:arm_height_reward",
+         weight=_isaaclab_reward_weight(-0.05),
+-        params={"table_height": TABLE_HEIGHT},
++        params={"support_height": SUPPORT_HEIGHT},
+     )
+     # 惩罚机械臂与场景物体发生接触。
+     arm_contact_reward = RewTerm(
+@@ -426,7 +427,7 @@ class TeacherTerminationsCfg:
+         func=f"{_MDP}.terminations:invalid_hand_height",
+         params={
+             "hand_keypoints_w_fn": mdp.hand_keypoints_w,
+-            "table_height": TABLE_HEIGHT,
++            "support_height": SUPPORT_HEIGHT,
+         },
+     )
+ 
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+index a535bef..93b5084 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ 
++import math
+ from dataclasses import MISSING
+ from typing import Final
+ 
+@@ -17,7 +18,25 @@ from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
+ 
+ CONTROL_DT: Final[float] = 0.2
+ TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
+-TABLE_HEIGHT: Final[float] = 0.771
++# 当前 Table/Collisions/Cube 在既有旋转、缩放后的尺寸，不替换桌子几何。
++TABLE_SIZE: Final[tuple[float, float, float]] = (1.28, 0.91, 0.771)
++SUPPORT_HEIGHT: Final[float] = TABLE_SIZE[2]
++TABLE_XY_BOUNDS: Final[tuple[float, float, float, float]] = (
++    TABLE_CENTER_XY[0] - TABLE_SIZE[0] / 2,
++    TABLE_CENTER_XY[0] + TABLE_SIZE[0] / 2,
++    TABLE_CENTER_XY[1] - TABLE_SIZE[1] / 2,
++    TABLE_CENTER_XY[1] + TABLE_SIZE[1] / 2,
++)
++# 对现有 USD 的 base_link visual/collision 顶点测量，半径向上取整到 1 µm。
++UR5_BASE_RADIUS: Final[float] = 0.110121
++UR5_BASE_MOUNT_OFFSET_Z: Final[float] = -0.000002399320010
++ROBOT_EDGE_MARGIN: Final[float] = 0.015
++# 源 Teacher 工作方向为 -Y，因此安装到 max-Y 桌边，保持 root 朝向。
++ROBOT_ROOT_POSITION: Final[tuple[float, float, float]] = (
++    TABLE_CENTER_XY[0],
++    TABLE_XY_BOUNDS[3] - UR5_BASE_RADIUS - ROBOT_EDGE_MARGIN,
++    SUPPORT_HEIGHT - UR5_BASE_MOUNT_OFFSET_Z,
++)
+ 
+ 
+ @configclass
+@@ -38,6 +57,9 @@ class Grasp1SceneCfg(InteractiveSceneCfg):
+ 
+     # 将机器人 articulation 配置放入每个并行环境各自的 Robot prim 下。
+     robot: ArticulationCfg = UR5_ALLEGRO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
++    robot.init_state.pos = ROBOT_ROOT_POSITION
++    # 去掉平台固定链后，将原 platform2ur5_joint 的 -1.57 yaw 移到 root。
++    robot.init_state.rot = (math.cos(-1.57 / 2), 0.0, 0.0, math.sin(-1.57 / 2))
+ 
+     # 具体物体 USD 和初始姿态由任务配置；原抓取物体具有可动关节。
+     # MISSING 表示此共享场景类要求具体任务配置提供物体 articulation。
+@@ -54,7 +76,7 @@ class Grasp1SceneCfg(InteractiveSceneCfg):
+             scale=(1.0, 1.0, 0.771),
+         ),
+         init_state=AssetBaseCfg.InitialStateCfg(
+-            pos=(0.3561, -0.75152, 0.773313),
++            pos=(TABLE_CENTER_XY[0] + 0.1561, TABLE_CENTER_XY[1], SUPPORT_HEIGHT + 0.003 * 0.771),
+             rot=(0.70710678, 0.0, 0.0, 0.70710678),
+         ),
+     )
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+index f60ddd9..610448a 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+@@ -30,7 +30,7 @@ from typing import Final
+ import numpy as np
+ import torch
+ 
+-from isaaclab.utils.math import matrix_from_quat, quat_apply, quat_mul
++from isaaclab.utils.math import matrix_from_quat, quat_mul
+ 
+ from Grasp1.robots.robot_profile import CONTROLLED_JOINT_NAMES
+ from Grasp1.utils.paths import object_asset_dir
+@@ -43,7 +43,7 @@ from .keypoints import hand_keypoints_w
+ # Source constants
+ # -----------------------------------------------------------------------------
+ 
+-SOURCE_OBJECT_SUPPORT_Z: Final[float] = 0.773
++SOURCE_STABLE_SUPPORT_HEIGHT: Final[float] = 0.771
+ STABLE_STATE_HEIGHT_OFFSET: Final[float] = 0.005
+ SOURCE_TRAINING_DATASET: Final[str] = "new_training_set"
+ 
+@@ -379,6 +379,7 @@ def _sample_object_pose(
+     names: tuple[str, ...],
+     *,
+     non_uniform_sampling: bool,
++    support_height: float,
+     use_stable_states: bool,
+     stable_state_height_offset: float,
+ ) -> tuple[torch.Tensor, torch.Tensor]:
+@@ -402,7 +403,8 @@ def _sample_object_pose(
+     )
+ 
+     object_pose = torch.zeros((len(ids), 7), device=env.device, dtype=dtype)
+-    object_pose[:, :2] = xy
++    # 源采样扇区以机器人为中心；只平移 XY，Z 使用桌面支撑高度。
++    object_pose[:, :2] = xy + robot.data.root_pos_w[ids, :2]
+ 
+     if use_stable_states:
+         stable_cache = data["stable_states_cpu"]
+@@ -419,10 +421,13 @@ def _sample_object_pose(
+         ).to(device=env.device, dtype=dtype)
+ 
+         # quantitative_eval.py resamples X/Y and copies only stable Z + quat.
+-        object_pose[:, 2] = stable[:, 2] + stable_state_height_offset
++        object_pose[:, 2] = (
++            stable[:, 2] - SOURCE_STABLE_SUPPORT_HEIGHT
++            + support_height + stable_state_height_offset
++        )
+         object_pose[:, 3:7] = stable[:, 3:7]
+     else:
+-        object_pose[:, 2] = SOURCE_OBJECT_SUPPORT_Z - data["lowest"][ids]
++        object_pose[:, 2] = support_height - data["lowest"][ids]
+ 
+         yaw = (
+             torch.rand(len(ids), device=env.device, dtype=dtype) * 2.0 - 1.0
+@@ -430,7 +435,7 @@ def _sample_object_pose(
+         object_pose[:, 3] = (yaw * 0.5).cos()
+         object_pose[:, 6] = (yaw * 0.5).sin()
+ 
+-    object_pose[:, :3] += env.scene.env_origins[ids]
++    object_pose[:, 2] += env.scene.env_origins[ids, 2]
+ 
+     quaternion_norm = torch.linalg.vector_norm(
+         object_pose[:, 3:7],
+@@ -458,7 +463,7 @@ def _visible_points(
+ 
+     camera_w = (
+         object_pose.new_tensor(camera_position)
+-        + env.scene.env_origins[ids]
++        + env.scene["robot"].data.root_pos_w[ids]
+     )
+     camera_o = geometry.world_points_to_object(
+         camera_w[:, None, :],
+@@ -496,26 +501,15 @@ def _solver_base_pose(
+     robot,
+     ids: torch.Tensor,
+ ) -> tuple[torch.Tensor, torch.Tensor]:
+-    """Return the analytic-UR5 solver base pose in world coordinates.
+-
+-    The original reset code used::
+-
+-        ur5_to_world =
+-            [[0,-1,0],
+-             [1, 0,0],
+-             [0, 0,1]]
++    """以新 USD 的 base_link root 位姿构造解析 UR5 的 base 坐标系。
+ 
+-        p_solver = ur5_to_world.T @ (p_world - [0,0,0.771])
+-
+-    Therefore the solver frame itself has ``R_world_solver = Rz(+pi/2)`` and
+-    translation ``z=0.771`` relative to the source robot root/world frame.
++    移除旧平台后 root 就是 base_link，不再添加平台的 0.771 m 高度。
++    UR5 DH/base 与 ROS base_link 相差 Rz(pi)，对应 URDF 中保留的
++    base_link-base_fixed_joint；DH 参数及 IK 算法保持不变。
+     """
+     root_pose = robot.data.root_link_pose_w[ids]
+-
+-    base_offset = root_pose.new_tensor((0.0, 0.0, 0.771)).expand(len(ids), -1)
+-    base_pos = root_pose[:, :3] + quat_apply(root_pose[:, 3:7], base_offset)
+-
+-    half_yaw = math.pi / 4.0
++    base_pos = root_pose[:, :3]
++    half_yaw = math.pi / 2.0
+     base_quat_local = root_pose.new_tensor(
+         (math.cos(half_yaw), 0.0, 0.0, math.sin(half_yaw))
+     ).expand(len(ids), -1)
+@@ -540,7 +534,7 @@ def _solve_pregrasp(
+ 
+     camera_w = (
+         torch.tensor(camera_position, device=env.device, dtype=dtype)
+-        + env.scene.env_origins[ids]
++        + env.scene["robot"].data.root_pos_w[ids]
+     )
+     direction = geometry.approach_direction(
+         visible_w,
+@@ -676,7 +670,7 @@ def _apply_collision_fallback(
+         return
+ 
+     safe = ~collision
+-    origins = env.scene.env_origins[ids]
++    base_positions = env.scene["robot"].data.root_pos_w[ids]
+ 
+     for local_index in (
+         torch.nonzero(collision, as_tuple=False)
+@@ -704,11 +698,10 @@ def _apply_collision_fallback(
+ 
+             joint_pos[local_index] = joint_pos[chosen]
+ 
+-            # Source copies environment-local object pose. Translate between
+-            # IsaacLab clone origins before copying.
+-            chosen_local_position = object_pose[chosen, :3] - origins[chosen]
++            # 将同物体安全姿态按真实 robot root 平移到目标环境。
++            chosen_local_position = object_pose[chosen, :3] - base_positions[chosen]
+             object_pose[local_index, :3] = (
+-                chosen_local_position + origins[local_index]
++                chosen_local_position + base_positions[local_index]
+             )
+             object_pose[local_index, 3:7] = object_pose[chosen, 3:7]
+             continue
+@@ -719,8 +712,8 @@ def _apply_collision_fallback(
+         for column, joint_id in enumerate(ur5_joint_ids):
+             joint_pos[local_index, joint_id] = fallback[column]
+ 
+-        object_pose[local_index, 0] = origins[local_index, 0] + _FALLBACK_OBJECT_XY[0]
+-        object_pose[local_index, 1] = origins[local_index, 1] + _FALLBACK_OBJECT_XY[1]
++        object_pose[local_index, 0] = base_positions[local_index, 0] + _FALLBACK_OBJECT_XY[0]
++        object_pose[local_index, 1] = base_positions[local_index, 1] + _FALLBACK_OBJECT_XY[1]
+ 
+ 
+ # -----------------------------------------------------------------------------
+@@ -735,6 +728,7 @@ def reset_teacher(
+     biased: bool,
+     top: bool,
+     non_uniform_sampling: bool,
++    support_height: float,
+     camera_position: tuple[float, float, float],
+     sample_num: int,
+     length_score_coeff: float,
+@@ -764,6 +758,7 @@ def reset_teacher(
+         ids,
+         names,
+         non_uniform_sampling=non_uniform_sampling,
++        support_height=support_height,
+         use_stable_states=use_stable_states,
+         stable_state_height_offset=stable_state_height_offset,
+     )
+@@ -929,7 +924,7 @@ def apply_object_position_bias(
+ 
+ 
+ __all__ = [
+-    "SOURCE_OBJECT_SUPPORT_Z",
++    "SOURCE_STABLE_SUPPORT_HEIGHT",
+     "STABLE_STATE_HEIGHT_OFFSET",
+     "SOURCE_TRAINING_DATASET",
+     "BIAS_DISTANCE_THRESHOLD",
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+index ff38791..96f20b1 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+@@ -643,7 +643,7 @@ class TeacherObservation(ManagerTermBase):
+     def __call__(
+         self,
+         env: ManagerBasedRLEnv,
+-        table_height: float,
++        support_height: float,
+     ) -> torch.Tensor:
+         """Return the exact-layout ``[num_envs,153]`` Teacher observation."""
+         joint_pos, target_error = (
+@@ -675,10 +675,12 @@ class TeacherObservation(ManagerTermBase):
+                 contacts,  # 44:57
+                 impulses,  # 57:70
+                 hand_positions_w[..., 2]
+-                - table_height,  # 70:87
++                - support_height,  # 70:87
+                 arm_positions_w[..., 2]
+-                - table_height,  # 87:93
+-                hand_center_w - env.scene.env_origins,  # 93:96，去掉并行场景平移
++                - support_height,  # 87:93
++                # XY 相对真实底座；Z 保留源 Teacher 相对地面的高度语义。
++                hand_center_w - self._robot.data.root_pos_w
++                + hand_center_w.new_tensor((0.0, 0.0, support_height)),  # 93:96
+                 euler_diff,  # 96:99
+                 wrist_euler,  # 99:102
+             ),
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+index 83145fe..b5cf8fe 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+@@ -316,10 +316,10 @@ def affordance_reward(
+ def table_reward(
+     env: ManagerBasedRLEnv,
+     finger_weights: tuple[float, ...],
+-    table_height: float,
++    support_height: float,
+ ) -> torch.Tensor:
+     """Hand/table proximity metric from ``train.py``."""
+-    heights = hand_keypoints_w(env)[..., 2] - table_height
++    heights = hand_keypoints_w(env)[..., 2] - support_height
+     heights = heights.clamp(
+         TABLE_HEIGHT_CLIP_MIN,
+         TABLE_HEIGHT_CLIP_MAX,
+@@ -333,14 +333,14 @@ def table_reward(
+ 
+ def arm_height_reward(
+     env: ManagerBasedRLEnv,
+-    table_height: float,
++    support_height: float,
+ ) -> torch.Tensor:
+     """Arm/table proximity metric using the source observation slice 89:93.
+ 
+     The six arm heights occupy observation indices 87:93, so source
+     ``obs_new_r[:, 89:93]`` intentionally selects only keypoints 2:6.
+     """
+-    heights = arm_keypoints_w(env)[:, 2:6, 2] - table_height
++    heights = arm_keypoints_w(env)[:, 2:6, 2] - support_height
+     heights = heights.clamp(
+         TABLE_HEIGHT_CLIP_MIN,
+         TABLE_HEIGHT_CLIP_MAX,
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/terminations.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/terminations.py
+index 787499e..aa273b0 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/terminations.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/terminations.py
+@@ -30,15 +30,15 @@ def _has_non_finite_rows(value: torch.Tensor) -> torch.Tensor:
+ def invalid_hand_height(
+     env: ManagerBasedRLEnv,
+     hand_keypoints_w_fn: Callable[[ManagerBasedRLEnv], torch.Tensor],
+-    table_height: float,
++    support_height: float,
+ ) -> torch.Tensor:
+     """当任一手部关键点低于桌面高度时终止对应环境的回合。
+ 
+     ``hand_keypoints_w_fn`` 从环境取得世界坐标系下的手部关键点；检查每个关键点
+-    的 z 坐标是否小于 ``table_height``，并为每个并行环境返回一个终止标志。
++    的 z 坐标是否小于 ``support_height``，并为每个并行环境返回一个终止标志。
+     """
+     hand_keypoints_w = hand_keypoints_w_fn(env)
+-    return torch.any(hand_keypoints_w[:, :, 2] < table_height, dim=1)
++    return torch.any(hand_keypoints_w[:, :, 2] < support_height, dim=1)
+ 
+ 
+ def invalid_observation(env: ManagerBasedRLEnv, group_names: tuple[str, ...]) -> torch.Tensor:

@@ -1,0 +1,210 @@
+{
+  "before": {
+    "run": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_18-03-25_perf_cache_baseline",
+    "checkpoint": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_18-03-25_perf_cache_baseline/model_0.pt",
+    "finite_tensors": 52,
+    "iteration": 0,
+    "metrics": {
+      "Episode_Reward/affordance_reward": [
+        -2.4118478298187256
+      ],
+      "Episode_Reward/affordance_contact_reward": [
+        0.004651174880564213
+      ],
+      "Episode_Reward/affordance_impulse_reward": [
+        0.002315725199878216
+      ],
+      "Episode_Reward/table_reward": [
+        -0.005537022836506367
+      ],
+      "Episode_Reward/table_contact_reward": [
+        -0.0004851408302783966
+      ],
+      "Episode_Reward/table_impulse_reward": [
+        -0.0006308293086476624
+      ],
+      "Episode_Reward/arm_height_reward": [
+        0.0
+      ],
+      "Episode_Reward/arm_contact_reward": [
+        -0.0039359573274850845
+      ],
+      "Episode_Reward/arm_impulse_reward": [
+        -0.005715341307222843
+      ],
+      "Episode_Reward/arm_collision_reward": [
+        -0.03974778205156326
+      ],
+      "Episode_Reward/push_reward": [
+        0.0
+      ],
+      "Episode_Reward/wrist_vel_reward_": [
+        -0.004197230562567711
+      ],
+      "Episode_Reward/wrist_qvel_reward_": [
+        -0.0019776038825511932
+      ],
+      "Episode_Reward/obj_vel_reward_": [
+        -0.007063344120979309
+      ],
+      "Episode_Reward/obj_qvel_reward_": [
+        -0.024062184616923332
+      ],
+      "Episode_Reward/obj_displacement_reward": [
+        -0.0427359864115715
+      ],
+      "Episode_Reward/arm_joint_vel_reward_": [
+        -0.03066192753612995
+      ],
+      "Episode_Termination/time_out": [
+        0.5077288150787354
+      ],
+      "Episode_Termination/invalid_hand_height": [
+        0.0
+      ],
+      "Episode_Termination/invalid_observation": [
+        0.0
+      ],
+      "Loss/value_function": [
+        154.83929443359375
+      ],
+      "Loss/surrogate": [
+        -0.00206362409517169
+      ],
+      "Loss/entropy": [
+        31.208919525146484
+      ],
+      "Loss/learning_rate": [
+        0.008542968891561031
+      ],
+      "Policy/mean_noise_std": [
+        0.9994949102401733
+      ],
+      "Perf/total_fps": [
+        3541.0
+      ],
+      "Perf/collection time": [
+        40.31706237792969
+      ],
+      "Perf/learning_time": [
+        0.1668708324432373
+      ],
+      "Train/mean_reward": [
+        -63.87559509277344
+      ],
+      "Train/mean_episode_length": [
+        68.7300033569336
+      ],
+      "Train/mean_reward/time": [
+        -63.87559509277344
+      ],
+      "Train/mean_episode_length/time": [
+        68.7300033569336
+      ]
+    }
+  },
+  "after": {
+    "run": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_18-32-23_perf_cache_validation",
+    "checkpoint": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-01_18-32-23_perf_cache_validation/model_0.pt",
+    "finite_tensors": 52,
+    "iteration": 0,
+    "metrics": {
+      "Episode_Reward/affordance_reward": [
+        -2.4118478298187256
+      ],
+      "Episode_Reward/affordance_contact_reward": [
+        0.004651174880564213
+      ],
+      "Episode_Reward/affordance_impulse_reward": [
+        0.002315725199878216
+      ],
+      "Episode_Reward/table_reward": [
+        -0.005537022836506367
+      ],
+      "Episode_Reward/table_contact_reward": [
+        -0.0004851408302783966
+      ],
+      "Episode_Reward/table_impulse_reward": [
+        -0.0006308293086476624
+      ],
+      "Episode_Reward/arm_height_reward": [
+        0.0
+      ],
+      "Episode_Reward/arm_contact_reward": [
+        -0.0039359573274850845
+      ],
+      "Episode_Reward/arm_impulse_reward": [
+        -0.005715341307222843
+      ],
+      "Episode_Reward/arm_collision_reward": [
+        -0.03974778205156326
+      ],
+      "Episode_Reward/push_reward": [
+        0.0
+      ],
+      "Episode_Reward/wrist_vel_reward_": [
+        -0.004197230562567711
+      ],
+      "Episode_Reward/wrist_qvel_reward_": [
+        -0.0019776038825511932
+      ],
+      "Episode_Reward/obj_vel_reward_": [
+        -0.007063344120979309
+      ],
+      "Episode_Reward/obj_qvel_reward_": [
+        -0.024062184616923332
+      ],
+      "Episode_Reward/obj_displacement_reward": [
+        -0.0427359864115715
+      ],
+      "Episode_Reward/arm_joint_vel_reward_": [
+        -0.03066192753612995
+      ],
+      "Episode_Termination/time_out": [
+        0.5077288150787354
+      ],
+      "Episode_Termination/invalid_hand_height": [
+        0.0
+      ],
+      "Episode_Termination/invalid_observation": [
+        0.0
+      ],
+      "Loss/value_function": [
+        154.83929443359375
+      ],
+      "Loss/surrogate": [
+        -0.00206362409517169
+      ],
+      "Loss/entropy": [
+        31.208919525146484
+      ],
+      "Loss/learning_rate": [
+        0.008542968891561031
+      ],
+      "Policy/mean_noise_std": [
+        0.9994949102401733
+      ],
+      "Perf/total_fps": [
+        3614.0
+      ],
+      "Perf/collection time": [
+        39.52872848510742
+      ],
+      "Perf/learning_time": [
+        0.13764357566833496
+      ],
+      "Train/mean_reward": [
+        -63.87559509277344
+      ],
+      "Train/mean_episode_length": [
+        68.7300033569336
+      ],
+      "Train/mean_reward/time": [
+        -63.87559509277344
+      ],
+      "Train/mean_episode_length/time": [
+        68.7300033569336
+      ]
+    }
+  }
+}

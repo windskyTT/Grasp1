@@ -56,8 +56,12 @@ from Grasp1.robots.robot_profile import (
 from .keypoints import (
     arm_keypoints_w,
     hand_keypoints_w,
-    keypoints_w_to_object,
+    hand_keypoints_o,
+    initialize_teacher_body_indices,
+    _object_top_pose_w,
 )
+
+from .runtime import TeacherRuntimeFeatures, filtered_contact_impulses
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -220,6 +224,24 @@ def _resolve_exact_body_id(
     return int(body_ids[0])
 
 
+def nearest_affordance_vectors_w(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """共享当前步世界系最近 affordance 向量 [N,17,3]，不计算完整观测。"""
+    def compute(ids: slice | torch.Tensor) -> torch.Tensor:
+        """只为本次失效行计算最近点；成对距离仅作为临时张量。"""
+        _, object_quat_w = _object_top_pose_w(env)
+        hand_positions_o = hand_keypoints_o(env)[ids]
+        points_o = env._teacher_affordance_points_o[ids]
+        nearest_index = torch.cdist(hand_positions_o, points_o).argmin(dim=-1)
+        nearest_points_o = torch.gather(
+            points_o, dim=1, index=nearest_index.unsqueeze(-1).expand(-1, -1, 3)
+        )
+        vectors_o = nearest_points_o - hand_positions_o
+        quaternions = object_quat_w[ids, None, :].expand(-1, HAND_KEYPOINT_COUNT, -1)
+        return quat_apply(quaternions.reshape(-1,4), vectors_o.reshape(-1,3)).reshape_as(vectors_o)
+
+    return env._teacher_runtime_features.get("affordance_vectors_w", compute)
+
+
 # -----------------------------------------------------------------------------
 # Stateful Manager observation
 # -----------------------------------------------------------------------------
@@ -236,6 +258,8 @@ class TeacherObservation(ManagerTermBase):
 
         self._robot = env.scene["robot"]
         self._object = env.scene["object"]
+        initialize_teacher_body_indices(env)
+        env._teacher_runtime_features = TeacherRuntimeFeatures(env)
 
         if not isinstance(self._robot, Articulation):
             raise TypeError(
@@ -301,7 +325,6 @@ class TeacherObservation(ManagerTermBase):
         )
 
         # Cache and validate the 13 one-body filtered contact sensors.
-        sensors: list[ContactSensor] = []
         for (
             sensor_name,
             expected_body_name,
@@ -338,15 +361,9 @@ class TeacherObservation(ManagerTermBase):
                     f"resolved={sensor.body_names[0]!r}."
                 )
 
-            sensors.append(sensor)
-
-        self._affordance_contact_sensors = tuple(
-            sensors
-        )
-
         # Geometry has to be available for ObservationManager's initial
         # dimension probe, which occurs before startup events.
-        self._affordance_points_o = _load_affordance_points(env)
+        _load_affordance_points(env)
 
         # Source reset_state():
         #   wrist_mat_r_init = current wrist matrix
@@ -375,6 +392,7 @@ class TeacherObservation(ManagerTermBase):
         if env_ids is None:
             env_ids = slice(None)
 
+        self._env._teacher_runtime_features.invalidate(env_ids)
         self._needs_wrist_init[env_ids] = True
         self._previous_wrist_euler[env_ids] = 0.0
 
@@ -417,63 +435,7 @@ class TeacherObservation(ManagerTermBase):
         "no contact", not an invalid robot state, so both force components are
         sanitized before they enter the policy observation.
         """
-        impulse_columns: list[torch.Tensor] = []
-
-        for sensor in self._affordance_contact_sensors:
-            normal_force = sensor.data.force_matrix_w
-            friction_force = (
-                sensor.data.friction_forces_w
-            )
-
-            if normal_force is None:
-                raise RuntimeError(
-                    "Teacher filtered ContactSensor has no force_matrix_w. "
-                    "Check filter_prim_paths_expr."
-                )
-            if friction_force is None:
-                raise RuntimeError(
-                    "Teacher filtered ContactSensor has no "
-                    "friction_forces_w. Set track_friction_forces=True."
-                )
-
-            if (
-                normal_force.shape[1:3] != (1, 1)
-                or friction_force.shape[1:3] != (1, 1)
-            ):
-                raise RuntimeError(
-                    "Teacher affordance contact sensors must be "
-                    "one-body-to-one-filter sensors. Got "
-                    f"normal={tuple(normal_force.shape)}, "
-                    f"friction={tuple(friction_force.shape)}."
-                )
-
-            total_force_w = (
-                torch.nan_to_num(
-                    normal_force[:, 0, 0, :],
-                    nan=0.0,
-                    posinf=0.0,
-                    neginf=0.0,
-                )
-                + torch.nan_to_num(
-                    friction_force[:, 0, 0, :],
-                    nan=0.0,
-                    posinf=0.0,
-                    neginf=0.0,
-                )
-            )
-
-            impulse_columns.append(
-                torch.linalg.vector_norm(
-                    total_force_w,
-                    dim=-1,
-                )
-                * env.physics_dt
-            )
-
-        impulses = torch.stack(
-            impulse_columns,
-            dim=-1,
-        )
+        impulses = filtered_contact_impulses(env, "teacher_af_contact_")[3]
         contacts = (
             impulses > CONTACT_IMPULSE_THRESHOLD
         ).to(impulses.dtype)
@@ -573,77 +535,16 @@ class TeacherObservation(ManagerTermBase):
     def _affordance_vectors(
         self,
         env: ManagerBasedRLEnv,
-        hand_positions_w: torch.Tensor,
     ) -> torch.Tensor:
         """Return flattened 17x3 nearest-affordance vectors in world frame."""
-        object_pose_w = (
-            self._object.data.body_link_pose_w[
-                :,
-                self._object_top_body_id,
-                :,
-            ]
-        )
-
-        hand_positions_o = (
-            keypoints_w_to_object(
-                hand_positions_w,
-                object_pose_w[:, :3],
-                object_pose_w[:, 3:7],
-            )
-        )
-
-        affordance_points_o = getattr(
-            env,
-            "_teacher_affordance_points_o",
-            self._affordance_points_o,
-        )
-
-        distances = torch.cdist(
-            hand_positions_o,
-            affordance_points_o,
-        )
-        nearest_index = distances.argmin(
-            dim=-1
-        )
-
-        nearest_points_o = torch.gather(
-            affordance_points_o,
-            dim=1,
-            index=nearest_index.unsqueeze(-1).expand(
-                -1,
-                -1,
-                3,
-            ),
-        )
-
-        vectors_o = (
-            nearest_points_o
-            - hand_positions_o
-        )
-
-        object_quat_w = (
-            object_pose_w[:, None, 3:7]
-            .expand(
-                -1,
-                HAND_KEYPOINT_COUNT,
-                -1,
-            )
-        )
-
-        vectors_w = quat_apply(
-            object_quat_w.reshape(-1, 4),
-            vectors_o.reshape(-1, 3),
-        )
-
-        return vectors_w.reshape(
-            env.num_envs,
-            TEACHER_AFFORDANCE_OBSERVATION_DIM,
+        return nearest_affordance_vectors_w(env).reshape(
+            env.num_envs, TEACHER_AFFORDANCE_OBSERVATION_DIM
         )
 
     def __call__(
         self,
         env: ManagerBasedRLEnv,
-        table_height: float,
+        support_height: float,
     ) -> torch.Tensor:
         """Return the exact-layout ``[num_envs,153]`` Teacher observation."""
         joint_pos, target_error = (
@@ -675,10 +576,12 @@ class TeacherObservation(ManagerTermBase):
                 contacts,  # 44:57
                 impulses,  # 57:70
                 hand_positions_w[..., 2]
-                - table_height,  # 70:87
+                - support_height,  # 70:87
                 arm_positions_w[..., 2]
-                - table_height,  # 87:93
-                hand_center_w - env.scene.env_origins,  # 93:96，去掉并行场景平移
+                - support_height,  # 87:93
+                # XY 相对真实底座；Z 保留源 Teacher 相对地面的高度语义。
+                hand_center_w - self._robot.data.root_pos_w
+                + hand_center_w.new_tensor((0.0, 0.0, support_height)),  # 93:96
                 euler_diff,  # 96:99
                 wrist_euler,  # 99:102
             ),
@@ -699,7 +602,6 @@ class TeacherObservation(ManagerTermBase):
         affordance_vectors = (
             self._affordance_vectors(
                 env,
-                hand_positions_w,
             )
         )
 

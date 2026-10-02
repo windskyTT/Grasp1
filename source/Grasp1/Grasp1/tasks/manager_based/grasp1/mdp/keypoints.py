@@ -7,6 +7,7 @@ USD 导入可能合并源 URDF 中由固定关节连接的连杆。本模块通�
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import torch
@@ -38,18 +39,51 @@ _HAND_BODY_SELECT = tuple(_HAND_BODY_NAMES.index(name.replace(".", "_")) for nam
 _TIP_OFFSETS_Z = (0.0267, 0.0267, 0.0267, 0.0423)
 
 
+@dataclass(frozen=True)
+class TeacherBodyIndices:
+    """由已加载 USD 解析的静态索引；与环境同寿命，不跨 articulation 共用。"""
+
+    hand: list[int]
+    arm: list[int]
+    wrist: int
+    object_top: int
+    arm_joints: list[int]
+
+
+def initialize_teacher_body_indices(env: ManagerBasedRLEnv) -> None:
+    """在 observation term 初始化时解析名称，保持源关键点与动作关节顺序。"""
+    robot = env.scene["robot"]
+    hand_ids, _ = robot.find_bodies(
+        [re.escape(name) for name in _HAND_BODY_NAMES], preserve_order=True
+    )
+    arm_ids, _ = robot.find_bodies(
+        [re.escape(name) for name in ARM_KEYPOINT_LINK_NAMES], preserve_order=True
+    )
+    top_ids, _ = env.scene["object"].find_bodies(["top"], preserve_order=True)
+    env._teacher_body_indices = TeacherBodyIndices(
+        hand=[hand_ids[index] for index in _HAND_BODY_SELECT],
+        arm=arm_ids,
+        wrist=arm_ids[-1],
+        object_top=top_ids[0],
+        arm_joints=list(env.action_manager.get_term("teacher")._joint_ids[:6]),
+    )
+
+
 def hand_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
     """重建并返回世界坐标系下的 17 个手部关键点，形状为 ``[N, 17, 3]``。
 
-    ``N`` 是并行环境数。先解析去重后的 parent 刚体，再按原 Teacher 顺序取位姿；
+    ``N`` 是并行环境数。用初始化时缓存的 parent 索引按原 Teacher 顺序取位姿；
     wrist/tool 和指尖关键点的局部固定偏移经刚体朝向旋转后加到 parent 位置上。
     """
+    return env._teacher_runtime_features.get(
+        "hand_keypoints_w", lambda ids: _hand_keypoints_w(env, ids)
+    )
+
+
+def _hand_keypoints_w(env: ManagerBasedRLEnv, ids: slice | torch.Tensor) -> torch.Tensor:
+    """用缓存索引重建本次需要更新的手部关键点行。"""
     robot = env.scene["robot"]
-    # 按 USD 刚体名称查询 parent link，并要求查询结果保持传入名称的顺序。
-    body_ids, _ = robot.find_bodies([re.escape(name) for name in _HAND_BODY_NAMES], preserve_order=True)
-    # 将去重后的 body 索引重新排列成 17 个关键点各自对应的 parent 索引。
-    ordered_ids = [body_ids[index] for index in _HAND_BODY_SELECT]
-    body_poses = robot.data.body_link_pose_w[:, ordered_ids, :]
+    body_poses = robot.data.body_link_pose_w[ids][:, env._teacher_body_indices.hand, :]
     positions = body_poses[..., :3]
     orientations = body_poses[..., 3:7]
 
@@ -68,11 +102,10 @@ def hand_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
 def arm_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
     """按 robot_profile 顺序返回世界系下六个 UR5 关键点位置 ``[N, 6, 3]``。"""
     robot = env.scene["robot"]
-    # 使用 URDF 对应连杆名查找刚体，并保持六个手臂关键点的语义顺序。
-    body_ids, _ = robot.find_bodies(
-        [re.escape(name) for name in ARM_KEYPOINT_LINK_NAMES], preserve_order=True
+    return env._teacher_runtime_features.get(
+        "arm_keypoints_w",
+        lambda ids: robot.data.body_link_pose_w[ids][:, env._teacher_body_indices.arm, :3],
     )
-    return robot.data.body_link_pose_w[:, body_ids, :3]
 
 
 def keypoints_w_to_object(
@@ -92,17 +125,22 @@ def keypoints_w_to_object(
 def _object_top_pose_w(env: ManagerBasedRLEnv) -> tuple[torch.Tensor, torch.Tensor]:
     """取得原 Teacher 使用的 ``top`` 刚体世界位姿，返回位置和 wxyz 四元数。"""
     obj = env.scene["object"]
-    # 获取 top 刚体索引；即使物体 articulation 包含多个刚体，也明确使用 top frame。
-    body_ids, _ = obj.find_bodies(["top"], preserve_order=True)
-    pose = obj.data.body_link_pose_w[:, body_ids[0], :]
+    pose = env._teacher_runtime_features.get(
+        "object_top_pose_w",
+        lambda ids: obj.data.body_link_pose_w[ids, env._teacher_body_indices.object_top, :].clone(),
+    )
     return pose[:, :3], pose[:, 3:7]
 
 
 def hand_keypoints_o(env: ManagerBasedRLEnv) -> torch.Tensor:
     """返回物体 ``top`` 坐标系下的 17 个手部关键点 ``[N, 17, 3]``。"""
     # 取物体参考位姿，并将世界系手部关键点转换到物体系。
-    object_pos_w, object_quat_w = _object_top_pose_w(env)
-    return keypoints_w_to_object(hand_keypoints_w(env), object_pos_w, object_quat_w)
+    def compute(ids: slice | torch.Tensor) -> torch.Tensor:
+        """仅转换已失效环境的手部关键点。"""
+        object_pos_w, object_quat_w = _object_top_pose_w(env)
+        return keypoints_w_to_object(hand_keypoints_w(env)[ids], object_pos_w[ids], object_quat_w[ids])
+
+    return env._teacher_runtime_features.get("hand_keypoints_o", compute)
 
 
 def arm_keypoints_o(env: ManagerBasedRLEnv) -> torch.Tensor:

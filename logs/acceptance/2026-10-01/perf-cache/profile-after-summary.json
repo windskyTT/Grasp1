@@ -1,0 +1,68 @@
+{
+  "manager_times": {
+    "acceptance/physics_step": {
+      "calls": 100,
+      "cpu_ms": 1074.02237,
+      "ms_per_control_step": 214.80447399999997
+    },
+    "acceptance/scene_update": {
+      "calls": 100,
+      "cpu_ms": 120.97409300000001,
+      "ms_per_control_step": 24.1948186
+    },
+    "acceptance/rewards": {
+      "calls": 5,
+      "cpu_ms": 61.59303599999999,
+      "ms_per_control_step": 12.318607199999999
+    },
+    "acceptance/observations": {
+      "calls": 5,
+      "cpu_ms": 5.870671000000001,
+      "ms_per_control_step": 1.1741342000000001
+    }
+  },
+  "kernel_total_ms": 971.8644230000007,
+  "top_kernels_ms": [
+    [
+      "artiSolveInternalConstraintsTGS1T",
+      498.803997
+    ],
+    [
+      "stepArticulation1TTGS",
+      211.97731399999932
+    ],
+    [
+      "solveBlockUnified",
+      31.228882999999946
+    ],
+    [
+      "artiPropagateRigidImpulsesAndSolveSelfConstraintsTGS1T",
+      20.094466999999998
+    ],
+    [
+      "markActiveSlabTGS",
+      18.469517000000007
+    ],
+    [
+      "propagateAverageSolverBodyVelocityTGS",
+      18.051294999999893
+    ],
+    [
+      "artiPropagateVelocityTGS",
+      11.010570000000127
+    ],
+    [
+      "radixSortMultiCalculateRanksLaunchWithCount",
+      9.968356999999992
+    ],
+    [
+      "computeUnconstrainedAccelerationsLaunch1T",
+      9.599760999999997
+    ],
+    [
+      "computeUnconstrainedSpatialInertiaLaunchPartial1T",
+      9.433875
+    ]
+  ],
+  "cdist_calls": 5
+}

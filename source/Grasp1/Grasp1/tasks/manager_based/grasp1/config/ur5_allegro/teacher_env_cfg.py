@@ -34,7 +34,7 @@ from Grasp1.robots.robot_profile import (
 from Grasp1.utils.paths import object_asset_dir
 
 from ... import mdp
-from ...grasp1_env_cfg import CONTROL_DT, TABLE_CENTER_XY, TABLE_HEIGHT, Grasp1EnvCfg
+from ...grasp1_env_cfg import CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
 
 
 # -----------------------------------------------------------------------------
@@ -65,11 +65,12 @@ TOP_DOWN_GRASP: Final[bool] = False
 NON_UNIFORM_SAMPLING: Final[bool] = True
 OBJECT_BIAS_DISTANCE_THRESHOLD: Final[float] = 0.07
 
-# 预抓取候选生成使用的相机位置和候选数量。
+# 相机在源 Teacher 工作坐标系中的偏移；reset 事件按真实 robot root 旋转
+# 到当前工作区，Z 保留源相机相对桌面的高度。
 CAMERA_POSITION: Final[tuple[float, float, float]] = (
     0.035,
     -0.58,
-    1.531,
+    1.531 - SUPPORT_HEIGHT,
 )
 
 PREGRASP_SAMPLE_NUM: Final[int] = 10
@@ -174,7 +175,7 @@ def _build_teacher_object_cfg(
             pos=(
                 TABLE_CENTER_XY[0],
                 TABLE_CENTER_XY[1],
-                TABLE_HEIGHT + 0.15,
+                SUPPORT_HEIGHT + 0.15,
             ),
             rot=(1.0, 0.0, 0.0, 0.0),
             joint_pos={".*": 0.0},
@@ -222,7 +223,7 @@ class TeacherObservationsCfg:
         # 由 teacher_observation 统一构造策略所需的拼接观测向量。
         teacher = ObsTerm(
             func=f"{_MDP}.observations:teacher_observation",
-            params={"table_height": TABLE_HEIGHT},
+            params={"support_height": SUPPORT_HEIGHT},
         )
         def __post_init__(self) -> None:
             """关闭观测噪声，并将该组各观测项拼接成单个向量。"""
@@ -264,6 +265,7 @@ class TeacherEventsCfg:
             "biased": BIASED_POINT_CLOUD,
             "top": TOP_DOWN_GRASP,
             "non_uniform_sampling": NON_UNIFORM_SAMPLING,
+            "support_height": SUPPORT_HEIGHT,
             "camera_position": CAMERA_POSITION,
             "sample_num": PREGRASP_SAMPLE_NUM,
             "length_score_coeff": PREGRASP_LENGTH_SCORE_COEFF,
@@ -331,7 +333,7 @@ class TeacherRewardsCfg:
         weight=_isaaclab_reward_weight(-0.03),
         params={
             "finger_weights": FINGER_REWARD_WEIGHTS,
-            "table_height": TABLE_HEIGHT,
+            "support_height": SUPPORT_HEIGHT,
         },
     )
     # 惩罚手部与桌面发生接触。
@@ -351,7 +353,7 @@ class TeacherRewardsCfg:
     arm_height_reward = RewTerm(
         func=f"{_MDP}.rewards:arm_height_reward",
         weight=_isaaclab_reward_weight(-0.05),
-        params={"table_height": TABLE_HEIGHT},
+        params={"support_height": SUPPORT_HEIGHT},
     )
     # 惩罚机械臂与场景物体发生接触。
     arm_contact_reward = RewTerm(
@@ -371,6 +373,7 @@ class TeacherRewardsCfg:
 
     # 原始奖励系数为 -0.0，因此保留该项但将权重设为 0。
     push_reward = RewTerm(
+        # Isaac Lab 2.3.2 RewardManager.compute 已跳过零权重项，保留定义与日志列。
         func=f"{_MDP}.rewards:push_reward",
         weight=0.0,
     )
@@ -426,7 +429,7 @@ class TeacherTerminationsCfg:
         func=f"{_MDP}.terminations:invalid_hand_height",
         params={
             "hand_keypoints_w_fn": mdp.hand_keypoints_w,
-            "table_height": TABLE_HEIGHT,
+            "support_height": SUPPORT_HEIGHT,
         },
     )
 

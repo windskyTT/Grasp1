@@ -1,0 +1,10 @@
+{
+  "new_training_set": {
+    "unique": 35,
+    "triangles_MiB": 0.872314453125
+  },
+  "shapenet-30obj": {
+    "unique": 30,
+    "triangles_MiB": 6.165870666503906
+  }
+}
