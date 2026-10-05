@@ -74,6 +74,11 @@ _COLLISION_ARM_SENSOR_INDICES: Final[tuple[int, ...]] = (1, 2, 3, 4)
 # Small helpers
 # -----------------------------------------------------------------------------
 
+def configure_object_joint(env, env_ids, armature: float) -> None:
+    """稳定源物体的近固定转动关节，避免接触冲量造成大幅限位越界。"""
+    env.scene["object"].write_joint_armature_to_sim(armature, env_ids=env_ids)
+
+
 def _env_ids(
     env,
     env_ids: Sequence[int] | torch.Tensor | slice | None,
@@ -946,6 +951,7 @@ __all__ = [
     "STABLE_STATE_HEIGHT_OFFSET",
     "SOURCE_TRAINING_DATASET",
     "BIAS_DISTANCE_THRESHOLD",
+    "configure_object_joint",
     "initialize_teacher_data",
     "reset_teacher",
     "check_initial_collision",

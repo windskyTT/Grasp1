@@ -1,0 +1,14 @@
+{
+  "object_limits_rad": [
+    0,
+    0.001
+  ],
+  "observed_object_rad": [
+    -0.27,
+    0.18
+  ],
+  "target_outside_limits_fraction": 0.0115,
+  "robot_max_qvel": 29.98,
+  "shapenet_success": "0/30",
+  "source": "\u4f18\u53163.md and archived \u4f18\u53162 runtime evidence"
+}

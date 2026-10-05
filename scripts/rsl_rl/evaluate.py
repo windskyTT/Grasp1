@@ -247,6 +247,9 @@ def _save_results(
                 "successes",
                 "failures",
                 "success_rate",
+                "source_successes",
+                "strict_successes",
+                "source_success_rate",
             ],
         )
         writer.writeheader()
@@ -357,6 +360,7 @@ def main(
     # 按物体名称累计尝试次数和成功次数；重复环境会共同累计到同一物体项。
     attempts = {name: 0 for name in names}
     successes = {name: 0 for name in names}
+    source_successes = {name: 0 for name in names}
 
     try:
         with torch.inference_mode():
@@ -442,32 +446,32 @@ def main(
                     active &= ~done_mask
                     policy_nn.reset(dones)
 
-                # 成功判据：环境未提前终止，且物体相对初始位置上升超过设定高度。
+                # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
 
                 height_gain = (
                     object_asset.data.root_pos_w[:, 2]
                     - initial_z
                 )
 
-                lifted = (
-                    active
-                    & (height_gain > args_cli.success_height)
-                )
+                source_lifted = height_gain > args_cli.success_height
+                lifted = active & source_lifted
 
                 round_successes = int(lifted.sum().item())
 
-                for object_name, success in zip(
+                for object_name, success, source_success in zip(
                     names,
                     lifted.tolist(),
+                    source_lifted.tolist(),
                     strict=True,
                 ):
                     attempts[object_name] += 1
                     successes[object_name] += int(success)
+                    source_successes[object_name] += int(source_success)
 
                 print(
                     f"[INFO] Round {round_idx + 1}/{args_cli.rounds}: "
-                    f"{round_successes}/{len(names)} successful "
-                    f"({100.0 * round_successes / len(names):.2f}%)"
+                    f"Source lift success: {int(source_lifted.sum())} / {len(names)}; "
+                    f"Strict lift success: {round_successes} / {len(names)}"
                 )
 
         # 汇总每个物体和全部试验的成功数、失败数及成功率。
@@ -510,11 +514,15 @@ def main(
                     "successes": object_successes,
                     "failures": object_failures,
                     "success_rate": success_rate,
+                    "source_successes": source_successes[name],
+                    "strict_successes": object_successes,
+                    "source_success_rate": source_successes[name] / object_attempts,
                 }
             )
 
         # 计算所有物体和并行副本合并后的总体成功率。
         total_successes = sum(successes.values())
+        total_source_successes = sum(source_successes.values())
         total_attempts = sum(attempts.values())
         overall_rate = (
             total_successes / total_attempts
@@ -524,9 +532,8 @@ def main(
 
         print("-" * 78)
         print(
-            "Overall success rate: "
-            f"{total_successes}/{total_attempts} "
-            f"({100.0 * overall_rate:.2f}%)"
+            f"Source lift success: {total_source_successes} / {total_attempts}\n"
+            f"Strict lift success: {total_successes} / {total_attempts}"
         )
 
         # 优先使用用户指定的结果目录，否则写入检查点运行目录下的 evaluation 子目录。
@@ -556,6 +563,9 @@ def main(
             "total_successes": total_successes,
             "total_failures": total_attempts - total_successes,
             "overall_success_rate": overall_rate,
+            "source_lift_success_rate": total_source_successes / total_attempts,
+            "strict_lift_success_rate": overall_rate,
+            "total_source_successes": total_source_successes,
             "per_object": {
                 row["object"]: {
                     key: value

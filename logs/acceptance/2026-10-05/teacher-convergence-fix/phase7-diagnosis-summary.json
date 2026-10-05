@@ -1,0 +1,21 @@
+{
+  "pregrasp_distance_min_m": 0.08414603024721146,
+  "pregrasp_distance_median_m": 0.12357958778738976,
+  "pregrasp_distance_max_m": 0.13858290016651154,
+  "grasp_end_distance_min_m": 0.01191707793623209,
+  "grasp_end_distance_median_m": 0.018548247404396534,
+  "grasp_end_distance_max_m": 0.12736669182777405,
+  "objects_with_contact_above_01N": 13,
+  "max_filtered_contact_force_N": 41.25011444091797,
+  "max_first_step_arm_change_rad": 0.0015788078308105469,
+  "height_gain_min_m": -0.06409204006195068,
+  "height_gain_median_m": -0.005844026803970337,
+  "height_gain_max_m": -2.384185791015625e-07,
+  "mean_abs_arm_raw_action": 0.24424135188261667,
+  "mean_abs_hand_raw_action": 0.18765350070316344,
+  "mean_abs_hand_grasp_joint_change_rad": 0.17663232302487206,
+  "max_abs_hand_grasp_joint_change_rad": 1.550406739115715,
+  "max_lift_arm_target_residual_rad": 0.0020111274719238903,
+  "pregrasp_source_distance_m": 0.25,
+  "source_distance_preserved": true
+}

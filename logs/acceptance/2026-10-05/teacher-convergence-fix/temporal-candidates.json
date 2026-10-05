@@ -1,0 +1,17 @@
+{
+  "dt_old": 0.2,
+  "dt_new": 0.016666666666666666,
+  "gamma_old": 0.996,
+  "gamma_candidate": 0.9996660539892578,
+  "lambda_old": 0.95,
+  "lambda_candidate": 0.9957346812224394,
+  "gamma_old_horizon_seconds": 49.89993319966122,
+  "gamma_current_horizon_seconds": 4.158327766638434,
+  "lambda_old_horizon_seconds": 3.8991451492447347,
+  "lambda_current_horizon_seconds": 0.3249287624370612,
+  "lambda_decision": "candidate only; retain 0.95 for isolated gamma comparison",
+  "rollout_physical_seconds": 0.5333333333333333,
+  "gae_trace_old_seconds": 3.616550477338278,
+  "gae_trace_selected_seconds": 0.3228266421616772,
+  "gae_trace_time_equivalent_candidate_seconds": 3.6165504773383033
+}

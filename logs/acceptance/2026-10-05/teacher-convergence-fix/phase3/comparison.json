@@ -1,0 +1,57 @@
+{
+  "rows": [
+    {
+      "candidate": "phase3-scale025",
+      "factor": 0.25,
+      "max_velocity": 6.028004169464111,
+      "mean_velocity": 0.051122536323964574,
+      "max_contact": 718.7871704101562,
+      "max_effort": 148.4979705810547,
+      "max_target_delta": 0.023471340537071228,
+      "clipping": 0.013096590909090908,
+      "outside": 0.0,
+      "terminations": {
+        "time_out": 16,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      }
+    },
+    {
+      "candidate": "phase3-scale05",
+      "factor": 0.5,
+      "max_velocity": 21.201881408691406,
+      "mean_velocity": 0.07067496640607712,
+      "max_contact": 360.2736511230469,
+      "max_effort": 111.31571197509766,
+      "max_target_delta": 0.05149364471435547,
+      "clipping": 0.011169507575757576,
+      "outside": 0.0,
+      "terminations": {
+        "time_out": 16,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      }
+    },
+    {
+      "candidate": "phase3-scale1",
+      "factor": 1,
+      "max_velocity": 24.53952407836914,
+      "mean_velocity": 0.10896031927317378,
+      "max_contact": 373.8692626953125,
+      "max_effort": 150.0,
+      "max_target_delta": 0.12914776802062988,
+      "clipping": 0.011415719696969697,
+      "outside": 0.0,
+      "terminations": {
+        "time_out": 16,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      }
+    }
+  ],
+  "selected_factor": 0.25,
+  "arm_scale": 0.00125,
+  "hand_scale": 0.00375,
+  "tradeoff": "lowest qvel; max contact 718.8N, higher than 0.5x; no invalid terminations",
+  "candidate_c_evidence": "phase2-targets, identical config and action sequence"
+}

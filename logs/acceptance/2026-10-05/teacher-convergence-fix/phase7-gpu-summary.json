@@ -1,0 +1,9 @@
+{
+  "peak_mib": 5638.0,
+  "first50_active_mean_mib": 5568.28,
+  "last50_active_mean_mib": 5638.0,
+  "last50_active_min_mib": 5638.0,
+  "last50_active_max_mib": 5638.0,
+  "last_half_active_min_mib": 5638.0,
+  "last_half_active_max_mib": 5638.0
+}

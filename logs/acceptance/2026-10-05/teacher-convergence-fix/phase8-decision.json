@@ -1,0 +1,6 @@
+{
+  "run_500": false,
+  "source_successes": 0,
+  "strict_successes": 0,
+  "reason": "Phase7 source success 0/30; \u4f18\u53163.md prohibits directly running 500 iterations; pregrasp/action/reward/gamma/std/limits inspected"
+}

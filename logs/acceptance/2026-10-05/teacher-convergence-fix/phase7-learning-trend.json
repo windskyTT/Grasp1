@@ -1,0 +1,7 @@
+{
+  "iteration10_to29_reward_mean": -17.666227722167967,
+  "iteration70_to99_reward_mean": -17.001753044128417,
+  "value_loss_peak_iteration": 40,
+  "value_loss_peak": 141.42861938476562,
+  "iterations_with_learning_rate_001": 74
+}

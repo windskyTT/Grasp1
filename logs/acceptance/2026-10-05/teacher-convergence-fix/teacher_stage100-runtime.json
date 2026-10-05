@@ -1,0 +1,11 @@
+{
+  "terminations": {
+    "time_out": 27324,
+    "invalid_hand_height": 0,
+    "invalid_observation": 0
+  },
+  "finite": true,
+  "object_joint_min": -2.6023832106147893e-05,
+  "object_joint_max": 0.0010466448729857802,
+  "cuda_peak_allocated_mib": 1147.83251953125
+}

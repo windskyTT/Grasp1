@@ -1,0 +1,72 @@
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+index 6d835d9..d571368 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+@@ -159,6 +159,8 @@ def _build_teacher_object_cfg(
+             random_choice=False,
+             # 启用接触传感器，以供接触类奖励读取物体接触信息。
+             activate_contact_sensors=True,
++            # 源 Teacher 对物体设置零 PD 增益；清除 URDF 导入器生成的 drive。
++            joint_drive_props=sim_utils.JointDrivePropertiesCfg(stiffness=0.0, damping=0.0),
+             rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                 # 物体受重力影响，并限制碰撞分离时的最大速度。
+                 disable_gravity=False,
+@@ -200,6 +202,7 @@ class TeacherActionsCfg:
+ 
+     # 单一相对位置动作项按源关节顺序控制 UR5 6 + Allegro 16，不再引入延迟。
+     teacher = isaaclab_mdp.RelativeJointPositionActionCfg(
++        class_type=mdp.TeacherRelativeJointPositionAction,
+         asset_name="robot",
+         joint_names=list(UR5_JOINT_NAMES + _HAND_USD_JOINT_NAMES),
+         scale={
+@@ -244,6 +247,14 @@ class TeacherObservationsCfg:
+ class TeacherEventsCfg:
+     """配置数据准备、预抓取重置与物理步后的碰撞/位置事件。"""
+ 
++    # 0–0.001 rad 的近固定关节在轻量 bottom 与 top 接触时需要关节惯量稳定化。
++    # 全部35个训练物体对照支持此值；不改两刚体的质量、惯量、碰撞或声明限位。
++    configure_object_joint = EventTerm(
++        func=f"{_MDP}.events:configure_object_joint",
++        mode="startup",
++        params={"armature": 0.1},
++    )
++
+     # 启动时为物体池准备网格、最低点和元数据，避免每次 reset 重复读取 CPU 几何数据。
+     initialize_teacher_data = EventTerm(
+         func=f"{_MDP}.events:initialize_teacher_data",
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
+index 22dd1a2..ab2986b 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
+@@ -8,6 +8,7 @@
+ 
+ from isaaclab.envs.mdp import *  # noqa: F401, F403
+ 
++from .actions import TeacherRelativeJointPositionAction
+ from .geometry import *  # noqa: F401, F403
+ from .keypoints import *  # noqa: F401, F403
+ from .observations import *  # noqa: F401, F403
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+index 8f04140..eae5b5a 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+@@ -74,6 +74,11 @@ _COLLISION_ARM_SENSOR_INDICES: Final[tuple[int, ...]] = (1, 2, 3, 4)
+ # Small helpers
+ # -----------------------------------------------------------------------------
+ 
++def configure_object_joint(env, env_ids, armature: float) -> None:
++    """稳定源物体的近固定转动关节，避免接触冲量造成大幅限位越界。"""
++    env.scene["object"].write_joint_armature_to_sim(armature, env_ids=env_ids)
++
++
+ def _env_ids(
+     env,
+     env_ids: Sequence[int] | torch.Tensor | slice | None,
+@@ -946,6 +951,7 @@ __all__ = [
+     "STABLE_STATE_HEIGHT_OFFSET",
+     "SOURCE_TRAINING_DATASET",
+     "BIAS_DISTANCE_THRESHOLD",
++    "configure_object_joint",
+     "initialize_teacher_data",
+     "reset_teacher",
+     "check_initial_collision",

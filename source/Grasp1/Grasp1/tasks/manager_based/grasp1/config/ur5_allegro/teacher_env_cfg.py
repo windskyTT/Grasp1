@@ -34,7 +34,7 @@ from Grasp1.robots.robot_profile import (
 from Grasp1.utils.paths import object_asset_dir
 
 from ... import mdp
-from ...grasp1_env_cfg import CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
+from ...grasp1_env_cfg import CONTROL_DT, SOURCE_CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
 
 
 # -----------------------------------------------------------------------------
@@ -49,9 +49,9 @@ TEACHER_ACTION_DIM: Final[int] = 22
 # 将 Allegro 关节名转换为 USD 导入器使用的运行时名称。
 _HAND_USD_JOINT_NAMES: Final[tuple[str, ...]] = tuple(name.replace(".", "_") for name in ALLEGRO_JOINT_NAMES)
 
-# cfg_reg.yaml 中 UR5 和 Allegro 相对关节位置动作使用的缩放系数。
-ARM_ACTION_SCALE: Final[float] = 0.005
-HAND_ACTION_SCALE: Final[float] = 0.015
+# 60 Hz 下的0.25×源动作尺度：16 env/300步对照的逐物理步速度峰值最低。
+ARM_ACTION_SCALE: Final[float] = 0.00125
+HAND_ACTION_SCALE: Final[float] = 0.00375
 
 # ContactSensor 每个 source body 只过滤 object top。较高的 contact-data
 # 上限避免复杂 mesh 接触时丢失摩擦接触点。
@@ -78,15 +78,15 @@ PREGRASP_ANGLE_SCORE_COEFF: Final[float] = 1.0
 
 
 def _isaaclab_reward_weight(source_coeff: float) -> float:
-    """将旧 Teacher 每控制步的奖励系数换算为 Isaac Lab RewardManager 权重。
+    """按源控制周期保持每模拟秒的奖励强度。
 
     RewardManager 会按 ``term × weight × env.step_dt`` 累加奖励；旧实现每个控制
-    步直接乘 YAML 系数。除以控制周期后，可抵消 manager 再乘的 ``step_dt``，保持
-    原来的每控制步奖励尺度。
+    步直接乘 YAML 系数。除以源周期0.2秒，新60 Hz每步系数为源系数的1/12，
+    从而保留单位模拟时间的奖励尺度；不改奖励公式或各项相对权重。
 
     参数 ``source_coeff`` 是旧配置中的奖励系数；返回值用于 ``RewTerm.weight``。
     """
-    return source_coeff / CONTROL_DT
+    return source_coeff / SOURCE_CONTROL_DT
 
 
 def _build_finger_reward_weights() -> tuple[float, ...]:
@@ -159,6 +159,8 @@ def _build_teacher_object_cfg(
             random_choice=False,
             # 启用接触传感器，以供接触类奖励读取物体接触信息。
             activate_contact_sensors=True,
+            # 源 Teacher 对物体设置零 PD 增益；清除 URDF 导入器生成的 drive。
+            joint_drive_props=sim_utils.JointDrivePropertiesCfg(stiffness=0.0, damping=0.0),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 # 物体受重力影响，并限制碰撞分离时的最大速度。
                 disable_gravity=False,
@@ -200,6 +202,7 @@ class TeacherActionsCfg:
 
     # 单一相对位置动作项按源关节顺序控制 UR5 6 + Allegro 16，不再引入延迟。
     teacher = isaaclab_mdp.RelativeJointPositionActionCfg(
+        class_type=mdp.TeacherRelativeJointPositionAction,
         asset_name="robot",
         joint_names=list(UR5_JOINT_NAMES + _HAND_USD_JOINT_NAMES),
         scale={
@@ -243,6 +246,14 @@ class TeacherObservationsCfg:
 @configclass
 class TeacherEventsCfg:
     """配置数据准备、预抓取重置与物理步后的碰撞/位置事件。"""
+
+    # 0–0.001 rad 的近固定关节在轻量 bottom 与 top 接触时需要关节惯量稳定化。
+    # 全部35个训练物体对照支持此值；不改两刚体的质量、惯量、碰撞或声明限位。
+    configure_object_joint = EventTerm(
+        func=f"{_MDP}.events:configure_object_joint",
+        mode="startup",
+        params={"armature": 0.1},
+    )
 
     # 启动时为物体池准备网格、最低点和元数据，避免每次 reset 重复读取 CPU 几何数据。
     initialize_teacher_data = EventTerm(
@@ -305,8 +316,8 @@ class TeacherRewardsCfg:
     """连接旧 cfg_reg.yaml 中的 Teacher 奖励项及其权重和参数。
 
     IsaacLab RewardManager 会再乘 ``env.step_dt``，因此这里使用
-    ``source_coeff / CONTROL_DT`` 作为 manager weight，保证最终每个 control
-    step 的系数与 RobustDexGrasp 相同。
+    ``source_coeff / SOURCE_CONTROL_DT`` 作为 manager weight，保留
+    RobustDexGrasp 每模拟秒的奖励强度。
     """
 
     # 手指关键点与物体 affordance 区域的接近/抓取奖励。

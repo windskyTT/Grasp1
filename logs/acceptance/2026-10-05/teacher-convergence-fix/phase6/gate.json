@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "source_metric": true,
+  "strict_metric": true,
+  "num_objects": 30,
+  "compile_passed": true
+}

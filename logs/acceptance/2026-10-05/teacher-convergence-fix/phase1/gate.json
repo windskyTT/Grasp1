@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "numerical_tolerance_rad": 2e-05,
+  "evidence": [
+    {
+      "file": "phase1-fixed-dummy-contact.json",
+      "max_limit_violation_rad": 1.0123591891897377e-05
+    },
+    {
+      "file": "phase1-fixed-dummy-free.json",
+      "max_limit_violation_rad": 9.388300553636597e-11
+    },
+    {
+      "file": "phase1-fixed-dummy-table.json",
+      "max_limit_violation_rad": -0.0
+    },
+    {
+      "file": "phase1-fixed-new_training_set-contact.json",
+      "max_limit_violation_rad": 3.9499843751400476e-07
+    },
+    {
+      "file": "phase1-fixed-new_training_set-free.json",
+      "max_limit_violation_rad": 2.7494922571341673e-12
+    },
+    {
+      "file": "phase1-fixed-new_training_set-table.json",
+      "max_limit_violation_rad": 1.7662713958088716e-08
+    },
+    {
+      "file": "phase1-fixed-shapenet-30obj-contact.json",
+      "max_limit_violation_rad": 4.694441940955585e-06
+    },
+    {
+      "file": "phase1-fixed-shapenet-30obj-free.json",
+      "max_limit_violation_rad": 4.67988972227551e-12
+    },
+    {
+      "file": "phase1-fixed-shapenet-30obj-table.json",
+      "max_limit_violation_rad": -0.0
+    },
+    {
+      "file": "phase1-all-training.json",
+      "max_limit_violation_rad": 9.71012377704028e-06
+    },
+    {
+      "file": "phase1-all-shapenet.json",
+      "max_limit_violation_rad": 3.874514277413255e-06
+    },
+    {
+      "file": "phase1-dummy-rollout.json",
+      "max_limit_violation_rad": 2.9524114779633237e-06
+    }
+  ]
+}

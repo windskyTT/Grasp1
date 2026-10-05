@@ -12,6 +12,7 @@ from isaaclab_rl.rsl_rl import (
     RslRlPpoActorCriticCfg,
     RslRlPpoAlgorithmCfg,
 )
+from ....grasp1_env_cfg import CONTROL_DT, SOURCE_CONTROL_DT
 
 
 @configclass
@@ -74,8 +75,9 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         learning_rate=5.0e-4,
         schedule="adaptive",
 
-        # 折扣因子 gamma 和 GAE 优势估计参数 lambda。
-        gamma=0.996,
+        # 5 Hz → 60 Hz 保持源gamma的物理时间折扣；不硬编码近似值。
+        # lambda的时间等效值只作为候选，本轮隔离gamma，仍保留0.95。
+        gamma=0.996 ** (CONTROL_DT / SOURCE_CONTROL_DT),
         lam=0.95,
 
         # 自适应学习率使用的目标 KL 散度，以及梯度范数裁剪上限。

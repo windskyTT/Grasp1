@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "target_clamp_checks": 198,
+  "relative_action": true,
+  "velocity_runtime_confirmed": true,
+  "velocity_peak_joint": "joint_15_0",
+  "velocity_note": "solver constraint enforcement; no state clamp; remaining overshoot recorded"
+}

@@ -1,0 +1,67 @@
+{
+  "runs": {
+    "a": {
+      "run": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-05_13-19-35_teacher_gamma_a",
+      "finite": true,
+      "scalars": {
+        "Loss/value_function": {
+          "count": 5,
+          "first": 0.8634232878684998,
+          "last": 0.42582884430885315,
+          "minimum": 0.26690176129341125,
+          "maximum": 0.8634232878684998,
+          "mean": 0.5052631199359894
+        },
+        "Loss/surrogate": {
+          "count": 5,
+          "first": -0.03508339822292328,
+          "last": -0.008489483967423439,
+          "minimum": -0.03508339822292328,
+          "maximum": -0.008489483967423439,
+          "mean": -0.021207388117909433
+        },
+        "Policy/mean_noise_std": {
+          "count": 5,
+          "first": 1.000004768371582,
+          "last": 1.0004302263259888,
+          "minimum": 0.9993586540222168,
+          "maximum": 1.0007292032241821,
+          "mean": 1.000091588497162
+        }
+      }
+    },
+    "b": {
+      "run": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-05_13-19-54_teacher_gamma_b",
+      "finite": true,
+      "scalars": {
+        "Loss/value_function": {
+          "count": 5,
+          "first": 0.9173575639724731,
+          "last": 0.5746570825576782,
+          "minimum": 0.31265851855278015,
+          "maximum": 0.9173575639724731,
+          "mean": 0.6075110077857971
+        },
+        "Loss/surrogate": {
+          "count": 5,
+          "first": -0.034602705389261246,
+          "last": -0.013192280195653439,
+          "minimum": -0.034602705389261246,
+          "maximum": -0.013192280195653439,
+          "mean": -0.02205224595963955
+        },
+        "Policy/mean_noise_std": {
+          "count": 5,
+          "first": 1.0002192258834839,
+          "last": 1.000760555267334,
+          "minimum": 0.9998751878738403,
+          "maximum": 1.0015945434570312,
+          "mean": 1.000663733482361
+        }
+      }
+    }
+  },
+  "selected": "B",
+  "lambda_value": 0.95,
+  "reason": "preserve physical-time discount; 5-iteration finite smoke does not prove convergence"
+}

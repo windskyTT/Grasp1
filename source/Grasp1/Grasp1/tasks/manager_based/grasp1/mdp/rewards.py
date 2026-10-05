@@ -7,7 +7,8 @@ raw reward metrics into IsaacLab Manager-Based terms.
 Only reward formulas live here.  Source YAML coefficients remain in
 ``teacher_env_cfg.py``.  Because IsaacLab's ``RewardManager`` multiplies every
 term by ``env.step_dt``, the environment config converts each old per-control-
-step coefficient to ``source_coeff / CONTROL_DT``.
+step coefficient to ``source_coeff / SOURCE_CONTROL_DT`` to preserve reward
+strength per simulated second.
 
 Important migration notes
 -------------------------

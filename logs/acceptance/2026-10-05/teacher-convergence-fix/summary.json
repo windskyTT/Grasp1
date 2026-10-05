@@ -1,0 +1,25 @@
+{
+  "completed_phases": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "phase8_run": false,
+  "phase9": "diagnosis and next-stage recommendation only",
+  "source_success": "0/30",
+  "strict_success": "0/30",
+  "action_target_outside_fraction": 0,
+  "arm_scale": 0.00125,
+  "hand_scale": 0.00375,
+  "reward_semantics": "per_simulated_time",
+  "gamma": 0.9996660539892578,
+  "lambda_value": 0.95,
+  "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-05_13-23-01_teacher_stage100/model_99.pt",
+  "all_finite": true,
+  "report": "docs/\u4f18\u53163_\u6267\u884c\u62a5\u544a.md"
+}

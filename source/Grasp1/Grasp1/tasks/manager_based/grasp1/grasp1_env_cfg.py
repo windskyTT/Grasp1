@@ -17,6 +17,8 @@ from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
 
 PHYSICS_DT: Final[float] = 1.0 / 120.0
 CONTROL_DT: Final[float] = 1.0 / 60.0
+# 源 Teacher 的5 Hz控制周期，用于奖励强度与折扣的物理时间等效换算。
+SOURCE_CONTROL_DT: Final[float] = 0.2
 TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
 # 当前 Table/Collisions/Cube 在既有旋转、缩放后的尺寸，不替换桌子几何。
 TABLE_SIZE: Final[tuple[float, float, float]] = (1.28, 0.91, 0.771)
