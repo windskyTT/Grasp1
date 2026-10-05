@@ -1,0 +1,488 @@
+{
+  "num_envs": 256,
+  "physics_dt": 0.008333333333333333,
+  "step_dt": 0.016666666666666666,
+  "decimation": 2,
+  "physics_hz": 120.0,
+  "policy_hz": 60.0,
+  "episode_seconds": 4.0,
+  "episode_steps": 240,
+  "action_class": "TeacherJointPositionAction",
+  "joint_names": [
+    "shoulder_pan_joint",
+    "shoulder_lift_joint",
+    "elbow_joint",
+    "wrist_1_joint",
+    "wrist_2_joint",
+    "wrist_3_joint",
+    "joint_0_0",
+    "joint_1_0",
+    "joint_2_0",
+    "joint_3_0",
+    "joint_4_0",
+    "joint_5_0",
+    "joint_6_0",
+    "joint_7_0",
+    "joint_8_0",
+    "joint_9_0",
+    "joint_10_0",
+    "joint_11_0",
+    "joint_12_0",
+    "joint_13_0",
+    "joint_14_0",
+    "joint_15_0"
+  ],
+  "robot_solver": {
+    "articulation_enabled": null,
+    "enabled_self_collisions": false,
+    "solver_position_iteration_count": 32,
+    "solver_velocity_iteration_count": 1,
+    "sleep_threshold": null,
+    "stabilization_threshold": null,
+    "fix_root_link": true
+  },
+  "object_solver": {
+    "articulation_enabled": null,
+    "enabled_self_collisions": false,
+    "solver_position_iteration_count": 16,
+    "solver_velocity_iteration_count": 0,
+    "sleep_threshold": null,
+    "stabilization_threshold": null,
+    "fix_root_link": false
+  },
+  "solver_type": 1,
+  "measurements": [
+    {
+      "steps": 70,
+      "wall_seconds": 2.6000983540000107,
+      "simulated_seconds": 1.1666666666666667,
+      "env_steps_per_second": 6892.046976773682,
+      "physics_substeps_per_second": 53.84411700604439,
+      "physics_env_substeps_per_second": 13784.093953547364,
+      "simulated_seconds_per_wall_second": 0.44870097505036993,
+      "wall_seconds_per_simulated_second": 2.228655732000009,
+      "done_counts": {
+        "time_out": 0,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      },
+      "observed_episode_reward_mean": null,
+      "reward_terms": {
+        "affordance_reward": {
+          "mean_per_step": -1.0594979524612427,
+          "mean_per_second": -63.56987380981445,
+          "horizon_equivalent": -254.27951049804688,
+          "completed_episode_mean": null,
+          "rms_per_step": 1.0752019882202148
+        },
+        "affordance_contact_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0
+        },
+        "affordance_impulse_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0
+        },
+        "table_reward": {
+          "mean_per_step": -1.2704940388630348e-07,
+          "mean_per_second": -7.6229639489611145e-06,
+          "horizon_equivalent": -3.049185761483386e-05,
+          "completed_episode_mean": null,
+          "rms_per_step": 1.7007545466185547e-05
+        },
+        "table_contact_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0
+        },
+        "table_impulse_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0
+        },
+        "arm_height_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0
+        },
+        "arm_contact_reward": {
+          "mean_per_step": -0.0002343750384170562,
+          "mean_per_second": -0.01406250149011612,
+          "horizon_equivalent": -0.056250009685754776,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0048412298783659935
+        },
+        "arm_impulse_reward": {
+          "mean_per_step": -0.00018394755898043513,
+          "mean_per_second": -0.01103685237467289,
+          "horizon_equivalent": -0.04414741322398186,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0050039435736835
+        },
+        "arm_collision_reward": {
+          "mean_per_step": -0.002566964365541935,
+          "mean_per_second": -0.1540178507566452,
+          "horizon_equivalent": -0.6160714626312256,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.05066521838307381
+        },
+        "push_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0
+        },
+        "wrist_vel_reward_": {
+          "mean_per_step": -0.005188053473830223,
+          "mean_per_second": -0.3112832009792328,
+          "horizon_equivalent": -1.2451328039169312,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.0066993627697229385
+        },
+        "wrist_qvel_reward_": {
+          "mean_per_step": -0.0038435175083577633,
+          "mean_per_second": -0.23061104118824005,
+          "horizon_equivalent": -0.922444224357605,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.005019545555114746
+        },
+        "obj_vel_reward_": {
+          "mean_per_step": -0.003806504188105464,
+          "mean_per_second": -0.22839023172855377,
+          "horizon_equivalent": -0.9135609865188599,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.02558952011168003
+        },
+        "obj_qvel_reward_": {
+          "mean_per_step": -0.01721104234457016,
+          "mean_per_second": -1.0326625108718872,
+          "horizon_equivalent": -4.130650043487549,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.11859769374132156
+        },
+        "obj_displacement_reward": {
+          "mean_per_step": -0.013320215977728367,
+          "mean_per_second": -0.7992129325866699,
+          "horizon_equivalent": -3.1968517303466797,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.02060793712735176
+        },
+        "arm_joint_vel_reward_": {
+          "mean_per_step": -0.03831363469362259,
+          "mean_per_second": -2.2988178730010986,
+          "horizon_equivalent": -9.195272445678711,
+          "completed_episode_mean": null,
+          "rms_per_step": 0.05318620428442955
+        }
+      },
+      "max_joint_velocity": 0.0,
+      "max_joint_effort": 0.0,
+      "max_contact_force": 0.0,
+      "max_target_delta": 0.0,
+      "max_contact_impulse": 0.0,
+      "target_outside_limits_fraction": 0.0
+    },
+    {
+      "steps": 240,
+      "wall_seconds": 11.641524952000054,
+      "simulated_seconds": 4.0,
+      "env_steps_per_second": 5277.659091341327,
+      "physics_substeps_per_second": 41.23171165110412,
+      "physics_env_substeps_per_second": 10555.318182682655,
+      "simulated_seconds_per_wall_second": 0.34359759709253435,
+      "wall_seconds_per_simulated_second": 2.9103812380000136,
+      "done_counts": {
+        "time_out": 256,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      },
+      "observed_episode_reward_mean": null,
+      "reward_terms": {
+        "affordance_reward": {
+          "mean_per_step": -0.7230123281478882,
+          "mean_per_second": -43.3807373046875,
+          "horizon_equivalent": -173.52296447753906,
+          "completed_episode_mean": -173.52294921875,
+          "rms_per_step": 0.7729138731956482
+        },
+        "affordance_contact_reward": {
+          "mean_per_step": 0.01142105646431446,
+          "mean_per_second": 0.6852633357048035,
+          "horizon_equivalent": 2.741053581237793,
+          "completed_episode_mean": 2.741053342819214,
+          "rms_per_step": 0.05594825744628906
+        },
+        "affordance_impulse_reward": {
+          "mean_per_step": 0.006763130892068148,
+          "mean_per_second": 0.4057878255844116,
+          "horizon_equivalent": 1.623151421546936,
+          "completed_episode_mean": 1.6231513023376465,
+          "rms_per_step": 0.04544297605752945
+        },
+        "table_reward": {
+          "mean_per_step": -0.01744435541331768,
+          "mean_per_second": -1.0466612577438354,
+          "horizon_equivalent": -4.1866455078125,
+          "completed_episode_mean": -4.186645030975342,
+          "rms_per_step": 0.03901808336377144
+        },
+        "table_contact_reward": {
+          "mean_per_step": -0.002709172200411558,
+          "mean_per_second": -0.16255031526088715,
+          "horizon_equivalent": -0.6502013206481934,
+          "completed_episode_mean": -0.6502013206481934,
+          "rms_per_step": 0.03238382935523987
+        },
+        "table_impulse_reward": {
+          "mean_per_step": -0.003344470402225852,
+          "mean_per_second": -0.20066821575164795,
+          "horizon_equivalent": -0.8026729226112366,
+          "completed_episode_mean": -0.8026728630065918,
+          "rms_per_step": 0.040584418922662735
+        },
+        "arm_height_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": 0.0,
+          "rms_per_step": 0.0
+        },
+        "arm_contact_reward": {
+          "mean_per_step": -0.003313804278150201,
+          "mean_per_second": -0.19882825016975403,
+          "horizon_equivalent": -0.7953130006790161,
+          "completed_episode_mean": -0.7953130006790161,
+          "rms_per_step": 0.018203847110271454
+        },
+        "arm_impulse_reward": {
+          "mean_per_step": -0.003355050692334771,
+          "mean_per_second": -0.20130303502082825,
+          "horizon_equivalent": -0.805212140083313,
+          "completed_episode_mean": -0.805212140083313,
+          "rms_per_step": 0.021650759503245354
+        },
+        "arm_collision_reward": {
+          "mean_per_step": -0.03164062649011612,
+          "mean_per_second": -1.8984375,
+          "horizon_equivalent": -7.593750476837158,
+          "completed_episode_mean": -7.59375,
+          "rms_per_step": 0.17787812650203705
+        },
+        "push_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "completed_episode_mean": 0.0,
+          "rms_per_step": 0.0
+        },
+        "wrist_vel_reward_": {
+          "mean_per_step": -0.004274371545761824,
+          "mean_per_second": -0.2564622759819031,
+          "horizon_equivalent": -1.0258492231369019,
+          "completed_episode_mean": -1.0258491039276123,
+          "rms_per_step": 0.005625481717288494
+        },
+        "wrist_qvel_reward_": {
+          "mean_per_step": -0.0048284512013196945,
+          "mean_per_second": -0.2897070646286011,
+          "horizon_equivalent": -1.1588282585144043,
+          "completed_episode_mean": -1.1588282585144043,
+          "rms_per_step": 0.013190432451665401
+        },
+        "obj_vel_reward_": {
+          "mean_per_step": -0.014114946126937866,
+          "mean_per_second": -0.8468967080116272,
+          "horizon_equivalent": -3.387587070465088,
+          "completed_episode_mean": -3.387586832046509,
+          "rms_per_step": 0.13878010213375092
+        },
+        "obj_qvel_reward_": {
+          "mean_per_step": -0.07348887622356415,
+          "mean_per_second": -4.409332275390625,
+          "horizon_equivalent": -17.637331008911133,
+          "completed_episode_mean": -17.6373291015625,
+          "rms_per_step": 0.5909205079078674
+        },
+        "obj_displacement_reward": {
+          "mean_per_step": -0.019466841593384743,
+          "mean_per_second": -1.1680104732513428,
+          "horizon_equivalent": -4.672041893005371,
+          "completed_episode_mean": -4.672041893005371,
+          "rms_per_step": 0.044007301330566406
+        },
+        "arm_joint_vel_reward_": {
+          "mean_per_step": -0.15689198672771454,
+          "mean_per_second": -9.413518905639648,
+          "horizon_equivalent": -37.654075622558594,
+          "completed_episode_mean": -37.654075622558594,
+          "rms_per_step": 1.8839441537857056
+        }
+      },
+      "max_joint_velocity": 0.0,
+      "max_joint_effort": 0.0,
+      "max_contact_force": 0.0,
+      "max_target_delta": 0.0,
+      "max_contact_impulse": 0.0,
+      "target_outside_limits_fraction": 0.0
+    }
+  ],
+  "object_body_names": [
+    "bottom",
+    "top"
+  ],
+  "object_joint_names": [
+    "rotation"
+  ],
+  "object_joint_limits": [
+    [
+      0.0,
+      0.0010000000474974513
+    ]
+  ],
+  "loaded_articulation_properties": {
+    "Robot": [
+      {
+        "path": "/World/envs/env_0/Robot/root_joint",
+        "position": 32,
+        "velocity": 1,
+        "self_collision": false
+      }
+    ],
+    "Object": [
+      {
+        "path": "/World/envs/env_0/Object/bottom",
+        "position": 16,
+        "velocity": 0,
+        "self_collision": false
+      }
+    ]
+  },
+  "first_step_contacts": {
+    "0": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.01666666753590107
+    },
+    "1": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.01666666753590107
+    },
+    "2": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.01666666753590107
+    },
+    "3": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.01666666753590107
+    },
+    "4": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.01666666753590107
+    },
+    "5": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.01666666753590107
+    }
+  },
+  "collision_pending_after_first_step": 0,
+  "object_joint_min": [
+    -0.9469770193099976
+  ],
+  "object_joint_max": [
+    2.231050968170166
+  ],
+  "cpu_wall_profile": {
+    "physics": {
+      "total_us": 196392.23500000002,
+      "calls": 20
+    },
+    "scene_update": {
+      "total_us": 24006.753000000008,
+      "calls": 20
+    },
+    "reward": {
+      "total_us": 117665.25200000002,
+      "calls": 10
+    },
+    "observation": {
+      "total_us": 12009.474999999999,
+      "calls": 10
+    }
+  },
+  "cpu_profile": {
+    "phase/physics": {
+      "total_us": 195923.17700000005,
+      "self_us": 185088.03100000095,
+      "calls": 20
+    },
+    "phase/scene_update": {
+      "total_us": 0,
+      "self_us": 0,
+      "calls": 40
+    },
+    "phase/reward": {
+      "total_us": 0,
+      "self_us": 0,
+      "calls": 20
+    },
+    "phase/observation": {
+      "total_us": 0,
+      "self_us": 0,
+      "calls": 10
+    }
+  },
+  "cpu_trace_profile": {
+    "physics": {
+      "total_us": 195923.177,
+      "calls": 20
+    },
+    "scene_update": {
+      "total_us": 23729.698999999997,
+      "calls": 20
+    },
+    "reward": {
+      "total_us": 117477.473,
+      "calls": 10
+    },
+    "observation": {
+      "total_us": 11837.297000000002,
+      "calls": 10
+    }
+  },
+  "gpu_kernel_total_us": 200187.77300000083,
+  "gpu_profile": {
+    "artiSolveInternalConstraintsTGS1T": {
+      "duration_us": 99559.84200000003,
+      "count": 660,
+      "percent": 49.733228212693895
+    },
+    "stepArticulation1TTGS": {
+      "duration_us": 42421.940000000075,
+      "count": 640,
+      "percent": 21.191074441894063
+    },
+    "artiPropagateRigidImpulsesAndSolveSelfConstraintsTGS1T": {
+      "duration_us": 2067.2419999999975,
+      "count": 660,
+      "percent": 1.0326514796685355
+    }
+  }
+}

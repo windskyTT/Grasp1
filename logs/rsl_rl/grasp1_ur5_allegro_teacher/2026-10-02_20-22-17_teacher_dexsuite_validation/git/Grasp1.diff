@@ -1,0 +1,568 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   scripts/rsl_rl/evaluate.py
+	modified:   source/Grasp1/Grasp1/robots/ur5_allegro_cfg.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
+	deleted:    source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+	modified:   source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	"docs/\344\274\230\345\214\2262.md"
+	logs/acceptance/2026-10-02/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-02_20-09-25_teacher_dexsuite_phase5/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-02_20-22-17_teacher_dexsuite_validation/
+	outputs/2026-10-02/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/scripts/rsl_rl/evaluate.py b/scripts/rsl_rl/evaluate.py
+index 492b252..aae1754 100644
+--- a/scripts/rsl_rl/evaluate.py
++++ b/scripts/rsl_rl/evaluate.py
+@@ -22,7 +22,7 @@ from isaaclab.app import AppLauncher
+ import cli_args  # isort: skip
+ 
+ 
+-# 命令行参数：任务、评估轮数、环境复制数、抓取/抬升步数及结果路径。
++# 命令行参数：任务、评估轮数、环境复制数、抓取/抬升秒数及结果路径。
+ # -----------------------------------------------------------------------------
+ 
+ parser = argparse.ArgumentParser(
+@@ -53,22 +53,22 @@ parser.add_argument(
+     help="Parallel copies of each ShapeNet evaluation object.",
+ )
+ parser.add_argument(
+-    "--grasp_steps",
+-    type=int,
+-    default=100,
+-    help="Policy-controlled steps before the lift test.",
++    "--grasp_duration_s",
++    type=float,
++    default=4.0,
++    help="Policy-controlled grasp duration in seconds; matches the training horizon.",
+ )
+ parser.add_argument(
+-    "--lift_steps",
+-    type=int,
+-    default=100,
+-    help="Steps in the lift test.",
++    "--lift_duration_s",
++    type=float,
++    default=2.0,
++    help="Lift test duration in seconds.",
+ )
+ parser.add_argument(
+-    "--lift_ramp_steps",
+-    type=int,
+-    default=80,
+-    help="Steps used to interpolate the UR5 arm to the lift target.",
++    "--lift_ramp_duration_s",
++    type=float,
++    default=1.5,
++    help="Duration in seconds used to interpolate the UR5 arm to the lift target.",
+ )
+ parser.add_argument(
+     "--success_height",
+@@ -96,13 +96,13 @@ AppLauncher.add_app_launcher_args(parser)
+ 
+ args_cli, hydra_args = parser.parse_known_args()
+ 
+-# 在启动仿真前检查评估轮数、环境复制数和各阶段步数为正数。
++# 在启动仿真前检查评估轮数、环境复制数和各阶段秒数为正数。
+ for name in (
+     "rounds",
+     "repeat_per_object",
+-    "grasp_steps",
+-    "lift_steps",
+-    "lift_ramp_steps",
++    "grasp_duration_s",
++    "lift_duration_s",
++    "lift_ramp_duration_s",
+ ):
+     if getattr(args_cli, name) <= 0:
+         parser.error(f"--{name} must be greater than zero.")
+@@ -190,9 +190,12 @@ def _configure_evaluation(
+     env_cfg.events.reset_teacher.params["dataset_name"] = EVALUATION_DATASET
+     env_cfg.events.reset_teacher.params["object_names"] = object_names
+ 
++    # 评估完整抓取/抬升流程，并额外留一个策略步，避免结束前 timeout。
++    step_dt = env_cfg.sim.dt * env_cfg.decimation
+     env_cfg.episode_length_s = (
+-        args_cli.grasp_steps + args_cli.lift_steps + 1
+-    ) * env_cfg.sim.dt * env_cfg.decimation
++        round(args_cli.grasp_duration_s / step_dt)
++        + round(args_cli.lift_duration_s / step_dt) + 1
++    ) * step_dt
+ 
+ 
+ def _resolve_checkpoint(
+@@ -315,6 +318,13 @@ def main(
+ 
+     policy_nn = runner.alg.policy
+ 
++    # 用真实环境控制周期将秒数换算为策略步，不依赖旧 5 Hz 配置。
++    grasp_steps = round(args_cli.grasp_duration_s / env.unwrapped.step_dt)
++    lift_steps = round(args_cli.lift_duration_s / env.unwrapped.step_dt)
++    lift_ramp_steps = round(args_cli.lift_ramp_duration_s / env.unwrapped.step_dt)
++    print(f"[INFO] Evaluation timing: step_dt={env.unwrapped.step_dt}, "
++          f"grasp={grasp_steps} steps, lift={lift_steps} steps, ramp={lift_ramp_steps} steps")
++
+     # 确认运行环境动作维数与 Teacher 策略定义一致。
+     if env.num_actions != TEACHER_ACTION_DIM:
+         raise RuntimeError(
+@@ -385,7 +395,7 @@ def main(
+ 
+                 # 策略抓取阶段：执行指定步数，并记录每个环境的最后一组抓取动作。
+ 
+-                for _ in range(args_cli.grasp_steps):
++                for _ in range(grasp_steps):
+                     policy_actions = policy(obs)
+ 
+                     last_grasp_actions[active] = policy_actions[active]
+@@ -407,9 +417,9 @@ def main(
+ 
+                 # 评估专用抬升阶段：手指沿用抓取动作，UR5 逐步移动到固定抬升姿态。
+ 
+-                for step_idx in range(args_cli.lift_steps):
++                for step_idx in range(lift_steps):
+                     fraction = min(
+-                        (step_idx + 1) / float(args_cli.lift_ramp_steps),
++                        (step_idx + 1) / float(lift_ramp_steps),
+                         1.0,
+                     )
+ 
+@@ -534,9 +544,13 @@ def main(
+             "rounds": args_cli.rounds,
+             "repeat_per_object": args_cli.repeat_per_object,
+             "num_envs": len(names),
+-            "grasp_steps": args_cli.grasp_steps,
+-            "lift_steps": args_cli.lift_steps,
+-            "lift_ramp_steps": args_cli.lift_ramp_steps,
++            "grasp_duration_s": args_cli.grasp_duration_s,
++            "lift_duration_s": args_cli.lift_duration_s,
++            "lift_ramp_duration_s": args_cli.lift_ramp_duration_s,
++            "step_dt": env.unwrapped.step_dt,
++            "grasp_steps": grasp_steps,
++            "lift_steps": lift_steps,
++            "lift_ramp_steps": lift_ramp_steps,
+             "success_height_m": args_cli.success_height,
+             "total_attempts": total_attempts,
+             "total_successes": total_successes,
+diff --git a/source/Grasp1/Grasp1/robots/ur5_allegro_cfg.py b/source/Grasp1/Grasp1/robots/ur5_allegro_cfg.py
+index 650e3d1..5fd8231 100644
+--- a/source/Grasp1/Grasp1/robots/ur5_allegro_cfg.py
++++ b/source/Grasp1/Grasp1/robots/ur5_allegro_cfg.py
+@@ -123,6 +123,10 @@ UR5_ALLEGRO_CFG: Final[ArticulationCfg] = ArticulationCfg(
+         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+             # 原始 UR5 + Allegro 系统为固定底座 articulation。
+             fix_root_link=True,
++            solver_position_iteration_count=32,
++            solver_velocity_iteration_count=1,
++            # 开启自碰撞的专项验收出现巨大手部接触力，保持原关闭配置。
++            enabled_self_collisions=False,
+         ),
+     ),
+     init_state=ArticulationCfg.InitialStateCfg(
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
+index fb27078..e38e19a 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
+@@ -21,12 +21,11 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+     # 随机数种子，用于初始化训练中的随机过程。
+     seed = 1
+ 
+-    # 每个环境在一次 PPO 更新前采集的步数；对应原 Teacher 的 grasp_steps=70，
+-    # 表示 rollout 长度，不等同于环境 episode 长度。
+-    num_steps_per_env = 70
++    # 每次 PPO 更新采集 32 个策略步；与 240 步的 episode 分开配置。
++    num_steps_per_env = 32
+ 
+-    # 最大训练迭代次数，对应原 train.py 的默认 --num_iterations。
+-    max_iterations = 50001
++    # Dexsuite v2.3.2 reference = 15000；Grasp1 selected = 20001。
++    max_iterations = 20001
+ 
+     # 检查点保存间隔，单位为训练迭代次数；原训练配置每 500 次评估/记录一次。
+     save_interval = 500
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+index f6ca2b9..6d835d9 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+@@ -1,7 +1,7 @@
+ """UR5 + Allegro Teacher 的 Manager-Based 任务配置。
+ 
+ 本文件只负责组合 Teacher 的 MDP terms 与旧 RobustDexGrasp 配置参数。
+-复杂计算分别放在 ``mdp/actions.py``、``mdp/observations.py``、
++动作使用 Isaac Lab RelativeJointPositionAction；复杂计算放在 ``mdp/observations.py``、
+ ``mdp/rewards.py``、``mdp/events.py``、``mdp/terminations.py`` 中。
+ """
+ 
+@@ -52,8 +52,6 @@ _HAND_USD_JOINT_NAMES: Final[tuple[str, ...]] = tuple(name.replace(".", "_") for
+ # cfg_reg.yaml 中 UR5 和 Allegro 相对关节位置动作使用的缩放系数。
+ ARM_ACTION_SCALE: Final[float] = 0.005
+ HAND_ACTION_SCALE: Final[float] = 0.015
+-ACTION_DELAY_PROBABILITY: Final[float] = 0.5
+-ACTION_DELAY_SIM_STEPS: Final[int] = 1
+ 
+ # ContactSensor 每个 source body 只过滤 object top。较高的 contact-data
+ # 上限避免复杂 mesh 接触时丢失摩擦接触点。
+@@ -149,7 +147,10 @@ def _build_teacher_object_cfg(
+     *,
+     dataset_name: str,
+ ) -> ArticulationCfg:
+-    """按给定顺序构造 Teacher 的多 USD 物体 articulation 配置。"""
++    """保留源 top/bottom 被动转动关节及各自质量、惯量和接触过滤。
++
++    top 刚体位姿和速度直接参与 Teacher 观测/奖励，不能以根状态替代。
++    """
+     return ArticulationCfg(
+         prim_path="{ENV_REGEX_NS}/Object",
+         spawn=sim_utils.MultiUsdFileCfg(
+@@ -167,6 +168,8 @@ def _build_teacher_object_cfg(
+                 # 物体根部可运动，且关闭自身碰撞。
+                 fix_root_link=False,
+                 enabled_self_collisions=False,
++                solver_position_iteration_count=16,
++                solver_velocity_iteration_count=0,
+             ),
+         ),
+         # 安全的暂存初始状态；reset_teacher() 随后根据采样的 XY/朝向和
+@@ -195,8 +198,8 @@ def _build_teacher_object_cfg(
+ class TeacherActionsCfg:
+     """按 6 个 UR5、16 个 Allegro 关节的顺序输出原 Teacher 22 维动作。"""
+ 
+-    # 一个动作项共用原实现的延迟抽样：每个环境有 50% 概率延迟一个物理子步。
+-    teacher = mdp.TeacherJointPositionActionCfg(
++    # 单一相对位置动作项按源关节顺序控制 UR5 6 + Allegro 16，不再引入延迟。
++    teacher = isaaclab_mdp.RelativeJointPositionActionCfg(
+         asset_name="robot",
+         joint_names=list(UR5_JOINT_NAMES + _HAND_USD_JOINT_NAMES),
+         scale={
+@@ -204,8 +207,6 @@ class TeacherActionsCfg:
+             **{name: HAND_ACTION_SCALE for name in _HAND_USD_JOINT_NAMES},
+         },
+         preserve_order=True,
+-        delay_probability=ACTION_DELAY_PROBABILITY,
+-        delay_sim_steps=ACTION_DELAY_SIM_STEPS,
+     )
+ 
+ 
+@@ -557,15 +558,8 @@ class UR5AllegroTeacherEnvCfg(Grasp1EnvCfg):
+         self.events.reset_teacher.params["dataset_name"] = self.object_dataset
+         self.events.reset_teacher.params["object_names"] = object_names
+ 
+-        # 原 train.py 在每个 PPO update 前显式 reset_state()，随后固定收集
+-        # grasp_steps=70 个 control steps。旧 VectorizedEnvironment 的 step/reset
+-        # 路径没有读取 cfg_reg.yaml 的 max_time=4.0 做时间终止，因此这里保留：
+-        #
+-        #   70 policy steps * 0.2 s = 14.0 s
+-        #
+-        # 作为标准 IsaacLab 的 rollout/reset 边界，并与 RSL-RL
+-        # num_steps_per_env=70 对齐。
+-        self.episode_length_s = 70 * CONTROL_DT
++        # 每回合 4 秒，即 240 个 60 Hz 策略步；PPO rollout 单独配置。
++        self.episode_length_s = 4.0
+ 
+     def set_num_envs(self, num_envs: int) -> None:
+         """按原物体池顺序循环分配环境，并同步 USD、观测及 reset 元数据。"""
+@@ -585,8 +579,6 @@ __all__ = [
+     "TEACHER_ACTION_DIM",
+     "ARM_ACTION_SCALE",
+     "HAND_ACTION_SCALE",
+-    "ACTION_DELAY_PROBABILITY",
+-    "ACTION_DELAY_SIM_STEPS",
+     "CONTACT_SENSOR_MAX_CONTACTS_PER_PRIM",
+     "TEACHER_REWARD_FLOOR",
+     "BIASED_POINT_CLOUD",
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+index 59b04f8..f99aec8 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+@@ -15,7 +15,8 @@ from Grasp1.utils.paths import ASSETS_DIR
+ from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
+ 
+ 
+-CONTROL_DT: Final[float] = 0.2
++PHYSICS_DT: Final[float] = 1.0 / 120.0
++CONTROL_DT: Final[float] = 1.0 / 60.0
+ TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
+ # 当前 Table/Collisions/Cube 在既有旋转、缩放后的尺寸，不替换桌子几何。
+ TABLE_SIZE: Final[tuple[float, float, float]] = (1.28, 0.91, 0.771)
+@@ -103,13 +104,15 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
+     def __post_init__(self) -> None:
+         """在配置对象初始化后设置仿真频率、渲染频率和物理材质。"""
+ 
+-        # 物理仿真每步 0.01 秒；每 20 个仿真步执行一次控制动作。
+-        self.sim.dt = 0.01
+-        self.decimation = 20  # control_dt = 0.01 × 20 = 0.2 s
++        # 物理频率 120 Hz；每两个物理步执行一次策略动作，控制频率 60 Hz。
++        self.sim.dt = PHYSICS_DT
++        self.decimation = 2
+ 
+         # 每个回合持续 4 秒；渲染间隔与控制间隔一致。
+         self.episode_length_s = 4.0
+         self.sim.render_interval = self.decimation
++        # 显式使用 TGS；保留其余 PhysX 接触配置。
++        self.sim.physx.solver_type = 1
+ 
+         # 对应旧 world 默认材质；远程桌面 USD 的独立材质不受此值覆盖。
+         self.sim.physics_material = sim_utils.RigidBodyMaterialCfg(
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
+index 3ef8868..22dd1a2 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/__init__.py
+@@ -8,7 +8,6 @@
+ 
+ from isaaclab.envs.mdp import *  # noqa: F401, F403
+ 
+-from .actions import *  # noqa: F401, F403
+ from .geometry import *  # noqa: F401, F403
+ from .keypoints import *  # noqa: F401, F403
+ from .observations import *  # noqa: F401, F403
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+deleted file mode 100644
+index 4a38c37..0000000
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
++++ /dev/null
+@@ -1,184 +0,0 @@
+-"""定义 RobustDexGrasp Teacher 的 22 维残差关节位置动作及其配置类。
+-
+-动作项在 UR5 与 Allegro 关节上应用缩放后的相对位置目标，并按配置复现旧 Teacher
+-在物理仿真子步中随机延迟一个子步更新 PD 目标的行为。
+-"""
+-
+-from __future__ import annotations
+-
+-from collections.abc import Sequence
+-from typing import TYPE_CHECKING
+-
+-import torch
+-
+-from isaaclab.envs.mdp.actions.actions_cfg import JointActionCfg
+-from isaaclab.envs.mdp.actions.joint_actions import JointAction
+-from isaaclab.utils import configclass
+-
+-if TYPE_CHECKING:
+-    from isaaclab.envs import ManagerBasedEnv
+-
+-
+-class TeacherJointPositionAction(JointAction):
+-    """Teacher 的残差关节位置动作，并复现旧实现的一物理子步随机延迟。
+-
+-    每个控制周期的目标为::
+-
+-        q_target = q_current + action * scale
+-
+-    ``scale`` 由配置按关节给出；目标随后裁剪到从 USD/URDF 载入的关节位置限位。
+-
+-    Isaac Lab 每个环境步调用一次 :meth:`process_actions`，每个物理子步调用一次
+-    :meth:`apply_actions`。因此该类复现旧 Teacher 的以下行为：
+-
+-    - 每个控制周期、每个环境独立抽样是否延迟；
+-    - 抽中延迟时，前 ``delay_sim_steps`` 个物理子步使用上一控制周期的位置目标；
+-    - 随后的物理子步使用当前控制周期的位置目标；
+-    - 当前控制周期最后一个物理子步结束后，将当前目标保存为下一周期的历史目标。
+-    """
+-
+-    cfg: TeacherJointPositionActionCfg
+-
+-    def __init__(
+-        self,
+-        cfg: TeacherJointPositionActionCfg,
+-        env: ManagerBasedEnv,
+-    ) -> None:
+-        """初始化关节动作缓存、PhysX 关节限位及延迟控制所需状态。
+-
+-        ``cfg`` 指定关节、动作缩放和延迟参数；``env`` 提供并行环境、机器人
+-        articulation 和每个控制步对应的物理子步数。
+-        """
+-        super().__init__(cfg, env)
+-        # 每个控制步包含的物理仿真子步数，用来判断何时开始下一控制周期。
+-        self._decimation = int(env.cfg.decimation)
+-
+-        # 读取 PhysX 实际使用的关节位置硬限位，形状为 [环境数, 动作维度, 2]；
+-        # 最后一维分别存储每个关节的下限和上限。
+-        self._joint_pos_limits = self._asset.data.joint_pos_limits[:, self._joint_ids, :].clone()
+-
+-        current_target = self._asset.data.joint_pos[:, self._joint_ids].clone()
+-
+-        # 上一个控制周期的 PD 位置目标，对应 RobustDexGrasp 的 pTarget_prev_r。
+-        self._previous_target = current_target.clone()
+-
+-        # 首次策略动作到来前，将处理后动作初始化为当前关节位置。
+-        self._processed_actions.copy_(current_target)
+-
+-        # 原 Teacher 始终使用零关节速度目标。
+-        self._zero_velocity_target = torch.zeros_like(current_target)
+-
+-        # 为每个环境保存当前控制周期是否抽中延迟。
+-        self._delay_mask = torch.zeros(
+-            (self.num_envs, 1),
+-            dtype=torch.bool,
+-            device=self.device,
+-        )
+-
+-        # 当前控制周期已经执行的物理子步数。并行环境同步推进，因此使用一个计数器。
+-        self._substep = 0
+-
+-    def process_actions(self, actions: torch.Tensor) -> None:
+-        """在每个控制周期处理策略动作并生成新的关节位置目标。
+-
+-        先由父类保存原始动作、应用关节级缩放和可选动作裁剪，再将结果作为相对
+-        当前测量关节位置的残差，最后裁剪到 PhysX 关节位置限位。
+-        """
+-        # 父类负责保存原始动作、应用每关节缩放和执行可选的动作范围裁剪。
+-        super().process_actions(actions)
+-
+-        # 旧实现会在上一控制周期后用实测关节位置更新 actionMean_r_；因此当前残差
+-        # 以本控制周期开始时的实测关节位置为基准。
+-        target = (
+-            self._asset.data.joint_pos[:, self._joint_ids]
+-            + self._processed_actions
+-        )
+-
+-        self._processed_actions = torch.clamp(
+-            target,
+-            min=self._joint_pos_limits[..., 0],
+-            max=self._joint_pos_limits[..., 1],
+-        )
+-
+-        # 每个控制周期、每个环境独立抽样一次是否延迟新目标。
+-        self._delay_mask = (
+-            torch.rand((self.num_envs, 1), device=self.device)
+-            < self.cfg.delay_probability
+-        )
+-
+-        self._substep = 0
+-
+-    def apply_actions(self) -> None:
+-        """在当前物理子步向 articulation 写入位置目标和零速度目标。
+-
+-        对抽中延迟的环境，在本控制周期的前 ``delay_sim_steps`` 个子步继续使用
+-        上一控制周期目标；之后所有环境都改用当前目标。
+-        """
+-        if self._substep < self.cfg.delay_sim_steps:
+-            target = torch.where(
+-                self._delay_mask,
+-                self._previous_target,
+-                self._processed_actions,
+-            )
+-        else:
+-            target = self._processed_actions
+-
+-        # 向所选关节写入本子步生效的位置目标及零速度目标。
+-        self._asset.set_joint_position_target(
+-            target,
+-            joint_ids=self._joint_ids,
+-        )
+-        self._asset.set_joint_velocity_target(
+-            self._zero_velocity_target,
+-            joint_ids=self._joint_ids,
+-        )
+-
+-        self._substep += 1
+-
+-        # 到达本控制周期最后一个物理子步后，将当前目标保存为下一周期的历史目标。
+-        if self._substep >= self._decimation:
+-            self._previous_target.copy_(self._processed_actions)
+-
+-    def reset(
+-        self,
+-        env_ids: Sequence[int] | torch.Tensor | None = None,
+-    ) -> None:
+-        """将指定环境的动作缓存和延迟状态同步到 reset 后的关节状态。
+-
+-        ``env_ids`` 为 ``None`` 时重置所有环境；也可仅重置给定环境索引。
+-        """
+-        if env_ids is None:
+-            env_ids = slice(None)
+-
+-        super().reset(env_ids)
+-
+-        # 以 reset 后实测关节位置重新初始化当前目标和历史目标，避免沿用旧回合数据。
+-        current_target = self._asset.data.joint_pos[env_ids][:, self._joint_ids]
+-
+-        self._processed_actions[env_ids] = current_target
+-        self._previous_target[env_ids] = current_target
+-        self._zero_velocity_target[env_ids] = 0.0
+-        self._delay_mask[env_ids] = False
+-
+-        self._substep = 0
+-
+-
+-@configclass
+-class TeacherJointPositionActionCfg(JointActionCfg):
+-    """配置 Teacher 关节动作项；关节名、缩放和裁剪参数继承自 ``JointActionCfg``。"""
+-
+-    # Isaac Lab action manager 根据此类型创建自定义动作项实例。
+-    class_type: type[TeacherJointPositionAction] = TeacherJointPositionAction
+-
+-    delay_probability: float = 0.5
+-    """每个控制周期中，每个环境独立延迟新位置目标的概率。"""
+-
+-    delay_sim_steps: int = 1
+-    """抽中延迟后继续使用上一控制周期目标的物理子步数。"""
+-
+-
+-# 对外公开的 Teacher 动作类和动作配置类。
+-__all__ = [
+-    "TeacherJointPositionAction",
+-    "TeacherJointPositionActionCfg",
+-]
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+index 6bfe0c6..8f04140 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+@@ -633,6 +633,9 @@ def _write_reset_state(
+         env_ids=env_ids,
+     )
+ 
++    # 官方相对动作 reset 只清 raw buffer；写入重置姿态时同步清除残差。
++    env.action_manager.get_term("teacher").processed_actions[env_ids] = 0.0
++
+     obj.write_root_pose_to_sim(
+         object_pose,
+         env_ids=env_ids,
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+index 7722d4b..8eb2266 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+@@ -7,7 +7,7 @@
+ 布局::
+ 
+     0:22      gc_r_
+-    22:44     pTarget_clipped_r - gc_r_
++    22:44     relative target error Δq (processed_actions)
+     44:57     contacts_r_af
+     57:70     impulses_r_af
+     70:87     17 hand keypoint heights
+@@ -400,7 +400,7 @@ class TeacherObservation(ManagerTermBase):
+         self,
+         env: ManagerBasedRLEnv,
+     ) -> tuple[torch.Tensor, torch.Tensor]:
+-        """Return ``gc_r_`` and ``pTarget_clipped_r - gc_r_``."""
++        """返回关节位置与相对动作 Δq；processed_actions 已是目标误差。"""
+         joint_pos = self._robot.data.joint_pos[
+             :,
+             self._joint_ids,
+@@ -418,7 +418,7 @@ class TeacherObservation(ManagerTermBase):
+                 f"joint_pos={tuple(joint_pos.shape)}."
+             )
+ 
+-        return joint_pos, target - joint_pos
++        return joint_pos, target
+ 
+     def _contact_observation(
+         self,

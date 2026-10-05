@@ -21,12 +21,11 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     # 随机数种子，用于初始化训练中的随机过程。
     seed = 1
 
-    # 每个环境在一次 PPO 更新前采集的步数；对应原 Teacher 的 grasp_steps=70，
-    # 表示 rollout 长度，不等同于环境 episode 长度。
-    num_steps_per_env = 70
+    # 每次 PPO 更新采集 32 个策略步；与 240 步的 episode 分开配置。
+    num_steps_per_env = 32
 
-    # 最大训练迭代次数，对应原 train.py 的默认 --num_iterations。
-    max_iterations = 50001
+    # Dexsuite v2.3.2 reference = 15000；Grasp1 selected = 20001。
+    max_iterations = 20001
 
     # 检查点保存间隔，单位为训练迭代次数；原训练配置每 500 次评估/记录一次。
     save_interval = 500

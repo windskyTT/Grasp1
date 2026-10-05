@@ -633,6 +633,9 @@ def _write_reset_state(
         env_ids=env_ids,
     )
 
+    # 官方相对动作 reset 只清 raw buffer；写入重置姿态时同步清除残差。
+    env.action_manager.get_term("teacher").processed_actions[env_ids] = 0.0
+
     obj.write_root_pose_to_sim(
         object_pose,
         env_ids=env_ids,

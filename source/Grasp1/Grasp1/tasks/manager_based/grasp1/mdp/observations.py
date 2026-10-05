@@ -7,7 +7,7 @@
 布局::
 
     0:22      gc_r_
-    22:44     pTarget_clipped_r - gc_r_
+    22:44     relative target error Δq (processed_actions)
     44:57     contacts_r_af
     57:70     impulses_r_af
     70:87     17 hand keypoint heights
@@ -400,7 +400,7 @@ class TeacherObservation(ManagerTermBase):
         self,
         env: ManagerBasedRLEnv,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Return ``gc_r_`` and ``pTarget_clipped_r - gc_r_``."""
+        """返回关节位置与相对动作 Δq；processed_actions 已是目标误差。"""
         joint_pos = self._robot.data.joint_pos[
             :,
             self._joint_ids,
@@ -418,7 +418,7 @@ class TeacherObservation(ManagerTermBase):
                 f"joint_pos={tuple(joint_pos.shape)}."
             )
 
-        return joint_pos, target - joint_pos
+        return joint_pos, target
 
     def _contact_observation(
         self,

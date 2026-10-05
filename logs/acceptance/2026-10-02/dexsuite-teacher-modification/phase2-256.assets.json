@@ -1,0 +1,3632 @@
+[
+  {
+    "asset": "assets/objects/dummy/dummy/dummy.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_61_foam_brick/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_61_foam_brick/top",
+        "mass": "0.3627459704875946",
+        "inertia": "(0.00024494124, 0.00015167336, 0.00025069466)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_61_foam_brick/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002236929867649451",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_61_foam_brick/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/002_master_chef_can/002_master_chef_can.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_02_master_chef_can/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_02_master_chef_can/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00053307886, 0.0005319428, 0.00030961528)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_02_master_chef_can/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003098638844676316",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_02_master_chef_can/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/003_cracker_box/003_cracker_box.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_03_cracker_box/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_03_cracker_box/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0014478248, 0.0010163371, 0.0006040312)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_03_cracker_box/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00039445687434636056",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_03_cracker_box/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/004_sugar_box/004_sugar_box.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_04_sugar_box/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_04_sugar_box/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00078326376, 0.00065591047, 0.00019557872)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_04_sugar_box/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003387276956345886",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_04_sugar_box/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/005_tomato_soup_can/005_tomato_soup_can.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_05_tomato_soup_can/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_05_tomato_soup_can/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0002479602, 0.00024983418, 0.0001352189)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_05_tomato_soup_can/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00022400343732442707",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_05_tomato_soup_can/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/006_mustard_bottle/006_mustard_bottle.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_06_mustard_bottle/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_06_mustard_bottle/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00058746495, 0.0006741425, 0.00017331705)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_06_mustard_bottle/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00032389542320743203",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_06_mustard_bottle/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/007_tuna_fish_can/007_tuna_fish_can.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_07_tuna_fish_can/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_07_tuna_fish_can/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0001280168, 0.00012840191, 0.00022453563)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_07_tuna_fish_can/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00018476469267625362",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_07_tuna_fish_can/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/008_pudding_box/008_pudding_box.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_08_pudding_box/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_08_pudding_box/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00018172844, 0.00026986288, 0.0004000092)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_08_pudding_box/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00025501364143565297",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_08_pudding_box/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/009_gelatin_box/009_gelatin_box.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_09_gelatin_box/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_09_gelatin_box/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00016996161, 0.00012062012, 0.00025898954)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_09_gelatin_box/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002011811448028311",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_09_gelatin_box/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/010_potted_meat_can/010_potted_meat_can.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_10_potted_meat_can/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_10_potted_meat_can/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00017484667, 0.00029945714, 0.0002249431)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_10_potted_meat_can/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00023290955869015306",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_10_potted_meat_can/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/011_banana/011_banana.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_11_banana/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_11_banana/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0005887063, 0.00005792309, 0.00061181665)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_11_banana/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00031481555197387934",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_11_banana/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/019_pitcher_base/019_pitcher_base.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_19_pitcher_base/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_19_pitcher_base/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.001292406, 0.0013057609, 0.00045520658)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_19_pitcher_base/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0004043846274726093",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_19_pitcher_base/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/021_bleach_cleanser/021_bleach_cleanser.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_21_bleach_cleanser/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_21_bleach_cleanser/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0010838708, 0.0011638167, 0.00019449487)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_21_bleach_cleanser/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00038327890797518194",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_21_bleach_cleanser/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/025_mug/025_mug.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_25_mug/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_25_mug/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00020864274, 0.00023575342, 0.00030650376)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_25_mug/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002442528784740716",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_25_mug/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/035_power_drill/035_power_drill.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_35_power_drill/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_35_power_drill/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0010081317, 0.0013271285, 0.00038418372)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_35_power_drill/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00038770376704633236",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_35_power_drill/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/036_wood_block/036_wood_block.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_36_wood_block/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_36_wood_block/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0010228503, 0.0010283032, 0.00031818773)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_36_wood_block/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00037980018532834947",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_36_wood_block/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/037_scissors/037_scissors.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_37_scissors/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_37_scissors/top",
+        "mass": "0.08626186847686768",
+        "inertia": "(0.00012506086, 0.000030188101, 0.00015351352)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_37_scissors/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00014450938033405691",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_37_scissors/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/051_large_clamp/051_large_clamp.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_51_large_clamp/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_51_large_clamp/top",
+        "mass": "0.16957010328769684",
+        "inertia": "(0.00026268937, 0.00014364326, 0.0003851939)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_51_large_clamp/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002548889024183154",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_51_large_clamp/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/052_extra_large_clamp/052_extra_large_clamp.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_52_extra_large_clamp/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_52_extra_large_clamp/top",
+        "mass": "0.22910358011722565",
+        "inertia": "(0.0003248678, 0.0005517434, 0.0008468359)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_52_extra_large_clamp/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003428396303206682",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_52_extra_large_clamp/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/061_foam_brick/061_foam_brick.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/a_61_foam_brick/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/a_61_foam_brick/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00016803366, 0.00010411401, 0.00017216717)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/a_61_foam_brick/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00017859046056400985",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/a_61_foam_brick/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/big_tape/big_tape.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/big_tape/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/big_tape/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00052917685, 0.00057315594, 0.0009925707)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/big_tape/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003582310164347291",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/big_tape/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/blue_pitcher/blue_pitcher.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/blue_pitcher/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/blue_pitcher/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00097064354, 0.00095329905, 0.00049681735)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/blue_pitcher/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00038225477328523993",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/blue_pitcher/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/brush_functional/brush_functional.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/brush_functional/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/brush_functional/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00037776123, 0.00009329474, 0.00037344958)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/brush_functional/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002718392061069608",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/brush_functional/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/car_down/car_down.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/car_down/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/car_down/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00029989643, 0.0001597418, 0.00024045756)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/car_down/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002332044969080016",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/car_down/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/cracker_box_oriented/cracker_box_oriented.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/cracker_box_oriented/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/cracker_box_oriented/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0014469352, 0.00060383166, 0.0010156641)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/cracker_box_oriented/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003944066702388227",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/cracker_box_oriented/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/fan_small_head/fan_small_head.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/fan_small_head/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/fan_small_head/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.000090527334, 0.00044154617, 0.0004459543)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/fan_small_head/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00028601958183571696",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/fan_small_head/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/gun_functional/gun_functional.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/gun_functional/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/gun_functional/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0006279286, 0.00026983986, 0.0008280653)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/gun_functional/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00034853254328481853",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/gun_functional/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/hammer/hammer.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/hammer/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/hammer/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0024536655, 0.00017879819, 0.002549376)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/hammer/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.000437597103882581",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/hammer/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/loopy_head_side/loopy_head_side.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/loopy_head_side/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/loopy_head_side/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00066029606, 0.00047665334, 0.00079626444)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/loopy_head_side/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003593549772631377",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/loopy_head_side/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/mouse/mouse.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/mouse/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/mouse/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00007253708, 0.00016508605, 0.00019231724)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/mouse/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00017251732060685754",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/mouse/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/off_water_body/off_water_body.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/off_water_body/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/off_water_body/top",
+        "mass": "0.20490917563438416",
+        "inertia": "(0.00003097258, 0.00023747142, 0.000247194)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/off_water_body/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00020643214520532638",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/off_water_body/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/small_block/small_block.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/small_block/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/small_block/top",
+        "mass": "0.08340712636709213",
+        "inertia": "(0.00003086692, 0.00003103157, 0.0000096021195)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/small_block/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "4.378354060463607e-05",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/small_block/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/small_tape/small_tape.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/small_tape/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/small_tape/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00028297902, 0.00026195665, 0.00046855552)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/small_tape/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002821299422066659",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/small_tape/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/solder_iron_head/solder_iron_head.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/solder_iron_head/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/solder_iron_head/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0011566178, 0.00047175813, 0.00084749283)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/solder_iron_head/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00038171306368894875",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/solder_iron_head/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/suger_box_oriented/suger_box_oriented.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/suger_box_oriented/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/suger_box_oriented/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0007829843, 0.0001954561, 0.0006557227)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/suger_box_oriented/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00033867894671857357",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/suger_box_oriented/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/new_training_set/wood_block_oriented/wood_block_oriented.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/wood_block_oriented/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/wood_block_oriented/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0010225945, 0.0003180772, 0.0010279319)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/wood_block_oriented/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.000379783334210515",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/wood_block_oriented/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Bear_34/Bear_34.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Bear_34/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Bear_34/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0001754279, 0.00045477157, 0.00036775137)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Bear_34/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002747936232481152",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Bear_34/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Black_mug/Black_mug.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Black_mug/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Black_mug/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00024288346, 0.00026775998, 0.00030767114)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Black_mug/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00024697178741917014",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Black_mug/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Blue_camera/Blue_camera.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Blue_camera/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Blue_camera/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00015774369, 0.00039228564, 0.0003176904)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Blue_camera/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002567465417087078",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Blue_camera/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Blue_teapot/Blue_teapot.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Blue_teapot/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Blue_teapot/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.000424478, 0.00033970893, 0.00022405144)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Blue_teapot/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002700736513361335",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Blue_teapot/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Camera_brown/Camera_brown.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Camera_brown/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Camera_brown/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00041780208, 0.00017346487, 0.00052796426)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Camera_brown/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00029788626125082374",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Camera_brown/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Camera_yellow/Camera_yellow.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Camera_yellow/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Camera_yellow/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0005223657, 0.0006631526, 0.00020531869)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Camera_yellow/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003172701981384307",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Camera_yellow/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/CellPhone_4e/CellPhone_4e.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/CellPhone_4e/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/CellPhone_4e/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0009900162, 0.00094239623, 0.00013278538)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/CellPhone_4e/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00036604973138310015",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/CellPhone_4e/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Donut/Donut.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Donut/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Donut/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00026621067, 0.00026617417, 0.00045815637)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Donut/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00027096422854810953",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Donut/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/DrinkBottle_blue_1ef/DrinkBottle_blue_1ef.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/DrinkBottle_blue_1ef/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/DrinkBottle_blue_1ef/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00005233359, 0.00034693573, 0.00034672965)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/DrinkBottle_blue_1ef/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00024992943508550525",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/DrinkBottle_blue_1ef/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Gun/Gun.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Gun/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Gun/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00055356394, 0.00014419566, 0.00068110885)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Gun/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00032302222098223865",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Gun/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Hammer_40/Hammer_40.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Hammer_40/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Hammer_40/top",
+        "mass": "0.21448034048080444",
+        "inertia": "(0.00051051145, 0.00009125902, 0.00043958094)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Hammer_40/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002891105832532048",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Hammer_40/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Knife/Knife.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Knife/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Knife/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0000487854, 0.00049315416, 0.00050066656)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Knife/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002952420327346772",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Knife/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Mug_8b_red/Mug_8b_red.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Mug_8b_red/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Mug_8b_red/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00066517794, 0.00034047474, 0.0006224518)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Mug_8b_red/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003299016098026186",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Mug_8b_red/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Mug_gray_d7/Mug_gray_d7.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Mug_gray_d7/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Mug_gray_d7/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0003843303, 0.00028264773, 0.00034399124)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Mug_gray_d7/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002703733916860074",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Mug_gray_d7/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Mug_yellow_18/Mug_yellow_18.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Mug_yellow_18/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Mug_yellow_18/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00045277792, 0.0004492793, 0.0003673295)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Mug_yellow_18/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00029791868291795254",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Mug_yellow_18/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Pan_gray/Pan_gray.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Pan_gray/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Pan_gray/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00065523054, 0.00048852386, 0.00021830603)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Pan_gray/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003156531893182546",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Pan_gray/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Plate_gold_69/Plate_gold_69.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Plate_gold_69/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Plate_gold_69/top",
+        "mass": "0.20029129087924957",
+        "inertia": "(0.00041716642, 0.00022653937, 0.00022665794)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Plate_gold_69/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00025607715360820293",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Plate_gold_69/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Purse_brown_d58/Purse_brown_d58.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Purse_brown_d58/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Purse_brown_d58/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00026197522, 0.00040492398, 0.00018470615)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Purse_brown_d58/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002586183836683631",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Purse_brown_d58/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Purse_red_f58/Purse_red_f58.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Purse_red_f58/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Purse_red_f58/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00036164408, 0.00047315273, 0.00016446087)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Purse_red_f58/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.000284096400719136",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Purse_red_f58/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Red_bottle/Red_bottle.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Red_bottle/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Red_bottle/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.000742335, 0.00074232055, 0.000088407265)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Red_bottle/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003417473053559661",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Red_bottle/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Red_chair/Red_chair.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Red_chair/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Red_chair/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00045827066, 0.00045934314, 0.00040499683)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Red_chair/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00030210529803298414",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Red_chair/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Red_scissor/Red_scissor.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Red_scissor/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Red_scissor/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0005018212, 0.000108230786, 0.0005582908)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Red_scissor/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00030116335256025195",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Red_scissor/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Stapler_gray_d9/Stapler_gray_d9.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Stapler_gray_d9/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Stapler_gray_d9/top",
+        "mass": "0.17787587642669678",
+        "inertia": "(0.00022597675, 0.000033219087, 0.00024064409)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Stapler_gray_d9/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0001994434860534966",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Stapler_gray_d9/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Teapot_blue_high_3d2/Teapot_blue_high_3d2.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Teapot_blue_high_3d2/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Teapot_blue_high_3d2/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00019069009, 0.00042615822, 0.00031140758)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Teapot_blue_high_3d2/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00026956936926580966",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Teapot_blue_high_3d2/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Teapot_brown/Teapot_brown.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Teapot_brown/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Teapot_brown/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00030055002, 0.00021818852, 0.00019097127)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Teapot_brown/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0002295208105351776",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Teapot_brown/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Vase_red_a1/Vase_red_a1.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Vase_red_a1/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Vase_red_a1/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.000057542526, 0.00031723847, 0.00031724165)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Vase_red_a1/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00023895016056485474",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Vase_red_a1/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Watch_9f/Watch_9f.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Watch_9f/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Watch_9f/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.0010326798, 0.00050539826, 0.00062029035)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Watch_9f/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00036252819700166583",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Watch_9f/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/WineGlass_gray_9d/WineGlass_gray_9d.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/WineGlass_gray_9d/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/WineGlass_gray_9d/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00013795147, 0.0006438501, 0.000643893)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/WineGlass_gray_9d/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.00032375723822042346",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/WineGlass_gray_9d/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Wine_glass2_1_blue/Wine_glass2_1_blue.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Wine_glass2_1_blue/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Wine_glass2_1_blue/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00022517673, 0.00075111585, 0.00075083907)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Wine_glass2_1_blue/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003419982094783336",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Wine_glass2_1_blue/bottom"
+    ]
+  },
+  {
+    "asset": "assets/objects/shapenet-30obj/Wine_glass_body_blue/Wine_glass_body_blue.urdf",
+    "source_links": [
+      "top",
+      "bottom"
+    ],
+    "source_joints": [
+      {
+        "name": "rotation",
+        "type": "revolute",
+        "limit": {
+          "effort": "0.1",
+          "velocity": "0.1",
+          "lower": "0",
+          "upper": "0.001"
+        }
+      }
+    ],
+    "rigid_bodies": [
+      {
+        "path": "/Wine_glass_body_blue/bottom",
+        "mass": "0.0009800000116229057",
+        "inertia": "(1.6333333e-8, 1.6333333e-8, 1.6333331e-8)"
+      },
+      {
+        "path": "/Wine_glass_body_blue/top",
+        "mass": "0.2487500011920929",
+        "inertia": "(0.00033296822, 0.0009937541, 0.00085137173)"
+      }
+    ],
+    "usd_joints": [
+      {
+        "path": "/Wine_glass_body_blue/joints/rotation",
+        "type": "PhysicsRevoluteJoint",
+        "attributes": {
+          "physics:axis": "Z",
+          "physics:breakForce": "3.4028234663852886e+38",
+          "physics:breakTorque": "3.4028234663852886e+38",
+          "physics:collisionEnabled": "False",
+          "physics:excludeFromArticulation": "False",
+          "physics:jointEnabled": "True",
+          "physics:JointEquivalentInertia": "0.0003758392995223403",
+          "physics:localPos0": "(0, 0, 0)",
+          "physics:localPos1": "(0, 0, 0)",
+          "physics:localRot0": "(0, 0, 1, 0)",
+          "physics:localRot1": "(0, 0, 1, 0)",
+          "physics:lowerLimit": "0.0",
+          "physics:upperLimit": "0.0572957806289196"
+        }
+      }
+    ],
+    "articulation_roots": [
+      "/Wine_glass_body_blue/bottom"
+    ]
+  }
+]

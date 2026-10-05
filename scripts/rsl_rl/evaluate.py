@@ -22,7 +22,7 @@ from isaaclab.app import AppLauncher
 import cli_args  # isort: skip
 
 
-# 命令行参数：任务、评估轮数、环境复制数、抓取/抬升步数及结果路径。
+# 命令行参数：任务、评估轮数、环境复制数、抓取/抬升秒数及结果路径。
 # -----------------------------------------------------------------------------
 
 parser = argparse.ArgumentParser(
@@ -53,22 +53,22 @@ parser.add_argument(
     help="Parallel copies of each ShapeNet evaluation object.",
 )
 parser.add_argument(
-    "--grasp_steps",
-    type=int,
-    default=100,
-    help="Policy-controlled steps before the lift test.",
+    "--grasp_duration_s",
+    type=float,
+    default=4.0,
+    help="Policy-controlled grasp duration in seconds; matches the training horizon.",
 )
 parser.add_argument(
-    "--lift_steps",
-    type=int,
-    default=100,
-    help="Steps in the lift test.",
+    "--lift_duration_s",
+    type=float,
+    default=2.0,
+    help="Lift test duration in seconds.",
 )
 parser.add_argument(
-    "--lift_ramp_steps",
-    type=int,
-    default=80,
-    help="Steps used to interpolate the UR5 arm to the lift target.",
+    "--lift_ramp_duration_s",
+    type=float,
+    default=1.5,
+    help="Duration in seconds used to interpolate the UR5 arm to the lift target.",
 )
 parser.add_argument(
     "--success_height",
@@ -96,13 +96,13 @@ AppLauncher.add_app_launcher_args(parser)
 
 args_cli, hydra_args = parser.parse_known_args()
 
-# 在启动仿真前检查评估轮数、环境复制数和各阶段步数为正数。
+# 在启动仿真前检查评估轮数、环境复制数和各阶段秒数为正数。
 for name in (
     "rounds",
     "repeat_per_object",
-    "grasp_steps",
-    "lift_steps",
-    "lift_ramp_steps",
+    "grasp_duration_s",
+    "lift_duration_s",
+    "lift_ramp_duration_s",
 ):
     if getattr(args_cli, name) <= 0:
         parser.error(f"--{name} must be greater than zero.")
@@ -190,9 +190,12 @@ def _configure_evaluation(
     env_cfg.events.reset_teacher.params["dataset_name"] = EVALUATION_DATASET
     env_cfg.events.reset_teacher.params["object_names"] = object_names
 
+    # 评估完整抓取/抬升流程，并额外留一个策略步，避免结束前 timeout。
+    step_dt = env_cfg.sim.dt * env_cfg.decimation
     env_cfg.episode_length_s = (
-        args_cli.grasp_steps + args_cli.lift_steps + 1
-    ) * env_cfg.sim.dt * env_cfg.decimation
+        round(args_cli.grasp_duration_s / step_dt)
+        + round(args_cli.lift_duration_s / step_dt) + 1
+    ) * step_dt
 
 
 def _resolve_checkpoint(
@@ -315,6 +318,13 @@ def main(
 
     policy_nn = runner.alg.policy
 
+    # 用真实环境控制周期将秒数换算为策略步，不依赖旧 5 Hz 配置。
+    grasp_steps = round(args_cli.grasp_duration_s / env.unwrapped.step_dt)
+    lift_steps = round(args_cli.lift_duration_s / env.unwrapped.step_dt)
+    lift_ramp_steps = round(args_cli.lift_ramp_duration_s / env.unwrapped.step_dt)
+    print(f"[INFO] Evaluation timing: step_dt={env.unwrapped.step_dt}, "
+          f"grasp={grasp_steps} steps, lift={lift_steps} steps, ramp={lift_ramp_steps} steps")
+
     # 确认运行环境动作维数与 Teacher 策略定义一致。
     if env.num_actions != TEACHER_ACTION_DIM:
         raise RuntimeError(
@@ -385,7 +395,7 @@ def main(
 
                 # 策略抓取阶段：执行指定步数，并记录每个环境的最后一组抓取动作。
 
-                for _ in range(args_cli.grasp_steps):
+                for _ in range(grasp_steps):
                     policy_actions = policy(obs)
 
                     last_grasp_actions[active] = policy_actions[active]
@@ -407,9 +417,9 @@ def main(
 
                 # 评估专用抬升阶段：手指沿用抓取动作，UR5 逐步移动到固定抬升姿态。
 
-                for step_idx in range(args_cli.lift_steps):
+                for step_idx in range(lift_steps):
                     fraction = min(
-                        (step_idx + 1) / float(args_cli.lift_ramp_steps),
+                        (step_idx + 1) / float(lift_ramp_steps),
                         1.0,
                     )
 
@@ -534,9 +544,13 @@ def main(
             "rounds": args_cli.rounds,
             "repeat_per_object": args_cli.repeat_per_object,
             "num_envs": len(names),
-            "grasp_steps": args_cli.grasp_steps,
-            "lift_steps": args_cli.lift_steps,
-            "lift_ramp_steps": args_cli.lift_ramp_steps,
+            "grasp_duration_s": args_cli.grasp_duration_s,
+            "lift_duration_s": args_cli.lift_duration_s,
+            "lift_ramp_duration_s": args_cli.lift_ramp_duration_s,
+            "step_dt": env.unwrapped.step_dt,
+            "grasp_steps": grasp_steps,
+            "lift_steps": lift_steps,
+            "lift_ramp_steps": lift_ramp_steps,
             "success_height_m": args_cli.success_height,
             "total_attempts": total_attempts,
             "total_successes": total_successes,

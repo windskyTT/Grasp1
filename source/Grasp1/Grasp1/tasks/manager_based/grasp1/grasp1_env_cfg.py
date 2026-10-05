@@ -15,7 +15,8 @@ from Grasp1.utils.paths import ASSETS_DIR
 from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
 
 
-CONTROL_DT: Final[float] = 0.2
+PHYSICS_DT: Final[float] = 1.0 / 120.0
+CONTROL_DT: Final[float] = 1.0 / 60.0
 TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
 # 当前 Table/Collisions/Cube 在既有旋转、缩放后的尺寸，不替换桌子几何。
 TABLE_SIZE: Final[tuple[float, float, float]] = (1.28, 0.91, 0.771)
@@ -103,13 +104,15 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
     def __post_init__(self) -> None:
         """在配置对象初始化后设置仿真频率、渲染频率和物理材质。"""
 
-        # 物理仿真每步 0.01 秒；每 20 个仿真步执行一次控制动作。
-        self.sim.dt = 0.01
-        self.decimation = 20  # control_dt = 0.01 × 20 = 0.2 s
+        # 物理频率 120 Hz；每两个物理步执行一次策略动作，控制频率 60 Hz。
+        self.sim.dt = PHYSICS_DT
+        self.decimation = 2
 
         # 每个回合持续 4 秒；渲染间隔与控制间隔一致。
         self.episode_length_s = 4.0
         self.sim.render_interval = self.decimation
+        # 显式使用 TGS；保留其余 PhysX 接触配置。
+        self.sim.physx.solver_type = 1
 
         # 对应旧 world 默认材质；远程桌面 USD 的独立材质不受此值覆盖。
         self.sim.physics_material = sim_utils.RigidBodyMaterialCfg(

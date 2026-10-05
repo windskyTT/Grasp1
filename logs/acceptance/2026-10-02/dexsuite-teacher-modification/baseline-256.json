@@ -1,0 +1,403 @@
+{
+  "num_envs": 256,
+  "physics_dt": 0.01,
+  "step_dt": 0.2,
+  "decimation": 20,
+  "physics_hz": 100.0,
+  "policy_hz": 5.0,
+  "episode_seconds": 14.0,
+  "episode_steps": 70,
+  "action_class": "TeacherJointPositionAction",
+  "joint_names": [
+    "shoulder_pan_joint",
+    "shoulder_lift_joint",
+    "elbow_joint",
+    "wrist_1_joint",
+    "wrist_2_joint",
+    "wrist_3_joint",
+    "joint_0_0",
+    "joint_1_0",
+    "joint_2_0",
+    "joint_3_0",
+    "joint_4_0",
+    "joint_5_0",
+    "joint_6_0",
+    "joint_7_0",
+    "joint_8_0",
+    "joint_9_0",
+    "joint_10_0",
+    "joint_11_0",
+    "joint_12_0",
+    "joint_13_0",
+    "joint_14_0",
+    "joint_15_0"
+  ],
+  "robot_solver": {
+    "articulation_enabled": null,
+    "enabled_self_collisions": null,
+    "solver_position_iteration_count": null,
+    "solver_velocity_iteration_count": null,
+    "sleep_threshold": null,
+    "stabilization_threshold": null,
+    "fix_root_link": true
+  },
+  "object_solver": {
+    "articulation_enabled": null,
+    "enabled_self_collisions": false,
+    "solver_position_iteration_count": null,
+    "solver_velocity_iteration_count": null,
+    "sleep_threshold": null,
+    "stabilization_threshold": null,
+    "fix_root_link": false
+  },
+  "solver_type": 1,
+  "measurements": [
+    {
+      "steps": 70,
+      "wall_seconds": 63.68997635500273,
+      "simulated_seconds": 14.0,
+      "env_steps_per_second": 281.3629557674097,
+      "physics_substeps_per_second": 21.98148091932888,
+      "physics_env_substeps_per_second": 5627.2591153481935,
+      "simulated_seconds_per_wall_second": 0.2198148091932888,
+      "wall_seconds_per_simulated_second": 4.549284025357338,
+      "done_counts": {
+        "time_out": 256,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      },
+      "observed_episode_reward_mean": null,
+      "reward_terms": {
+        "affordance_reward": {
+          "mean_per_step": -0.8141921162605286,
+          "mean_per_second": -4.070960521697998,
+          "horizon_equivalent": -56.993446350097656,
+          "rms_per_step": 0.8592472076416016
+        },
+        "affordance_contact_reward": {
+          "mean_per_step": 0.007482179440557957,
+          "mean_per_second": 0.03741089627146721,
+          "horizon_equivalent": 0.5237525701522827,
+          "rms_per_step": 0.052610788494348526
+        },
+        "affordance_impulse_reward": {
+          "mean_per_step": 0.004845978692173958,
+          "mean_per_second": 0.02422989346086979,
+          "horizon_equivalent": 0.33921849727630615,
+          "rms_per_step": 0.04634171724319458
+        },
+        "table_reward": {
+          "mean_per_step": -0.005769554525613785,
+          "mean_per_second": -0.028847772628068924,
+          "horizon_equivalent": -0.40386882424354553,
+          "rms_per_step": 0.020510027185082436
+        },
+        "table_contact_reward": {
+          "mean_per_step": -0.0014904956333339214,
+          "mean_per_second": -0.007452478166669607,
+          "horizon_equivalent": -0.10433469712734222,
+          "rms_per_step": 0.02402011677622795
+        },
+        "table_impulse_reward": {
+          "mean_per_step": -0.0017035175114870071,
+          "mean_per_second": -0.008517587557435036,
+          "horizon_equivalent": -0.1192462295293808,
+          "rms_per_step": 0.028525808826088905
+        },
+        "arm_height_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "arm_contact_reward": {
+          "mean_per_step": -0.0023701328318566084,
+          "mean_per_second": -0.011850664392113686,
+          "horizon_equivalent": -0.1659093052148819,
+          "rms_per_step": 0.015490490943193436
+        },
+        "arm_impulse_reward": {
+          "mean_per_step": -0.0028978558257222176,
+          "mean_per_second": -0.014489279128611088,
+          "horizon_equivalent": -0.20284990966320038,
+          "rms_per_step": 0.0217629075050354
+        },
+        "arm_collision_reward": {
+          "mean_per_step": -0.02371651865541935,
+          "mean_per_second": -0.1185825914144516,
+          "horizon_equivalent": -1.66015625,
+          "rms_per_step": 0.15687376260757446
+        },
+        "push_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "wrist_vel_reward_": {
+          "mean_per_step": -0.0013154560001567006,
+          "mean_per_second": -0.006577279884368181,
+          "horizon_equivalent": -0.09208191931247711,
+          "rms_per_step": 0.0013677955139428377
+        },
+        "wrist_qvel_reward_": {
+          "mean_per_step": -0.0010349757503718138,
+          "mean_per_second": -0.0051748789846897125,
+          "horizon_equivalent": -0.07244830578565598,
+          "rms_per_step": 0.002493501640856266
+        },
+        "obj_vel_reward_": {
+          "mean_per_step": -0.00268756877630949,
+          "mean_per_second": -0.013437843881547451,
+          "horizon_equivalent": -0.18812981247901917,
+          "rms_per_step": 0.035012777894735336
+        },
+        "obj_qvel_reward_": {
+          "mean_per_step": -0.008357487618923187,
+          "mean_per_second": -0.041787438094615936,
+          "horizon_equivalent": -0.5850241184234619,
+          "rms_per_step": 0.12285458296537399
+        },
+        "obj_displacement_reward": {
+          "mean_per_step": -0.01663336157798767,
+          "mean_per_second": -0.08316680788993835,
+          "horizon_equivalent": -1.1643352508544922,
+          "rms_per_step": 0.029332708567380905
+        },
+        "arm_joint_vel_reward_": {
+          "mean_per_step": -0.020659146830439568,
+          "mean_per_second": -0.10329573601484299,
+          "horizon_equivalent": -1.4461402893066406,
+          "rms_per_step": 0.278362512588501
+        }
+      },
+      "max_joint_velocity": 0.0,
+      "max_joint_effort": 0.0,
+      "max_contact_force": 0.0,
+      "max_target_delta": 0.0,
+      "target_outside_limits_fraction": 0.0
+    },
+    {
+      "steps": 20,
+      "wall_seconds": 14.168715052997868,
+      "simulated_seconds": 4.0,
+      "env_steps_per_second": 361.3595150194436,
+      "physics_substeps_per_second": 28.23121211089403,
+      "physics_env_substeps_per_second": 7227.190300388872,
+      "simulated_seconds_per_wall_second": 0.28231212110894033,
+      "wall_seconds_per_simulated_second": 3.542178763249467,
+      "done_counts": {
+        "time_out": 0,
+        "invalid_hand_height": 0,
+        "invalid_observation": 0
+      },
+      "observed_episode_reward_mean": null,
+      "reward_terms": {
+        "affordance_reward": {
+          "mean_per_step": -1.1299223899841309,
+          "mean_per_second": -5.649611949920654,
+          "horizon_equivalent": -79.09456634521484,
+          "rms_per_step": 1.1407397985458374
+        },
+        "affordance_contact_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "affordance_impulse_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "table_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "table_contact_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "table_impulse_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "arm_height_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "arm_contact_reward": {
+          "mean_per_step": -7.812500552972779e-05,
+          "mean_per_second": -0.00039062503492459655,
+          "horizon_equivalent": -0.00546875037252903,
+          "rms_per_step": 0.0027950850781053305
+        },
+        "arm_impulse_reward": {
+          "mean_per_step": -4.846197771257721e-05,
+          "mean_per_second": -0.00024230989220086485,
+          "horizon_equivalent": -0.0033923385199159384,
+          "rms_per_step": 0.0027116218116134405
+        },
+        "arm_collision_reward": {
+          "mean_per_step": -0.0009765625,
+          "mean_per_second": -0.0048828125,
+          "horizon_equivalent": -0.068359375,
+          "rms_per_step": 0.03125
+        },
+        "push_reward": {
+          "mean_per_step": 0.0,
+          "mean_per_second": 0.0,
+          "horizon_equivalent": 0.0,
+          "rms_per_step": 0.0
+        },
+        "wrist_vel_reward_": {
+          "mean_per_step": -0.0014604779426008463,
+          "mean_per_second": -0.007302389480173588,
+          "horizon_equivalent": -0.10223345458507538,
+          "rms_per_step": 0.0014837622875347733
+        },
+        "wrist_qvel_reward_": {
+          "mean_per_step": -0.0006512704421766102,
+          "mean_per_second": -0.0032563521526753902,
+          "horizon_equivalent": -0.04558892920613289,
+          "rms_per_step": 0.0006541234324686229
+        },
+        "obj_vel_reward_": {
+          "mean_per_step": -0.0003941095492336899,
+          "mean_per_second": -0.001970547717064619,
+          "horizon_equivalent": -0.02758766897022724,
+          "rms_per_step": 0.004168339539319277
+        },
+        "obj_qvel_reward_": {
+          "mean_per_step": -0.001942191505804658,
+          "mean_per_second": -0.009710957296192646,
+          "horizon_equivalent": -0.1359534114599228,
+          "rms_per_step": 0.022761613130569458
+        },
+        "obj_displacement_reward": {
+          "mean_per_step": -0.014396768994629383,
+          "mean_per_second": -0.07198384404182434,
+          "horizon_equivalent": -1.0077738761901855,
+          "rms_per_step": 0.021690774708986282
+        },
+        "arm_joint_vel_reward_": {
+          "mean_per_step": -0.003438549814745784,
+          "mean_per_second": -0.017192749306559563,
+          "horizon_equivalent": -0.24069848656654358,
+          "rms_per_step": 0.003446414368227124
+        }
+      },
+      "max_joint_velocity": 0.0,
+      "max_joint_effort": 0.0,
+      "max_contact_force": 0.0,
+      "max_target_delta": 0.0,
+      "target_outside_limits_fraction": 0.0
+    }
+  ],
+  "first_step_contacts": {
+    "0": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.20000001788139343
+    },
+    "1": {
+      "finite": true,
+      "max_force": 1.1230238676071167,
+      "sensor_timestamp": 0.20000001788139343
+    },
+    "2": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.20000001788139343
+    },
+    "3": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.20000001788139343
+    },
+    "4": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.20000001788139343
+    },
+    "5": {
+      "finite": true,
+      "max_force": 0.0,
+      "sensor_timestamp": 0.20000001788139343
+    }
+  },
+  "collision_pending_after_first_step": 0,
+  "object_joint_min": [
+    -1.5588626861572266
+  ],
+  "object_joint_max": [
+    2.6492505073547363
+  ],
+  "cpu_profile": {
+    "phase/physics": {
+      "total_us": 7700619.664999998,
+      "self_us": 7507400.936000074,
+      "calls": 200
+    },
+    "phase/scene_update": {
+      "total_us": 0,
+      "self_us": 0,
+      "calls": 400
+    },
+    "phase/reward": {
+      "total_us": 0,
+      "self_us": 0,
+      "calls": 20
+    },
+    "phase/observation": {
+      "total_us": 0,
+      "self_us": 0,
+      "calls": 10
+    }
+  },
+  "gpu_kernel_total_us": 7532606.2800003905,
+  "gpu_profile": {
+    "artiSolveInternalConstraintsTGS1T": {
+      "duration_us": 3999696.203000001,
+      "count": 6600,
+      "percent": 53.098437039242064
+    },
+    "stepArticulation1TTGS": {
+      "duration_us": 1641544.375999999,
+      "count": 6400,
+      "percent": 21.792515299232047
+    },
+    "artiPropagateRigidImpulsesAndSolveSelfConstraintsTGS1T": {
+      "duration_us": 364194.445,
+      "count": 6600,
+      "percent": 4.834906159465182
+    }
+  },
+  "cpu_trace_profile": {
+    "physics": {
+      "total_us": 7700619.665000005,
+      "calls": 200
+    },
+    "scene_update": {
+      "total_us": 289695.6269999999,
+      "calls": 200
+    },
+    "reward": {
+      "total_us": 133498.66,
+      "calls": 10
+    },
+    "observation": {
+      "total_us": 11756.377999999999,
+      "calls": 10
+    }
+  }
+}

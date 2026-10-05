@@ -1,7 +1,7 @@
 """UR5 + Allegro Teacher 的 Manager-Based 任务配置。
 
 本文件只负责组合 Teacher 的 MDP terms 与旧 RobustDexGrasp 配置参数。
-复杂计算分别放在 ``mdp/actions.py``、``mdp/observations.py``、
+动作使用 Isaac Lab RelativeJointPositionAction；复杂计算放在 ``mdp/observations.py``、
 ``mdp/rewards.py``、``mdp/events.py``、``mdp/terminations.py`` 中。
 """
 
@@ -52,8 +52,6 @@ _HAND_USD_JOINT_NAMES: Final[tuple[str, ...]] = tuple(name.replace(".", "_") for
 # cfg_reg.yaml 中 UR5 和 Allegro 相对关节位置动作使用的缩放系数。
 ARM_ACTION_SCALE: Final[float] = 0.005
 HAND_ACTION_SCALE: Final[float] = 0.015
-ACTION_DELAY_PROBABILITY: Final[float] = 0.5
-ACTION_DELAY_SIM_STEPS: Final[int] = 1
 
 # ContactSensor 每个 source body 只过滤 object top。较高的 contact-data
 # 上限避免复杂 mesh 接触时丢失摩擦接触点。
@@ -149,7 +147,10 @@ def _build_teacher_object_cfg(
     *,
     dataset_name: str,
 ) -> ArticulationCfg:
-    """按给定顺序构造 Teacher 的多 USD 物体 articulation 配置。"""
+    """保留源 top/bottom 被动转动关节及各自质量、惯量和接触过滤。
+
+    top 刚体位姿和速度直接参与 Teacher 观测/奖励，不能以根状态替代。
+    """
     return ArticulationCfg(
         prim_path="{ENV_REGEX_NS}/Object",
         spawn=sim_utils.MultiUsdFileCfg(
@@ -167,6 +168,8 @@ def _build_teacher_object_cfg(
                 # 物体根部可运动，且关闭自身碰撞。
                 fix_root_link=False,
                 enabled_self_collisions=False,
+                solver_position_iteration_count=16,
+                solver_velocity_iteration_count=0,
             ),
         ),
         # 安全的暂存初始状态；reset_teacher() 随后根据采样的 XY/朝向和
@@ -195,8 +198,8 @@ def _build_teacher_object_cfg(
 class TeacherActionsCfg:
     """按 6 个 UR5、16 个 Allegro 关节的顺序输出原 Teacher 22 维动作。"""
 
-    # 一个动作项共用原实现的延迟抽样：每个环境有 50% 概率延迟一个物理子步。
-    teacher = mdp.TeacherJointPositionActionCfg(
+    # 单一相对位置动作项按源关节顺序控制 UR5 6 + Allegro 16，不再引入延迟。
+    teacher = isaaclab_mdp.RelativeJointPositionActionCfg(
         asset_name="robot",
         joint_names=list(UR5_JOINT_NAMES + _HAND_USD_JOINT_NAMES),
         scale={
@@ -204,8 +207,6 @@ class TeacherActionsCfg:
             **{name: HAND_ACTION_SCALE for name in _HAND_USD_JOINT_NAMES},
         },
         preserve_order=True,
-        delay_probability=ACTION_DELAY_PROBABILITY,
-        delay_sim_steps=ACTION_DELAY_SIM_STEPS,
     )
 
 
@@ -557,15 +558,8 @@ class UR5AllegroTeacherEnvCfg(Grasp1EnvCfg):
         self.events.reset_teacher.params["dataset_name"] = self.object_dataset
         self.events.reset_teacher.params["object_names"] = object_names
 
-        # 原 train.py 在每个 PPO update 前显式 reset_state()，随后固定收集
-        # grasp_steps=70 个 control steps。旧 VectorizedEnvironment 的 step/reset
-        # 路径没有读取 cfg_reg.yaml 的 max_time=4.0 做时间终止，因此这里保留：
-        #
-        #   70 policy steps * 0.2 s = 14.0 s
-        #
-        # 作为标准 IsaacLab 的 rollout/reset 边界，并与 RSL-RL
-        # num_steps_per_env=70 对齐。
-        self.episode_length_s = 70 * CONTROL_DT
+        # 每回合 4 秒，即 240 个 60 Hz 策略步；PPO rollout 单独配置。
+        self.episode_length_s = 4.0
 
     def set_num_envs(self, num_envs: int) -> None:
         """按原物体池顺序循环分配环境，并同步 USD、观测及 reset 元数据。"""
@@ -585,8 +579,6 @@ __all__ = [
     "TEACHER_ACTION_DIM",
     "ARM_ACTION_SCALE",
     "HAND_ACTION_SCALE",
-    "ACTION_DELAY_PROBABILITY",
-    "ACTION_DELAY_SIM_STEPS",
     "CONTACT_SENSOR_MAX_CONTACTS_PER_PRIM",
     "TEACHER_REWARD_FLOOR",
     "BIASED_POINT_CLOUD",

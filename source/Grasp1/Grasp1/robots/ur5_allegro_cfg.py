@@ -123,6 +123,10 @@ UR5_ALLEGRO_CFG: Final[ArticulationCfg] = ArticulationCfg(
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
             # 原始 UR5 + Allegro 系统为固定底座 articulation。
             fix_root_link=True,
+            solver_position_iteration_count=32,
+            solver_velocity_iteration_count=1,
+            # 开启自碰撞的专项验收出现巨大手部接触力，保持原关闭配置。
+            enabled_self_collisions=False,
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
