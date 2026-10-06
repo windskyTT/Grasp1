@@ -1,0 +1,5 @@
+{
+  "status": "aborted-during-scene-creation",
+  "ppo_updates": 0,
+  "reason": "Negative height gain becoming less negative was incorrectly counted as learning progress. No hand-object contact and behavior deterioration; continuation gate corrected."
+}

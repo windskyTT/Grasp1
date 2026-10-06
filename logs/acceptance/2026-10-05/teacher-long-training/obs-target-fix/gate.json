@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "observation_dim": 153,
+  "action_dim": 22,
+  "case_count_per_agent": 198,
+  "zero_steps": 300,
+  "random_steps": 300,
+  "num_envs": 16,
+  "full_reset": true,
+  "partial_reset": true,
+  "non_reset_state_preserved": true,
+  "target_outside_fraction": 0,
+  "finite": true,
+  "random_max_ur5_qvel": 2.409311294555664,
+  "random_max_hand_qvel": 6.028004169464111,
+  "physics_and_ppo_config_unchanged": true,
+  "evaluation_interface_checkpoint_semantics": "Optimization-3 checkpoint used only for interface runtime verification; not new-run convergence evidence"
+}

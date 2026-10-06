@@ -1,0 +1,14 @@
+{
+  "iteration": 2000,
+  "comparison": 1000,
+  "improved_metrics": {
+    "objects_with_object_contact": false,
+    "objects_with_two_plus_contacts": false,
+    "objects_with_thumb_other": false,
+    "median_height_gain_m": false,
+    "distance": false,
+    "reward": false
+  },
+  "continue_training": false,
+  "criterion": "source>0 or sustained behavior improvement; height progress requires positive median gain with hand-object contact; reward alone does not establish behavior improvement; 0/30 alone does not stop training"
+}

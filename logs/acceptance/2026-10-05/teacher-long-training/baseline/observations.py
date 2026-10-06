@@ -7,7 +7,7 @@
 布局::
 
     0:22      gc_r_
-    22:44     actual clamped target - current joint position
+    22:44     relative target error Δq (processed_actions)
     44:57     contacts_r_af
     57:70     impulses_r_af
     70:87     17 hand keypoint heights
@@ -400,7 +400,7 @@ class TeacherObservation(ManagerTermBase):
         self,
         env: ManagerBasedRLEnv,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """返回关节位置和实际发送的限位目标相对当前测量位置的误差。"""
+        """返回关节位置与相对动作 Δq；processed_actions 已是目标误差。"""
         joint_pos = self._robot.data.joint_pos[
             :,
             self._joint_ids,
@@ -409,7 +409,7 @@ class TeacherObservation(ManagerTermBase):
         action_term = env.action_manager.get_term(
             "teacher"
         )
-        target = action_term.target - joint_pos
+        target = action_term.processed_actions
 
         if target.shape != joint_pos.shape:
             raise RuntimeError(

@@ -1,0 +1,192 @@
+diff --git a/scripts/rsl_rl/evaluate.py b/scripts/rsl_rl/evaluate.py
+index 824c7b7..c3279d4 100644
+--- a/scripts/rsl_rl/evaluate.py
++++ b/scripts/rsl_rl/evaluate.py
+@@ -88,6 +88,9 @@ parser.add_argument(
+     default=None,
+     help="Evaluation seed.",
+ )
++parser.add_argument('--lift_hand_mode', choices=('current-relative-repeat', 'hold-grasp-posture'),
++                    default='current-relative-repeat', help='Lift hand control A/B diagnostic.')
++parser.add_argument('--diagnostics', action='store_true', help='Record top/bottom/table and multi-finger contacts.')
+ 
+ # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
+ cli_args.add_rsl_rl_args(parser)
+@@ -283,6 +286,9 @@ def main(
+     # 构建 ShapeNet 物体列表；repeat_per_object 控制每个物体并行复制数量。
+     names = tuple(evaluation_object_names(args_cli.repeat_per_object))
+     _configure_evaluation(env_cfg, names)
++    if args_cli.diagnostics:
++        from grasp_diagnostics import configure_diagnostics, GraspDiagnostics
++        configure_diagnostics(env_cfg.scene)
+ 
+     # 解析检查点并将运行目录传给环境，供日志及评估结果路径使用。
+     checkpoint, log_dir = _resolve_checkpoint(agent_cfg)
+@@ -338,6 +344,8 @@ def main(
+     # 获取机器人和物体 articulation，供控制抬升动作及计算高度变化使用。
+     robot = env.unwrapped.scene["robot"]
+     object_asset = env.unwrapped.scene["object"]
++    diagnostic = GraspDiagnostics(env.unwrapped, names) if args_cli.diagnostics else None
++    action_term = env.unwrapped.action_manager.get_term('teacher')
+ 
+     # 按 robot_profile 中的顺序解析 UR5 关节索引，以正确构造抬升目标。
+     arm_joint_ids, resolved_joint_names = robot.find_joints(
+@@ -382,6 +390,8 @@ def main(
+                 )
+ 
+                 initial_z = object_asset.data.root_pos_w[:, 2].clone()
++                if diagnostic is not None:
++                    diagnostic.start_round(round_idx)
+ 
+                 # 标记仍参与本轮评估的环境；发生回合终止的环境不再执行动作。
+                 active = torch.ones(
+@@ -412,10 +422,27 @@ def main(
+                     done_mask = dones.to(dtype=torch.bool)
+                     active &= ~done_mask
+                     policy_nn.reset(dones)
++                    if diagnostic is not None:
++                        diagnostic.sample('grasp', actions, active)
+ 
+                 lift_start = (
+                     robot.data.joint_pos[:, arm_joint_ids].clone()
+                 )
++                if diagnostic is not None:
++                    diagnostic.end_grasp()
++
++                # B模式在每个物理子步保持抓取结束的实际限位目标。
++                # 保持原arm相对动作与轨迹，A模式仍重复最后的hand delta。
++                original_apply = action_term.apply_actions
++                if args_cli.lift_hand_mode == 'hold-grasp-posture':
++                    held_hand_target = action_term.target[:, 6:].clone()
++
++                    def apply_with_hand_hold():
++                        original_apply()
++                        action_term.target[active, 6:] = held_hand_target[active]
++                        robot.set_joint_position_target(action_term.target, joint_ids=action_term._joint_ids)
++
++                    action_term.apply_actions = apply_with_hand_hold
+ 
+                 # 记录抓取结束时 UR5 关节角，作为后续插值抬升动作的起点。
+ 
+@@ -445,6 +472,10 @@ def main(
+                     done_mask = dones.to(dtype=torch.bool)
+                     active &= ~done_mask
+                     policy_nn.reset(dones)
++                    if diagnostic is not None:
++                        diagnostic.sample('lift', actions, active)
++
++                action_term.apply_actions = original_apply
+ 
+                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
+ 
+@@ -455,6 +486,8 @@ def main(
+ 
+                 source_lifted = height_gain > args_cli.success_height
+                 lifted = active & source_lifted
++                if diagnostic is not None:
++                    diagnostic.finish_round(height_gain, source_lifted, lifted, lift_target, arm_joint_ids)
+ 
+                 round_successes = int(lifted.sum().item())
+ 
+@@ -547,6 +580,8 @@ def main(
+         summary = {
+             "task": args_cli.task,
+             "checkpoint": str(checkpoint),
++            "lift_hand_mode": args_cli.lift_hand_mode,
++            "diagnostics": args_cli.diagnostics,
+             "dataset": EVALUATION_DATASET,
+             "rounds": args_cli.rounds,
+             "repeat_per_object": args_cli.repeat_per_object,
+@@ -581,6 +616,8 @@ def main(
+             summary=summary,
+             rows=rows,
+         )
++        if diagnostic is not None:
++            diagnostic.save(output_dir)
+ 
+     finally:
+         env.close()
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+index dc70867..7b08404 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+@@ -1,13 +1,31 @@
+ """Teacher 相对位置动作：保留官方逐物理步语义并恢复源目标限位。"""
+ 
+ from isaaclab.envs.mdp.actions import RelativeJointPositionAction
++import torch
+ 
+ 
+ class TeacherRelativeJointPositionAction(RelativeJointPositionAction):
+-    """仅限制最终目标，不增加动作延迟或上一目标状态。"""
++    """逐物理步限制目标，并保存实际发送的目标供观测读取。"""
++
++    def __init__(self, cfg, env):
++        super().__init__(cfg, env)
++        self._target = self._asset.data.joint_pos[:, self._joint_ids].clone()
++
++    @property
++    def target(self) -> torch.Tensor:
++        """按22维策略顺序返回最近实际发送的关节目标。"""
++        return self._target
++
++    def reset(self, env_ids=None) -> None:
++        super().reset(env_ids)
++        if env_ids is None:
++            env_ids = slice(None)
++        self._processed_actions[env_ids] = 0.0
++        self._target[env_ids] = self._asset.data.joint_pos[:, self._joint_ids][env_ids]
+ 
+     def apply_actions(self) -> None:
+         target = self._asset.data.joint_pos[:, self._joint_ids] + self.processed_actions
+         limits = self._asset.data.joint_pos_limits[:, self._joint_ids]
+         target.clamp_(min=limits[..., 0], max=limits[..., 1])
+-        self._asset.set_joint_position_target(target, joint_ids=self._joint_ids)
++        self._target[:] = target
++        self._asset.set_joint_position_target(self._target, joint_ids=self._joint_ids)
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+index eae5b5a..4585c95 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/events.py
+@@ -638,8 +638,8 @@ def _write_reset_state(
+         env_ids=env_ids,
+     )
+ 
+-    # 官方相对动作 reset 只清 raw buffer；写入重置姿态时同步清除残差。
+-    env.action_manager.get_term("teacher").processed_actions[env_ids] = 0.0
++    # reset 与碰撞 fallback 都同步清除动作，并保存当前测量姿态作为目标。
++    env.action_manager.get_term("teacher").reset(env_ids)
+ 
+     obj.write_root_pose_to_sim(
+         object_pose,
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+index 8eb2266..ed7fde3 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/observations.py
+@@ -7,7 +7,7 @@
+ 布局::
+ 
+     0:22      gc_r_
+-    22:44     relative target error Δq (processed_actions)
++    22:44     actual clamped target - current joint position
+     44:57     contacts_r_af
+     57:70     impulses_r_af
+     70:87     17 hand keypoint heights
+@@ -400,7 +400,7 @@ class TeacherObservation(ManagerTermBase):
+         self,
+         env: ManagerBasedRLEnv,
+     ) -> tuple[torch.Tensor, torch.Tensor]:
+-        """返回关节位置与相对动作 Δq；processed_actions 已是目标误差。"""
++        """返回关节位置和实际发送的限位目标相对当前测量位置的误差。"""
+         joint_pos = self._robot.data.joint_pos[
+             :,
+             self._joint_ids,
+@@ -409,7 +409,7 @@ class TeacherObservation(ManagerTermBase):
+         action_term = env.action_manager.get_term(
+             "teacher"
+         )
+-        target = action_term.processed_actions
++        target = action_term.target - joint_pos
+ 
+         if target.shape != joint_pos.shape:
+             raise RuntimeError(

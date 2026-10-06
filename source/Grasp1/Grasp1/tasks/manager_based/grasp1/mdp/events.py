@@ -638,8 +638,8 @@ def _write_reset_state(
         env_ids=env_ids,
     )
 
-    # 官方相对动作 reset 只清 raw buffer；写入重置姿态时同步清除残差。
-    env.action_manager.get_term("teacher").processed_actions[env_ids] = 0.0
+    # reset 与碰撞 fallback 都同步清除动作，并保存当前测量姿态作为目标。
+    env.action_manager.get_term("teacher").reset(env_ids)
 
     obj.write_root_pose_to_sim(
         object_pose,

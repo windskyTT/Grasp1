@@ -1,0 +1,15 @@
+{
+  "task": "Grasp1-UR5-Allegro-Teacher-v0",
+  "object_joint_max_violation_rad": 4.6645e-05,
+  "target_outside_fraction": 0,
+  "arm_scale": 0.00125,
+  "hand_scale": 0.00375,
+  "gamma": 0.9996660539892578,
+  "lam": 0.95,
+  "reward_semantics": "per-simulated-time",
+  "historical_iterations": 100,
+  "source_successes": 0,
+  "strict_successes": 0,
+  "attempts": 30,
+  "provenance": "docs/\u4f18\u53163_\u6267\u884c\u62a5\u544a.md; historical results"
+}

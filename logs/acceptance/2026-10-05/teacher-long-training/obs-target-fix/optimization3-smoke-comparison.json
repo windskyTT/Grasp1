@@ -1,0 +1,20 @@
+{
+  "zero": {
+    "object_joint_min_by_env": true,
+    "object_joint_max_by_env": true,
+    "max_velocity_by_joint": true,
+    "max_contact_force": true,
+    "target_outside_limits_fraction": true,
+    "target_clipping_fraction": true,
+    "done_counts": true
+  },
+  "random": {
+    "object_joint_min_by_env": true,
+    "object_joint_max_by_env": true,
+    "max_velocity_by_joint": true,
+    "max_contact_force": true,
+    "target_outside_limits_fraction": true,
+    "target_clipping_fraction": true,
+    "done_counts": true
+  }
+}

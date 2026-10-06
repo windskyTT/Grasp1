@@ -88,6 +88,9 @@ parser.add_argument(
     default=None,
     help="Evaluation seed.",
 )
+parser.add_argument('--lift_hand_mode', choices=('current-relative-repeat', 'hold-grasp-posture'),
+                    default='current-relative-repeat', help='Lift hand control A/B diagnostic.')
+parser.add_argument('--diagnostics', action='store_true', help='Record top/bottom/table and multi-finger contacts.')
 
 # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
 cli_args.add_rsl_rl_args(parser)
@@ -283,6 +286,9 @@ def main(
     # 构建 ShapeNet 物体列表；repeat_per_object 控制每个物体并行复制数量。
     names = tuple(evaluation_object_names(args_cli.repeat_per_object))
     _configure_evaluation(env_cfg, names)
+    if args_cli.diagnostics:
+        from grasp_diagnostics import configure_diagnostics, GraspDiagnostics
+        configure_diagnostics(env_cfg.scene)
 
     # 解析检查点并将运行目录传给环境，供日志及评估结果路径使用。
     checkpoint, log_dir = _resolve_checkpoint(agent_cfg)
@@ -338,6 +344,8 @@ def main(
     # 获取机器人和物体 articulation，供控制抬升动作及计算高度变化使用。
     robot = env.unwrapped.scene["robot"]
     object_asset = env.unwrapped.scene["object"]
+    diagnostic = GraspDiagnostics(env.unwrapped, names) if args_cli.diagnostics else None
+    action_term = env.unwrapped.action_manager.get_term('teacher')
 
     # 按 robot_profile 中的顺序解析 UR5 关节索引，以正确构造抬升目标。
     arm_joint_ids, resolved_joint_names = robot.find_joints(
@@ -382,6 +390,8 @@ def main(
                 )
 
                 initial_z = object_asset.data.root_pos_w[:, 2].clone()
+                if diagnostic is not None:
+                    diagnostic.start_round(round_idx)
 
                 # 标记仍参与本轮评估的环境；发生回合终止的环境不再执行动作。
                 active = torch.ones(
@@ -412,10 +422,27 @@ def main(
                     done_mask = dones.to(dtype=torch.bool)
                     active &= ~done_mask
                     policy_nn.reset(dones)
+                    if diagnostic is not None:
+                        diagnostic.sample('grasp', actions, active)
 
                 lift_start = (
                     robot.data.joint_pos[:, arm_joint_ids].clone()
                 )
+                if diagnostic is not None:
+                    diagnostic.end_grasp()
+
+                # B模式在每个物理子步保持抓取结束的实际限位目标。
+                # 保持原arm相对动作与轨迹，A模式仍重复最后的hand delta。
+                original_apply = action_term.apply_actions
+                if args_cli.lift_hand_mode == 'hold-grasp-posture':
+                    held_hand_target = action_term.target[:, 6:].clone()
+
+                    def apply_with_hand_hold():
+                        original_apply()
+                        action_term.target[active, 6:] = held_hand_target[active]
+                        robot.set_joint_position_target(action_term.target, joint_ids=action_term._joint_ids)
+
+                    action_term.apply_actions = apply_with_hand_hold
 
                 # 记录抓取结束时 UR5 关节角，作为后续插值抬升动作的起点。
 
@@ -445,6 +472,10 @@ def main(
                     done_mask = dones.to(dtype=torch.bool)
                     active &= ~done_mask
                     policy_nn.reset(dones)
+                    if diagnostic is not None:
+                        diagnostic.sample('lift', actions, active)
+
+                action_term.apply_actions = original_apply
 
                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
 
@@ -455,6 +486,8 @@ def main(
 
                 source_lifted = height_gain > args_cli.success_height
                 lifted = active & source_lifted
+                if diagnostic is not None:
+                    diagnostic.finish_round(height_gain, source_lifted, lifted, lift_target, arm_joint_ids)
 
                 round_successes = int(lifted.sum().item())
 
@@ -547,6 +580,8 @@ def main(
         summary = {
             "task": args_cli.task,
             "checkpoint": str(checkpoint),
+            "lift_hand_mode": args_cli.lift_hand_mode,
+            "diagnostics": args_cli.diagnostics,
             "dataset": EVALUATION_DATASET,
             "rounds": args_cli.rounds,
             "repeat_per_object": args_cli.repeat_per_object,
@@ -581,6 +616,8 @@ def main(
             summary=summary,
             rows=rows,
         )
+        if diagnostic is not None:
+            diagnostic.save(output_dir)
 
     finally:
         env.close()
