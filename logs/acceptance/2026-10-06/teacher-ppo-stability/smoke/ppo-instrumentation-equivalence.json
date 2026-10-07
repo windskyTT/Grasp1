@@ -1,0 +1,18 @@
+[
+  {
+    "schedule": "adaptive",
+    "parameters_exactly_equal": true,
+    "optimizer_exactly_equal": true,
+    "losses_exactly_equal": true,
+    "learning_rate": 1e-05,
+    "diagnostic_kl": 0.02300335094332695
+  },
+  {
+    "schedule": "fixed",
+    "parameters_exactly_equal": true,
+    "optimizer_exactly_equal": true,
+    "losses_exactly_equal": true,
+    "learning_rate": 0.0005,
+    "diagnostic_kl": 0.01149054616689682
+  }
+]

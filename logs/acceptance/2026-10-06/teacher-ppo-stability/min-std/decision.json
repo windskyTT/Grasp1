@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "variable": "minimum_action_std",
+  "selected_value": 0.2,
+  "reason": [
+    "500和1000节点None/0.2的全部model参数、optimizer state以及逐轮PPO/Action/Dynamics记录严格相等，详见ab-equivalence.json；两种A/B抬升评估也一致。",
+    "所选fixed LR + time lambda下，1000次完整更新的最低std为0.319182 > 0.2，因此本次正式对照没有触发下界，不能声称0.2改善了contact、critic或success。",
+    "16-env激活下界测试证明扩展只在完整PPO update后精确投影std，actor/critic其他参数和optimizer与None完全一致。",
+    "选择0.2恢复已核实的源Teacher std参数下界；当前短程没有代价，也没有观测到任务收益。超过1000轮后的影响仍需实际gate验证。"
+  ],
+  "not_proven": [
+    "minimum std在本次前1000次更新有任务收益",
+    "防止全部policy/critic退化",
+    "保证长期抓取成功"
+  ]
+}

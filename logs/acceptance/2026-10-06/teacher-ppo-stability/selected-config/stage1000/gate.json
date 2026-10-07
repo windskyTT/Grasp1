@@ -1,0 +1,107 @@
+{
+  "completed_iteration": 1000,
+  "next_iteration": 2000,
+  "continue": true,
+  "basis": {
+    "500": {
+      "reward_last50": -14.215058766546846,
+      "value_final": 0.761418629437685,
+      "value_peak": 1025.6344833374023,
+      "value_last50_mean": 0.9153031052649021,
+      "value_last50_median": 0.8897253405302763,
+      "value_last50_peak": 1.4149311780929565,
+      "evaluations": [
+        {
+          "mode": "A",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.01950681582093239,
+          "max_height_gain_m": -1.1920928955078125e-07,
+          "median_height_gain_m": -0.004187464714050293,
+          "max_during_lift_height_gain_m": 0.010697543621063232,
+          "mean_lift_retention": 0.0070921985815602835,
+          "trials_with_object_contact": 57,
+          "trials_with_top_contact": 57,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 3,
+          "trials_with_two_plus_contacts": 18,
+          "trials_with_three_plus_contacts": 2,
+          "trials_with_thumb_other": 0
+        },
+        {
+          "mode": "B",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.019659504294395447,
+          "max_height_gain_m": -1.1920928955078125e-07,
+          "median_height_gain_m": -0.004187256097793579,
+          "max_during_lift_height_gain_m": 0.008230090141296387,
+          "mean_lift_retention": 0.007993197278911564,
+          "trials_with_object_contact": 58,
+          "trials_with_top_contact": 58,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 3,
+          "trials_with_two_plus_contacts": 19,
+          "trials_with_three_plus_contacts": 2,
+          "trials_with_thumb_other": 0
+        }
+      ]
+    },
+    "1000": {
+      "reward_last50": -14.9353577317819,
+      "value_final": 4.0488829761743546,
+      "value_peak": 660.216552734375,
+      "value_last50_mean": 2.8809676168859006,
+      "value_last50_median": 2.821528173983097,
+      "value_last50_peak": 4.826049104332924,
+      "evaluations": [
+        {
+          "mode": "A",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.019818305037915707,
+          "max_height_gain_m": 0.0039893388748168945,
+          "median_height_gain_m": -0.005531519651412964,
+          "max_during_lift_height_gain_m": 0.014864027500152588,
+          "mean_lift_retention": 0.004166666666666667,
+          "trials_with_object_contact": 63,
+          "trials_with_top_contact": 63,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 1,
+          "trials_with_two_plus_contacts": 11,
+          "trials_with_three_plus_contacts": 4,
+          "trials_with_thumb_other": 7
+        },
+        {
+          "mode": "B",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.019502226263284683,
+          "max_height_gain_m": 0.0042310357093811035,
+          "median_height_gain_m": -0.005531609058380127,
+          "max_during_lift_height_gain_m": 0.01486426591873169,
+          "mean_lift_retention": 0.003947368421052632,
+          "trials_with_object_contact": 63,
+          "trials_with_top_contact": 63,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 1,
+          "trials_with_two_plus_contacts": 10,
+          "trials_with_three_plus_contacts": 3,
+          "trials_with_thumb_other": 7
+        }
+      ]
+    }
+  },
+  "reason": [
+    "finite checkpoint/TensorBoard/runtime；target outside=0；NVML VRAM平台，没有持续增长。",
+    "object contact 57/58→63/63，distance 1.951/1.966→1.982/1.950 cm，未出现旧基线的接触崩溃及距离扩大。",
+    "reward last50 -14.215→-14.935，小幅变差，但未出现V1.4式持续系统性退化。",
+    "critic风险仍在：final 0.761→4.049，recent50 mean 0.915→2.881；阶段峰值1025.63→660.22，recent50 peak 4.826，没有持续数千级失控增长。允许继续验证2000，不宣称critic已完全稳定。",
+    "2+ contact 18/19→11/10下降，但3+ 2/2→4/3、thumb-other 0→7有所增加；lift retention仍低于1%，source/strict均0/90。",
+    "2000之后只有critic稳定且至少一种真实行为持续改善才进入5000，禁止无条件推进。"
+  ]
+}

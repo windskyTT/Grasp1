@@ -1,0 +1,74 @@
+{
+  "phase": 2,
+  "variable": "clip_actions",
+  "selected_value": null,
+  "reason": [
+    "源实现没有[-1,1]裁剪；None保留源动作范围。",
+    "clip1降低target clipping，但500节点contact 53/90→3/90，distance 1.736→5.016 cm，value final 1.498→13.580。",
+    "1000节点clip1 value final79.691 vs None1.734；Allegro qvel217.766 vs151.661 rad/s；contact3/90 vs5/90，2+0/90 vs2/90。",
+    "clip1在1000距离4.747 cm优于None6.117 cm，但未抵消critic、速度和接触指标退化。",
+    "None也不是稳定配置；其500→1000 contact53→5，distance1.736→6.117 cm，后续仍需LR/lambda/std实验。"
+  ],
+  "metrics": [
+    {
+      "candidate": "none",
+      "iteration": 500,
+      "value_loss": 1.497890442609787,
+      "value_loss_peak": 194.68451118469238,
+      "reward_last50": -14.87427370584011,
+      "target_clipping_fraction": 0.0727124384099787,
+      "allegro_qvel_peak": 55.8812370300293,
+      "distance_cm": 1.736205816268921,
+      "contact_trials": 53,
+      "multi_contact_trials": 33,
+      "source_successes": 0,
+      "strict_successes": 0
+    },
+    {
+      "candidate": "none",
+      "iteration": 1000,
+      "value_loss": 1.7338507995009422,
+      "value_loss_peak": 514.3917179107666,
+      "reward_last50": -18.099590110222252,
+      "target_clipping_fraction": 0.06293495386297053,
+      "allegro_qvel_peak": 151.6611785888672,
+      "distance_cm": 6.1174968257546425,
+      "contact_trials": 5,
+      "multi_contact_trials": 2,
+      "source_successes": 0,
+      "strict_successes": 0
+    },
+    {
+      "candidate": "clip1",
+      "iteration": 500,
+      "value_loss": 13.580406367778778,
+      "value_loss_peak": 205.21984553337097,
+      "reward_last50": -19.043112022781372,
+      "target_clipping_fraction": 0.024270524458451705,
+      "allegro_qvel_peak": 69.41032409667969,
+      "distance_cm": 5.016345717012882,
+      "contact_trials": 3,
+      "multi_contact_trials": 1,
+      "source_successes": 0,
+      "strict_successes": 0
+    },
+    {
+      "candidate": "clip1",
+      "iteration": 1000,
+      "value_loss": 79.69109106063843,
+      "value_loss_peak": 338.84929752349854,
+      "reward_last50": -20.14107513666153,
+      "target_clipping_fraction": 0.04812432445179332,
+      "allegro_qvel_peak": 217.76565551757812,
+      "distance_cm": 4.7468747943639755,
+      "contact_trials": 3,
+      "multi_contact_trials": 0,
+      "source_successes": 0,
+      "strict_successes": 0
+    }
+  ],
+  "not_proven": [
+    "不能证明clipping是系统退化的唯一根因。",
+    "不能证明None已经实现稳定学习或抓取成功。"
+  ]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "candidate": "none",
+    "finite": true,
+    "target_outside_fraction": 0,
+    "raw_max": 4.170172214508057,
+    "wrapper_max": 4.170172214508057,
+    "processed_relative_delta_max_abs": 0.015638144686818123
+  },
+  {
+    "candidate": "clip1",
+    "finite": true,
+    "target_outside_fraction": 0,
+    "raw_max": 4.169983863830566,
+    "wrapper_max": 1.0,
+    "processed_relative_delta_max_abs": 0.0037499999161809683
+  }
+]

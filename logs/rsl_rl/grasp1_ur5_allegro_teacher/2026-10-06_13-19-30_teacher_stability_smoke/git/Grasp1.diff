@@ -1,0 +1,45 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   scripts/rsl_rl/evaluate.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	"docs/\344\274\230\345\214\2265.md"
+	logs/acceptance/2026-10-06/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-19-30_teacher_stability_smoke/
+	outputs/2026-10-06/13-19-30/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/scripts/rsl_rl/evaluate.py b/scripts/rsl_rl/evaluate.py
+index c3279d4..4bce2de 100644
+--- a/scripts/rsl_rl/evaluate.py
++++ b/scripts/rsl_rl/evaluate.py
+@@ -431,6 +431,12 @@ def main(
+                 if diagnostic is not None:
+                     diagnostic.end_grasp()
+ 
++                # clipping比较只改变策略动作；固定UR5抬升轨迹继续使用原控制。
++                grasp_action_clip = env.clip_actions
++                if grasp_action_clip is not None:
++                    last_grasp_actions.clamp_(-grasp_action_clip, grasp_action_clip)
++                env.clip_actions = None
++
+                 # B模式在每个物理子步保持抓取结束的实际限位目标。
+                 # 保持原arm相对动作与轨迹，A模式仍重复最后的hand delta。
+                 original_apply = action_term.apply_actions
+@@ -476,6 +482,7 @@ def main(
+                         diagnostic.sample('lift', actions, active)
+ 
+                 action_term.apply_actions = original_apply
++                env.clip_actions = grasp_action_clip
+ 
+                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
+ 

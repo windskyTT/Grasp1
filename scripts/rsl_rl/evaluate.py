@@ -91,6 +91,8 @@ parser.add_argument(
 parser.add_argument('--lift_hand_mode', choices=('current-relative-repeat', 'hold-grasp-posture'),
                     default='current-relative-repeat', help='Lift hand control A/B diagnostic.')
 parser.add_argument('--diagnostics', action='store_true', help='Record top/bottom/table and multi-finger contacts.')
+parser.add_argument('--clip_actions', choices=('none', '1.0'), default=None,
+                    help='Override policy action clipping for the stability A/B experiment.')
 
 # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
 cli_args.add_rsl_rl_args(parser)
@@ -275,6 +277,8 @@ def main(
 
     # 合并标准 RSL-RL 命令行覆盖，并在环境初始化前设置种子和设备。
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
+    if args_cli.clip_actions is not None:
+        agent_cfg.clip_actions = None if args_cli.clip_actions == 'none' else 1.0
 
     env_cfg.seed = agent_cfg.seed
     env_cfg.sim.device = (
@@ -431,6 +435,12 @@ def main(
                 if diagnostic is not None:
                     diagnostic.end_grasp()
 
+                # clipping比较只改变策略动作；固定UR5抬升轨迹继续使用原控制。
+                grasp_action_clip = env.clip_actions
+                if grasp_action_clip is not None:
+                    last_grasp_actions.clamp_(-grasp_action_clip, grasp_action_clip)
+                env.clip_actions = None
+
                 # B模式在每个物理子步保持抓取结束的实际限位目标。
                 # 保持原arm相对动作与轨迹，A模式仍重复最后的hand delta。
                 original_apply = action_term.apply_actions
@@ -476,6 +486,7 @@ def main(
                         diagnostic.sample('lift', actions, active)
 
                 action_term.apply_actions = original_apply
+                env.clip_actions = grasp_action_clip
 
                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
 

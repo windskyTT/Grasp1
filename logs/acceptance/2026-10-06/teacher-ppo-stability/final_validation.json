@@ -1,0 +1,226 @@
+{
+  "conda_environment": "grasp",
+  "source_syntax": "passed py_compile on 3 source files + 2 actual helper scripts",
+  "git_diff_check": "passed",
+  "completed_summary_rows": 20,
+  "referenced_rows": 6,
+  "checkpoint_tensor_finite": "passed by each completed run_stage before evaluation; checked summary flags here",
+  "tensorboard_all_scalars_finite": "passed by each completed run_stage before evaluation; 17 reward tags required",
+  "runtime_finite_and_target_outside_zero": true,
+  "all_formal_eval_90_trials_per_mode": true,
+  "all_modeB_hand_target_drift_zero": true,
+  "final_gate": false,
+  "long_training_not_executed": [
+    5000,
+    10000,
+    20000
+  ],
+  "stable_learning_achieved": false,
+  "nodes": [
+    {
+      "stage": "action-clipping/clip1/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_15-29-27_teacher_stability_action-clipping_clip1_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "action-clipping/clip1/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-57-59_teacher_stability_action-clipping_clip1_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": false
+    },
+    {
+      "stage": "action-clipping/none/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_14-53-48_teacher_stability_action-clipping_none_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "action-clipping/none/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-52_teacher_stability_action-clipping_none_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": false
+    },
+    {
+      "stage": "lambda/095/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-45-37_teacher_stability_learning-rate_fixed_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": true
+    },
+    {
+      "stage": "lambda/095/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-07-53_teacher_stability_learning-rate_fixed_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": true
+    },
+    {
+      "stage": "lambda/time-equivalent/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_18-01-15_teacher_stability_lambda_time-equivalent_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "lambda/time-equivalent/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_17-23-44_teacher_stability_lambda_time-equivalent_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": false
+    },
+    {
+      "stage": "learning-rate/adaptive/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_14-53-48_teacher_stability_action-clipping_none_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": true
+    },
+    {
+      "stage": "learning-rate/adaptive/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-52_teacher_stability_action-clipping_none_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": true
+    },
+    {
+      "stage": "learning-rate/fixed/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-45-37_teacher_stability_learning-rate_fixed_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "learning-rate/fixed/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-07-53_teacher_stability_learning-rate_fixed_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": false
+    },
+    {
+      "stage": "min-std/min020/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_19-18-07_teacher_stability_min-std_min020_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "min-std/min020/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_18-40-47_teacher_stability_min-std_min020_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": false
+    },
+    {
+      "stage": "min-std/none/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_18-01-15_teacher_stability_lambda_time-equivalent_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": true
+    },
+    {
+      "stage": "min-std/none/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_17-23-44_teacher_stability_lambda_time-equivalent_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": true
+    },
+    {
+      "stage": "selected-config/stage100",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_19-55-10_teacher_stable_stage500/model_99.pt",
+      "iteration": 100,
+      "window": [
+        1,
+        100
+      ],
+      "reused": false
+    },
+    {
+      "stage": "selected-config/stage1000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_20-39-27_teacher_stable_stage1000/model_999.pt",
+      "iteration": 1000,
+      "window": [
+        501,
+        1000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "selected-config/stage2000",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_21-21-18_teacher_stable_stage2000/model_1999.pt",
+      "iteration": 2000,
+      "window": [
+        1001,
+        2000
+      ],
+      "reused": false
+    },
+    {
+      "stage": "selected-config/stage500",
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_19-55-10_teacher_stable_stage500/model_499.pt",
+      "iteration": 500,
+      "window": [
+        1,
+        500
+      ],
+      "reused": false
+    }
+  ],
+  "source_change_scope": [
+    "scripts/rsl_rl/train.py",
+    "scripts/rsl_rl/evaluate.py",
+    "source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py"
+  ]
+}

@@ -40,10 +40,14 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         "critic": ["policy"],
     }
 
+    # 优化5的None/0.2对照在前1000轮严格等价；恢复源Teacher更新后的std下界。
+    # 标准RSL-RL没有此字段，由train.py执行，不改变mean或网络结构。
+    minimum_action_std: float | None = 0.2
+
     # Actor-Critic 策略网络结构与输入归一化配置。
     policy = RslRlPpoActorCriticCfg(
         # 高斯策略动作分布的初始标准差。
-        # 原始实现更新后的最小标准差为 0.2；RSL-RL 配置接口没有对应字段。
+        # 更新后的最小标准差由上面的minimum_action_std控制。
         init_noise_std=1.0,
 
         # 分别控制 actor 和 critic 是否对输入观测做归一化；原实现未归一化观测。
@@ -71,14 +75,14 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         num_learning_epochs=4,
         num_mini_batches=4,
 
-        # 优化器学习率及自适应学习率调整策略。
+        # 优化5学习率单变量对照后选择fixed，保留原5e-4；2000轮仍未通过稳定性gate。
         learning_rate=5.0e-4,
-        schedule="adaptive",
+        schedule="fixed",
 
         # 5 Hz → 60 Hz 保持源gamma的物理时间折扣；不硬编码近似值。
-        # lambda的时间等效值只作为候选，本轮隔离gamma，仍保留0.95。
+        # lambda同样按物理时间保持源GAE衰减；优化5中改善了500→1000的接触保持。
         gamma=0.996 ** (CONTROL_DT / SOURCE_CONTROL_DT),
-        lam=0.95,
+        lam=0.95 ** (CONTROL_DT / SOURCE_CONTROL_DT),
 
         # 自适应学习率使用的目标 KL 散度，以及梯度范数裁剪上限。
         desired_kl=0.01,

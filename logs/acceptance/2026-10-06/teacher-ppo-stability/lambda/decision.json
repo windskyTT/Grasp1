@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "variable": "lambda",
+  "selected_value": 0.9957346812224394,
+  "reason": [
+    "500节点time lambda相对0.95：reward last50 -14.215 > -17.124，距离约1.95 cm < 2.30 cm，contact 57/90 > 14/90，2+ contact 18/90 > 3/90（Mode A）。",
+    "1000节点time lambda相对0.95：reward last50 -14.935 > -18.868；距离A/B 1.982/1.950 cm < 4.221 cm；contact 63/90 > 8/90，thumb-other 7/90 > 0/90。",
+    "time lambda 500→1000的object contact 57/58→63/63，距离约1.95/1.97→1.98/1.95 cm，没有V1.4式接触崩溃与距离扩大；但2+ contact从18/19下降到11/10。",
+    "1000阶段hand qvel peak 36.89 < 214.40 rad/s，target clipping 15.71% < 18.17%；UR5 peak 22.30 > 18.11 rad/s，仍有动作/dynamics代价。",
+    "critic代价明确：time lambda的500 peak 1025.63 > 56.64，1000 peak 660.22 > 123.80，1000 final 4.049 > 1.514。峰值有波动，但最终没有V1.4的持续大幅爆炸；后续必须继续通过gate。",
+    "选择基于本次接触保持、距离及reward改善；source/strict仍均0/90，抬升保持率不足1%，不能称已学会稳定抓取。"
+  ],
+  "not_proven": [
+    "lambda是唯一根因",
+    "critic尖峰已消失",
+    "可靠closure或抓取成功",
+    "可以无条件训练20000"
+  ]
+}

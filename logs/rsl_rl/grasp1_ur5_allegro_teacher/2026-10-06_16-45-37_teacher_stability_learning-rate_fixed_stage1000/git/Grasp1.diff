@@ -1,0 +1,88 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   scripts/rsl_rl/evaluate.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	"docs/\344\274\230\345\214\2265.md"
+	logs/acceptance/2026-10-06/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-19-30_teacher_stability_smoke/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-07_teacher_stability_clip_smoke/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-52_teacher_stability_action-clipping_none_stage500/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-57-59_teacher_stability_action-clipping_clip1_stage500/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_14-53-48_teacher_stability_action-clipping_none_stage1000/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_15-29-27_teacher_stability_action-clipping_clip1_stage1000/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-07-53_teacher_stability_learning-rate_fixed_stage500/
+	logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-45-37_teacher_stability_learning-rate_fixed_stage1000/
+	outputs/2026-10-06/13-19-30/
+	outputs/2026-10-06/13-21-07/
+	outputs/2026-10-06/13-21-51/
+	outputs/2026-10-06/13-56-12/
+	outputs/2026-10-06/13-57-05/
+	outputs/2026-10-06/13-57-59/
+	outputs/2026-10-06/14-33-24/
+	outputs/2026-10-06/14-35-56/
+	outputs/2026-10-06/14-36-45/
+	outputs/2026-10-06/14-53-48/
+	outputs/2026-10-06/15-27-46/
+	outputs/2026-10-06/15-28-36/
+	outputs/2026-10-06/15-29-27/
+	outputs/2026-10-06/16-03-20/
+	outputs/2026-10-06/16-04-11/
+	outputs/2026-10-06/16-07-53/
+	outputs/2026-10-06/16-43-51/
+	outputs/2026-10-06/16-44-43/
+	outputs/2026-10-06/16-45-36/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/scripts/rsl_rl/evaluate.py b/scripts/rsl_rl/evaluate.py
+index c3279d4..522e460 100644
+--- a/scripts/rsl_rl/evaluate.py
++++ b/scripts/rsl_rl/evaluate.py
+@@ -91,6 +91,8 @@ parser.add_argument(
+ parser.add_argument('--lift_hand_mode', choices=('current-relative-repeat', 'hold-grasp-posture'),
+                     default='current-relative-repeat', help='Lift hand control A/B diagnostic.')
+ parser.add_argument('--diagnostics', action='store_true', help='Record top/bottom/table and multi-finger contacts.')
++parser.add_argument('--clip_actions', choices=('none', '1.0'), default=None,
++                    help='Override policy action clipping for the stability A/B experiment.')
+ 
+ # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
+ cli_args.add_rsl_rl_args(parser)
+@@ -275,6 +277,8 @@ def main(
+ 
+     # 合并标准 RSL-RL 命令行覆盖，并在环境初始化前设置种子和设备。
+     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
++    if args_cli.clip_actions is not None:
++        agent_cfg.clip_actions = None if args_cli.clip_actions == 'none' else 1.0
+ 
+     env_cfg.seed = agent_cfg.seed
+     env_cfg.sim.device = (
+@@ -431,6 +435,12 @@ def main(
+                 if diagnostic is not None:
+                     diagnostic.end_grasp()
+ 
++                # clipping比较只改变策略动作；固定UR5抬升轨迹继续使用原控制。
++                grasp_action_clip = env.clip_actions
++                if grasp_action_clip is not None:
++                    last_grasp_actions.clamp_(-grasp_action_clip, grasp_action_clip)
++                env.clip_actions = None
++
+                 # B模式在每个物理子步保持抓取结束的实际限位目标。
+                 # 保持原arm相对动作与轨迹，A模式仍重复最后的hand delta。
+                 original_apply = action_term.apply_actions
+@@ -476,6 +486,7 @@ def main(
+                         diagnostic.sample('lift', actions, active)
+ 
+                 action_term.apply_actions = original_apply
++                env.clip_actions = grasp_action_clip
+ 
+                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
+ 

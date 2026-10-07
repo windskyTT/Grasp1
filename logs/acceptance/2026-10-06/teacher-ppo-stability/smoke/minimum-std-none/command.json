@@ -1,0 +1,19 @@
+[
+  "/home/windsky/miniconda3/envs/grasp/bin/python",
+  "-u",
+  "/home/windsky/project/Grasp1/logs/acceptance/2026-10-06/teacher-ppo-stability/train_measure.py",
+  "--measurement-dir",
+  "/home/windsky/project/Grasp1/logs/acceptance/2026-10-06/teacher-ppo-stability/smoke/minimum-std-none",
+  "--candidate-config",
+  "/home/windsky/project/Grasp1/logs/acceptance/2026-10-06/teacher-ppo-stability/smoke/minimum-std-none/candidate.json",
+  "--task",
+  "Grasp1-UR5-Allegro-Teacher-v0",
+  "--num_envs",
+  "16",
+  "--max_iterations",
+  "2",
+  "--run_name",
+  "teacher_std_floor_none_smoke",
+  "--headless",
+  "agent.policy.init_noise_std=0.1"
+]

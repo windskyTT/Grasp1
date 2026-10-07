@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "variable": "schedule",
+  "selected_value": "fixed",
+  "reason": [
+    "1000节点value loss阶段峰值：fixed 123.799 < adaptive 514.392；final 1.514 < 1.734。500阶段峰值也为56.641 < 194.685。",
+    "1000节点A/B距离中位数：fixed 4.221 cm < adaptive 6.117 cm；有object contact的trial：8/90 > 5/90。",
+    "500→1000仍然退化，但fixed接触14→8、距离2.300→4.221 cm、reward last50 -17.124→-18.868；adaptive接触53→5、距离约1.74→6.117 cm、reward -14.874→-18.100，fixed回退较小。",
+    "代价：fixed的500节点行为更差；1000阶段target clipping 18.17% > 6.29%，hand qvel peak 214.40 > 151.66 rad/s，2+ contact 1/90 < 2/90。不能声称解决了动作饱和或高速问题。",
+    "依据本阶段critic峰值和1000节点距离/接触选择fixed作为lambda实验基线；尚未达到稳定长训练门槛，两者source/strict均0/90。"
+  ],
+  "not_proven": [
+    "fixed是唯一根因修复",
+    "500→1000完全不退化",
+    "抓取成功或已可进入5000"
+  ]
+}

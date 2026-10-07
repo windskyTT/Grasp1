@@ -1,0 +1,20 @@
+[
+  {
+    "iteration": 500,
+    "model_parameters_exact": true,
+    "optimizer_state_exact": true,
+    "ppo_action_dynamics_rows_exact": true,
+    "minimum_std_over_stage": 0.560174286365509,
+    "std_floor_activated": false,
+    "row_differences": []
+  },
+  {
+    "iteration": 1000,
+    "model_parameters_exact": true,
+    "optimizer_state_exact": true,
+    "ppo_action_dynamics_rows_exact": true,
+    "minimum_std_over_stage": 0.31918221712112427,
+    "std_floor_activated": false,
+    "row_differences": []
+  }
+]

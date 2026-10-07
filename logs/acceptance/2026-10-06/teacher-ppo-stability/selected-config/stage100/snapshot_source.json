@@ -1,0 +1,4 @@
+{
+  "source_stage": "/home/windsky/project/Grasp1/logs/acceptance/2026-10-06/teacher-ppo-stability/selected-config/stage500",
+  "node": "actual saved model_99.pt and runtime100 snapshot from the final from-scratch stage500 run; no additional training"
+}

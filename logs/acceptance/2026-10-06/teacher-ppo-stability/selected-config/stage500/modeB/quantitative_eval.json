@@ -1,0 +1,297 @@
+{
+  "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_19-55-10_teacher_stable_stage500/model_499.pt",
+  "dataset": "shapenet-30obj",
+  "diagnostics": true,
+  "grasp_duration_s": 4.0,
+  "grasp_steps": 240,
+  "lift_duration_s": 2.0,
+  "lift_hand_mode": "hold-grasp-posture",
+  "lift_ramp_duration_s": 1.5,
+  "lift_ramp_steps": 90,
+  "lift_steps": 120,
+  "num_envs": 30,
+  "overall_success_rate": 0.0,
+  "per_object": {
+    "Bear_34": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Black_mug": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Blue_camera": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Blue_teapot": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Camera_brown": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Camera_yellow": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "CellPhone_4e": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Donut": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "DrinkBottle_blue_1ef": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Gun": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Hammer_40": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Knife": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Mug_8b_red": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Mug_gray_d7": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Mug_yellow_18": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Pan_gray": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Plate_gold_69": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Purse_brown_d58": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Purse_red_f58": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Red_bottle": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Red_chair": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Red_scissor": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Stapler_gray_d9": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Teapot_blue_high_3d2": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Teapot_brown": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Vase_red_a1": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Watch_9f": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "WineGlass_gray_9d": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Wine_glass2_1_blue": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    },
+    "Wine_glass_body_blue": {
+      "attempts": 3,
+      "failures": 3,
+      "source_success_rate": 0.0,
+      "source_successes": 0,
+      "strict_successes": 0,
+      "success_rate": 0.0,
+      "successes": 0
+    }
+  },
+  "repeat_per_object": 1,
+  "rounds": 3,
+  "source_lift_success_rate": 0.0,
+  "step_dt": 0.016666666666666666,
+  "strict_lift_success_rate": 0.0,
+  "success_height_m": 0.1,
+  "task": "Grasp1-UR5-Allegro-Teacher-v0",
+  "total_attempts": 90,
+  "total_failures": 90,
+  "total_source_successes": 0,
+  "total_successes": 0
+}

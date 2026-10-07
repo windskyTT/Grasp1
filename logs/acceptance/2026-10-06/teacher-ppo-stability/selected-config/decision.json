@@ -1,0 +1,18 @@
+{
+  "phase": 6,
+  "variable": "final PPO candidate",
+  "selected_value": {
+    "clip_actions": null,
+    "schedule": "fixed",
+    "lam": 0.9957346812224394,
+    "minimum_std": 0.2,
+    "learning_rate": 0.0005
+  },
+  "reason": [
+    "clip_actions=None：源Gaussian无[-1,1]裁剪，clip1工程对照虽降低target clipping，却恶化critic和接触，详见action-clipping/decision.json。",
+    "fixed LR=5e-4：降低critic峰值，1000节点比adaptive的距离与接触更好，代价是500节点较差及部分qvel/saturation偏高，详见learning-rate/decision.json。",
+    "lambda=0.95**(CONTROL_DT/SOURCE_CONTROL_DT)：500→1000接触保持在57/58→63/63、距离约2 cm，没有旧基线的接触崩溃；仍有critic尖峰与2+ contact回退，详见lambda/decision.json。",
+    "minimum_action_std=0.2：恢复源下界；前1000轮未激活且参数/optimizer严格等价，不宣称其任务收益，详见min-std/decision.json。",
+    "这是一套用于最终from-scratch验收的候选，尚不能证明2000或更长训练稳定。仍需100/500/1000/2000节点及进入5000的行为gate。"
+  ]
+}

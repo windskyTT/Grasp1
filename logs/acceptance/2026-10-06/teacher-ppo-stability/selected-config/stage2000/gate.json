@@ -1,0 +1,167 @@
+{
+  "completed_iteration": 2000,
+  "next_iteration": 5000,
+  "continue": false,
+  "critic_stable": false,
+  "task_behavior_improved": true,
+  "criterion": "docs/优化5.md section 19: critic stable AND at least one task behavior improves",
+  "basis": {
+    "500": {
+      "reward_last50": -14.215058766546846,
+      "value_final": 0.761418629437685,
+      "value_peak": 1025.6344833374023,
+      "value_last50_mean": 0.9153031052649021,
+      "value_last50_median": 0.8897253405302763,
+      "value_last50_peak": 1.4149311780929565,
+      "target_clipping_fraction": 0.07904755748401988,
+      "allegro_qvel_peak": 273.1656494140625,
+      "evaluations": [
+        {
+          "mode": "A",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.01950681582093239,
+          "max_height_gain_m": -1.1920928955078125e-07,
+          "median_height_gain_m": -0.004187464714050293,
+          "max_during_lift_height_gain_m": 0.010697543621063232,
+          "mean_lift_retention": 0.0070921985815602835,
+          "trials_with_object_contact": 57,
+          "trials_with_top_contact": 57,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 3,
+          "trials_with_two_plus_contacts": 18,
+          "trials_with_three_plus_contacts": 2,
+          "trials_with_thumb_other": 0
+        },
+        {
+          "mode": "B",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.019659504294395447,
+          "max_height_gain_m": -1.1920928955078125e-07,
+          "median_height_gain_m": -0.004187256097793579,
+          "max_during_lift_height_gain_m": 0.008230090141296387,
+          "mean_lift_retention": 0.007993197278911564,
+          "trials_with_object_contact": 58,
+          "trials_with_top_contact": 58,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 3,
+          "trials_with_two_plus_contacts": 19,
+          "trials_with_three_plus_contacts": 2,
+          "trials_with_thumb_other": 0
+        }
+      ]
+    },
+    "1000": {
+      "reward_last50": -14.9353577317819,
+      "value_final": 4.0488829761743546,
+      "value_peak": 660.216552734375,
+      "value_last50_mean": 2.8809676168859006,
+      "value_last50_median": 2.821528173983097,
+      "value_last50_peak": 4.826049104332924,
+      "target_clipping_fraction": 0.15705580277876421,
+      "allegro_qvel_peak": 36.88542938232422,
+      "evaluations": [
+        {
+          "mode": "A",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.019818305037915707,
+          "max_height_gain_m": 0.0039893388748168945,
+          "median_height_gain_m": -0.005531519651412964,
+          "max_during_lift_height_gain_m": 0.014864027500152588,
+          "mean_lift_retention": 0.004166666666666667,
+          "trials_with_object_contact": 63,
+          "trials_with_top_contact": 63,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 1,
+          "trials_with_two_plus_contacts": 11,
+          "trials_with_three_plus_contacts": 4,
+          "trials_with_thumb_other": 7
+        },
+        {
+          "mode": "B",
+          "source_successes": 0,
+          "strict_successes": 0,
+          "attempts": 90,
+          "median_final_distance_m": 0.019502226263284683,
+          "max_height_gain_m": 0.0042310357093811035,
+          "median_height_gain_m": -0.005531609058380127,
+          "max_during_lift_height_gain_m": 0.01486426591873169,
+          "mean_lift_retention": 0.003947368421052632,
+          "trials_with_object_contact": 63,
+          "trials_with_top_contact": 63,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 1,
+          "trials_with_two_plus_contacts": 10,
+          "trials_with_three_plus_contacts": 3,
+          "trials_with_thumb_other": 7
+        }
+      ]
+    },
+    "2000": {
+      "reward_last50": -54.52913854241669,
+      "value_final": 1420.0894355773926,
+      "value_peak": 4984.834808349609,
+      "value_last50_mean": 899.6339727020263,
+      "value_last50_median": 786.1420593261719,
+      "value_last50_peak": 4342.601303100586,
+      "target_clipping_fraction": 0.26577724838256833,
+      "allegro_qvel_peak": 406.5439758300781,
+      "evaluations": [
+        {
+          "mode": "A",
+          "source_successes": 1,
+          "strict_successes": 1,
+          "attempts": 90,
+          "median_final_distance_m": 0.018657772801816463,
+          "max_height_gain_m": 0.2817295789718628,
+          "median_height_gain_m": -0.00824660062789917,
+          "max_during_lift_height_gain_m": 0.2826120853424072,
+          "mean_lift_retention": 0.0476010101010101,
+          "trials_with_object_contact": 81,
+          "trials_with_top_contact": 81,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 30,
+          "trials_with_two_plus_contacts": 52,
+          "trials_with_three_plus_contacts": 31,
+          "trials_with_thumb_other": 37
+        },
+        {
+          "mode": "B",
+          "source_successes": 2,
+          "strict_successes": 2,
+          "attempts": 90,
+          "median_final_distance_m": 0.018581828102469444,
+          "max_height_gain_m": 0.2901892066001892,
+          "median_height_gain_m": -0.007545799016952515,
+          "max_during_lift_height_gain_m": 0.29121798276901245,
+          "mean_lift_retention": 0.054292929292929296,
+          "trials_with_object_contact": 81,
+          "trials_with_top_contact": 81,
+          "trials_with_bottom_contact": 0,
+          "trials_with_table_contact": 30,
+          "trials_with_two_plus_contacts": 52,
+          "trials_with_three_plus_contacts": 32,
+          "trials_with_thumb_other": 37
+        }
+      ]
+    }
+  },
+  "minimum_std_observation": {
+    "minimum_over_1001_2000": 0.20000000298023224,
+    "first_update_at_floor": 1538,
+    "updates_at_floor": 69,
+    "comparison_tolerance": 1e-06,
+    "causal_benefit_not_tested_after_1000": true
+  },
+  "reason": [
+    "Behavior improves: source/strict A=1/90 B=2/90; object contact 63→81, multi-contact improves, distance about 1.9cm.",
+    "Critic unstable: recent50 mean 2.881→899.634, final 4.049→1420.089, stage peak 660.217→4984.835; sustained hundreds-level loss in last 300 updates.",
+    "reward last50 -14.935→-54.529; clipping 15.706%→26.578%; hand qvel peak 36.885→406.544 rad/s.",
+    "Stop before 5000. 10000/20000 not run. Finite tensors and zero outside do not prove stable learning."
+  ]
+}

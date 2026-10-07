@@ -204,6 +204,19 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         runner = DistillationRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
     else:
         raise ValueError(f"Unsupported runner class: {agent_cfg.class_name}")
+
+    # 源Teacher在每次完整PPO更新后只投影std下界，保留原mean、损失和optimizer更新。
+    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg) and agent_cfg.minimum_action_std is not None:
+        original_update = runner.alg.update
+
+        def update_with_minimum_std():
+            losses = original_update()
+            with torch.no_grad():
+                runner.alg.policy.std.clamp_(min=agent_cfg.minimum_action_std)
+            return losses
+
+        runner.alg.update = update_with_minimum_std
+
     # write git state to logs
     runner.add_git_repo_to_log(__file__)
     # load the checkpoint

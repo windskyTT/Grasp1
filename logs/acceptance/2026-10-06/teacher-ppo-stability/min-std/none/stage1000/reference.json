@@ -1,0 +1,4 @@
+{
+  "source_stage": "/home/windsky/project/Grasp1/logs/acceptance/2026-10-06/teacher-ppo-stability/lambda/time-equivalent/stage1000",
+  "reason": "配置、seed、from-scratch起点及90-trial A/B协议完全一致；复用已经完成的证据，不计为新增训练。"
+}

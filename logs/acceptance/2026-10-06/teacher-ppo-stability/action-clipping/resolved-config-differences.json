@@ -1,0 +1,18 @@
+{
+  "agent": {
+    "run_name": {
+      "none": "teacher_stability_action-clipping_none_stage500",
+      "clip1": "teacher_stability_action-clipping_clip1_stage500"
+    },
+    "clip_actions": {
+      "none": null,
+      "clip1": 1.0
+    }
+  },
+  "env": {
+    "log_dir": {
+      "none": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-52_teacher_stability_action-clipping_none_stage500",
+      "clip1": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-57-59_teacher_stability_action-clipping_clip1_stage500"
+    }
+  }
+}

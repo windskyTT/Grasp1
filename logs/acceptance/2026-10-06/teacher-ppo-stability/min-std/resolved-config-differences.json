@@ -1,0 +1,22 @@
+{
+  "agent": [
+    {
+      "field": "run_name",
+      "none": "teacher_stability_lambda_time-equivalent_stage500",
+      "min020": "teacher_stability_min-std_min020_stage500"
+    },
+    {
+      "field": "minimum_action_std",
+      "none": null,
+      "min020": 0.2
+    }
+  ],
+  "env": [
+    {
+      "field": "log_dir",
+      "none": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_17-23-44_teacher_stability_lambda_time-equivalent_stage500",
+      "min020": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_18-40-47_teacher_stability_min-std_min020_stage500"
+    }
+  ],
+  "note": "None reference predates the new optional Runner field; absent minimum_action_std has the same no-floor semantics as None."
+}

@@ -1,0 +1,9 @@
+{
+  "protocol": "16 env, 2 updates, same seed/settings, init_noise_std=0.1 ONLY for activating the lower bound in this smoke; formal experiments keep init_noise_std=1.0",
+  "first_update_actor_critic_parameters_exact_except_std": true,
+  "first_update_std_exact_projection": true,
+  "first_update_optimizer_exact": true,
+  "floor_after_each_full_update": true,
+  "none_first_std_min": 0.09581749141216278,
+  "floor_first_std_min": 0.20000000298023224
+}

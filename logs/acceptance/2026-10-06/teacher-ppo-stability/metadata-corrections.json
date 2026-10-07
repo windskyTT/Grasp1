@@ -1,0 +1,75 @@
+{
+  "reason": "train.py consumes CLI before diagnostic sys.argv check; training/checkpoint lineage unaffected",
+  "corrections": [
+    {
+      "stage": "action-clipping/clip1/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "action-clipping/none/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "lambda/095/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "lambda/time-equivalent/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "learning-rate/adaptive/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "learning-rate/fixed/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "min-std/min020/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "min-std/none/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "selected-config/stage1000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    },
+    {
+      "stage": "selected-config/stage2000",
+      "field": "from_scratch",
+      "old": true,
+      "new": false,
+      "basis": "saved --resume command and actual iteration range"
+    }
+  ]
+}

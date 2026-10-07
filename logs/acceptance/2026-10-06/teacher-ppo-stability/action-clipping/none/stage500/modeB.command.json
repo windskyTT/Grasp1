@@ -1,0 +1,20 @@
+[
+  "/home/windsky/miniconda3/envs/grasp/bin/python",
+  "-u",
+  "scripts/rsl_rl/evaluate.py",
+  "--task",
+  "Grasp1-UR5-Allegro-Teacher-v0",
+  "--checkpoint",
+  "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-52_teacher_stability_action-clipping_none_stage500/model_499.pt",
+  "--rounds",
+  "3",
+  "--seed",
+  "1",
+  "--diagnostics",
+  "--lift_hand_mode",
+  "hold-grasp-posture",
+  "--output_dir",
+  "/home/windsky/project/Grasp1/logs/acceptance/2026-10-06/teacher-ppo-stability/action-clipping/none/stage500/modeB",
+  "--headless",
+  "agent.clip_actions=null"
+]

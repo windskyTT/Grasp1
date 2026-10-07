@@ -1,0 +1,21 @@
+{
+  "agent": [
+    {
+      "field": "algorithm.schedule",
+      "adaptive": "adaptive",
+      "fixed": "fixed"
+    },
+    {
+      "field": "run_name",
+      "adaptive": "teacher_stability_action-clipping_none_stage500",
+      "fixed": "teacher_stability_learning-rate_fixed_stage500"
+    }
+  ],
+  "env": [
+    {
+      "field": "log_dir",
+      "adaptive": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_13-21-52_teacher_stability_action-clipping_none_stage500",
+      "fixed": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_16-07-53_teacher_stability_learning-rate_fixed_stage500"
+    }
+  ]
+}
