@@ -12,7 +12,7 @@ from isaaclab_rl.rsl_rl import (
     RslRlPpoActorCriticCfg,
     RslRlPpoAlgorithmCfg,
 )
-from ....grasp1_env_cfg import CONTROL_DT, SOURCE_CONTROL_DT
+from ....grasp1_env_cfg import Grasp1EnvCfg, SOURCE_CONTROL_DT
 
 
 @configclass
@@ -81,13 +81,21 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
 
         # 5 Hz → 60 Hz 保持源gamma的物理时间折扣；不硬编码近似值。
         # lambda同样按物理时间保持源GAE衰减；优化5中改善了500→1000的接触保持。
-        gamma=0.996 ** (CONTROL_DT / SOURCE_CONTROL_DT),
-        lam=0.95 ** (CONTROL_DT / SOURCE_CONTROL_DT),
+        gamma=0.996,
+        lam=0.95,
 
         # 自适应学习率使用的目标 KL 散度，以及梯度范数裁剪上限。
         desired_kl=0.01,
         max_grad_norm=0.5,
     )
+
+    def __post_init__(self) -> None:
+        self.synchronize_control_timing(Grasp1EnvCfg().control_dt())
+
+    def synchronize_control_timing(self, control_dt: float) -> None:
+        """训练/播放/评估入口在环境覆盖后显式同步源时间折扣。"""
+        self.algorithm.gamma = 0.996 ** (control_dt / SOURCE_CONTROL_DT)
+        self.algorithm.lam = 0.95 ** (control_dt / SOURCE_CONTROL_DT)
 
 
 # 本模块公开的 UR5 + Allegro Teacher PPO 运行器配置类。

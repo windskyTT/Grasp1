@@ -1,0 +1,17 @@
+ M scripts/random_agent.py
+ M scripts/rsl_rl/evaluate.py
+ M scripts/rsl_rl/grasp_diagnostics.py
+ M scripts/rsl_rl/play.py
+ M scripts/rsl_rl/train.py
+ M scripts/zero_agent.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+?? "docs/\344\274\230\345\214\2266.md"
+?? "docs/\344\274\230\345\214\2266_\346\211\247\350\241\214\346\212\245\345\221\212.md"
+?? logs/acceptance/optimization6/
+?? logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-09_17-24-44_opt6_interface_smoke/
+?? logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-09_17-25-57_opt6_interface_smoke_retry/
+?? outputs/2026-10-09/

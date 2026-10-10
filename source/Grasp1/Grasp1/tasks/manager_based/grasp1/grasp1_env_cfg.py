@@ -16,7 +16,6 @@ from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
 
 
 PHYSICS_DT: Final[float] = 1.0 / 120.0
-CONTROL_DT: Final[float] = 1.0 / 60.0
 # 源 Teacher 的5 Hz控制周期，用于奖励强度与折扣的物理时间等效换算。
 SOURCE_CONTROL_DT: Final[float] = 0.2
 TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
@@ -99,6 +98,12 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
 
     # 随机数种子，供环境和训练组件初始化随机过程。
     seed = 1
+    decimation = 2
+    episode_length_s = 4.0
+
+    def control_dt(self) -> float:
+        """真实控制周期只有sim.dt × decimation这一事实来源。"""
+        return self.sim.dt * self.decimation
 
     # 并行场景配置；默认创建 1 个环境，环境之间间隔 3 米。
     scene: Grasp1SceneCfg = Grasp1SceneCfg(num_envs=1, env_spacing=3.0)
@@ -108,10 +113,8 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
 
         # 物理频率 120 Hz；每两个物理步执行一次策略动作，控制频率 60 Hz。
         self.sim.dt = PHYSICS_DT
-        self.decimation = 2
 
         # 每个回合持续 4 秒；渲染间隔与控制间隔一致。
-        self.episode_length_s = 4.0
         self.sim.render_interval = self.decimation
         # 显式使用 TGS；保留其余 PhysX 接触配置。
         self.sim.physx.solver_type = 1

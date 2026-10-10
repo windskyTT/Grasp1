@@ -1,0 +1,10 @@
+{
+  "status": "failed_measurement",
+  "completed_updates": 1,
+  "transitions": 512,
+  "logged_records": 0,
+  "checkpoint_saved": false,
+  "reason": "Measurement dict duplicated entropy already present in RSL loss_dict; first update returned before logger exception",
+  "runtime_json_limitation": "Raw runtime stage_updates/transitions=0 reflect logged record count; use this correction for actual failed-run counters",
+  "formal_E1_E4_training": false
+}

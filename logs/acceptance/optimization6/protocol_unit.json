@@ -1,0 +1,155 @@
+{
+  "defaults": {
+    "--task": "Grasp1-UR5-Allegro-Teacher-v0",
+    "--agent": "rsl_rl_cfg_entry_point",
+    "--rounds": 5,
+    "--repeat_per_object": 1,
+    "--grasp_duration_s": 20.0,
+    "--lift_duration_s": 20.0,
+    "--lift_ramp_duration_s": 16.0,
+    "--success_height": 0.1,
+    "--output_dir": null,
+    "--seed": null,
+    "--lift_hand_mode": "current-relative-repeat",
+    "--max_relative_translation_drift_m": 0.02,
+    "--max_relative_rotation_drift_rad": 0.2,
+    "--clip_actions": null,
+    "--decimation": null
+  },
+  "stability_cases": [
+    {
+      "decimation": 2,
+      "hold_intervals": 300,
+      "hold_s": 5.0,
+      "failure": "none",
+      "outcomes": [
+        true,
+        true
+      ],
+      "timeout_steps": 2402
+    },
+    {
+      "decimation": 2,
+      "hold_intervals": 300,
+      "hold_s": 5.0,
+      "failure": "height_drop",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 2402
+    },
+    {
+      "decimation": 2,
+      "hold_intervals": 300,
+      "hold_s": 5.0,
+      "failure": "contact_gap",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 2402
+    },
+    {
+      "decimation": 2,
+      "hold_intervals": 300,
+      "hold_s": 5.0,
+      "failure": "translation_slip",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 2402
+    },
+    {
+      "decimation": 2,
+      "hold_intervals": 300,
+      "hold_s": 5.0,
+      "failure": "rotation_slip",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 2402
+    },
+    {
+      "decimation": 2,
+      "hold_intervals": 300,
+      "hold_s": 5.0,
+      "failure": "terminated",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 2402
+    },
+    {
+      "decimation": 4,
+      "hold_intervals": 150,
+      "hold_s": 5.0,
+      "failure": "none",
+      "outcomes": [
+        true,
+        true
+      ],
+      "timeout_steps": 1202
+    },
+    {
+      "decimation": 4,
+      "hold_intervals": 150,
+      "hold_s": 5.0,
+      "failure": "height_drop",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 1202
+    },
+    {
+      "decimation": 4,
+      "hold_intervals": 150,
+      "hold_s": 5.0,
+      "failure": "contact_gap",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 1202
+    },
+    {
+      "decimation": 4,
+      "hold_intervals": 150,
+      "hold_s": 5.0,
+      "failure": "translation_slip",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 1202
+    },
+    {
+      "decimation": 4,
+      "hold_intervals": 150,
+      "hold_s": 5.0,
+      "failure": "rotation_slip",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 1202
+    },
+    {
+      "decimation": 4,
+      "hold_intervals": 150,
+      "hold_s": 5.0,
+      "failure": "terminated",
+      "outcomes": [
+        true,
+        false
+      ],
+      "timeout_steps": 1202
+    }
+  ],
+  "all_pass": true,
+  "limitation": "Synthetic classifier tests and runtime timeout property; not physical grasp or a 40s policy evaluation."
+}

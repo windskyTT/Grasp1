@@ -1,0 +1,16 @@
+{
+  "D2_modeA": {
+    "grasp_steps": 12,
+    "lift_steps": 12,
+    "trials": 30,
+    "unexpected_timeout": 0
+  },
+  "D4_modeB": {
+    "grasp_steps": 6,
+    "lift_steps": 6,
+    "trials": 30,
+    "unexpected_timeout": 0,
+    "hand_target_drift": 0.0
+  },
+  "classification": "0.2+0.2s interface smoke with 2-update checkpoint; not formal 20+20s evaluation"
+}

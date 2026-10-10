@@ -1,0 +1,12 @@
+ scripts/random_agent.py                            |   7 +
+ scripts/rsl_rl/evaluate.py                         |  84 +++++---
+ scripts/rsl_rl/grasp_diagnostics.py                | 224 ++++++++++++++++++++-
+ scripts/rsl_rl/play.py                             |   8 +
+ scripts/rsl_rl/train.py                            |  15 ++
+ scripts/zero_agent.py                              |   7 +
+ .../config/ur5_allegro/agents/rsl_rl_ppo_cfg.py    |  14 +-
+ .../grasp1/config/ur5_allegro/teacher_env_cfg.py   |  24 ++-
+ .../tasks/manager_based/grasp1/grasp1_env_cfg.py   |   9 +-
+ .../tasks/manager_based/grasp1/mdp/actions.py      |  11 +-
+ .../tasks/manager_based/grasp1/mdp/rewards.py      |   7 +
+ 11 files changed, 360 insertions(+), 50 deletions(-)

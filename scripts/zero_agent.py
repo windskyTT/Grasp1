@@ -20,6 +20,8 @@ parser.add_argument("--num_envs", type=int, default=None, help="Number of enviro
 parser.add_argument("--task", type=str, default=None, help="Name of the task.")
 parser.add_argument("--steps", type=int, default=None, help="Stop after this many control steps.")
 # append AppLauncher cli args
+parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
+parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
 args_cli = parser.parse_args()
@@ -48,6 +50,11 @@ def main():
     )
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         env_cfg.set_num_envs(env_cfg.scene.num_envs)
+        if args_cli.decimation is not None:
+            env_cfg.decimation = args_cli.decimation
+        if args_cli.episode_length_s is not None:
+            env_cfg.episode_length_s = args_cli.episode_length_s
+        env_cfg.synchronize_control_timing()
     # create environment
     env = gym.make(args_cli.task, cfg=env_cfg)
 

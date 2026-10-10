@@ -51,6 +51,8 @@ parser.add_argument("--real-time",action="store_true",default=False,help="Run in
 cli_args.add_rsl_rl_args(parser)
 
 # 加入 Isaac Sim 启动参数，例如 headless、设备和相机选项。
+parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
+parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
 AppLauncher.add_app_launcher_args(parser)
 
 args_cli, hydra_args = parser.parse_known_args()
@@ -150,6 +152,12 @@ def main(
 
     # 将 RSL-RL 命令行选项覆盖到 Hydra 提供的 agent 配置。
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
+    if args_cli.decimation is not None:
+        env_cfg.decimation = args_cli.decimation
+    if args_cli.episode_length_s is not None:
+        env_cfg.episode_length_s = args_cli.episode_length_s
+    env_cfg.synchronize_control_timing()
+    agent_cfg.synchronize_control_timing(env_cfg.control_dt())
 
     # 在场景和随机化初始化前设置环境随机种子与仿真设备。
     env_cfg.seed = agent_cfg.seed

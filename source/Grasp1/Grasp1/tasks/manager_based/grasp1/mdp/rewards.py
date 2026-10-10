@@ -531,7 +531,14 @@ def arm_joint_vel_reward_(
     return scaled_velocity.square().sum(dim=-1)
 
 
+def invalid_hand_height_terminal(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """termination先于reward计算；除去manager的dt后仅高度终止扣一次-10。"""
+    # double中消去dt，再由RewardManager累加到float32，避免得到-9.999999。
+    return env.termination_manager.get_term("invalid_hand_height").to(torch.float64) / env.step_dt
+
+
 __all__ = [
+    "invalid_hand_height_terminal",
     "NUM_HAND_CONTACTS",
     "NUM_ARM_CONTACTS",
     "CONTACT_THRESHOLD",

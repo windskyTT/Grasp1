@@ -55,19 +55,19 @@ parser.add_argument(
 parser.add_argument(
     "--grasp_duration_s",
     type=float,
-    default=4.0,
-    help="Policy-controlled grasp duration in seconds; matches the training horizon.",
+    default=20.0,
+    help="Policy-controlled grasp seconds; this tests beyond the training horizon.",
 )
 parser.add_argument(
     "--lift_duration_s",
     type=float,
-    default=2.0,
+    default=20.0,
     help="Lift test duration in seconds.",
 )
 parser.add_argument(
     "--lift_ramp_duration_s",
     type=float,
-    default=1.5,
+    default=16.0,
     help="Duration in seconds used to interpolate the UR5 arm to the lift target.",
 )
 parser.add_argument(
@@ -91,15 +91,25 @@ parser.add_argument(
 parser.add_argument('--lift_hand_mode', choices=('current-relative-repeat', 'hold-grasp-posture'),
                     default='current-relative-repeat', help='Lift hand control A/B diagnostic.')
 parser.add_argument('--diagnostics', action='store_true', help='Record top/bottom/table and multi-finger contacts.')
+parser.add_argument('--paper_stability', action='store_true', help='Independent 20+20s protocol with 14s ramp and final 5s hold.')
+parser.add_argument('--max_relative_translation_drift_m', type=float, default=0.02,
+                    help='Engineering slip threshold for the hold window; saved with measured trajectories.')
+parser.add_argument('--max_relative_rotation_drift_rad', type=float, default=0.2)
 parser.add_argument('--clip_actions', choices=('none', '1.0'), default=None,
                     help='Override policy action clipping for the stability A/B experiment.')
 
 # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
 cli_args.add_rsl_rl_args(parser)
 # 加入 Isaac Sim 启动参数，例如运行设备和 headless 模式。
+parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
 AppLauncher.add_app_launcher_args(parser)
 
 args_cli, hydra_args = parser.parse_known_args()
+
+if args_cli.paper_stability:
+    assert args_cli.grasp_duration_s == args_cli.lift_duration_s == 20.0
+    args_cli.lift_ramp_duration_s = 14.0
+    args_cli.diagnostics = True
 
 # 在启动仿真前检查评估轮数、环境复制数和各阶段秒数为正数。
 for name in (
@@ -199,7 +209,7 @@ def _configure_evaluation(
     step_dt = env_cfg.sim.dt * env_cfg.decimation
     env_cfg.episode_length_s = (
         round(args_cli.grasp_duration_s / step_dt)
-        + round(args_cli.lift_duration_s / step_dt) + 1
+        + round(args_cli.lift_duration_s / step_dt) + 2
     ) * step_dt
 
 
@@ -246,16 +256,7 @@ def _save_results(
     with csv_path.open("w", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(
             file,
-            fieldnames=[
-                "object",
-                "attempts",
-                "successes",
-                "failures",
-                "success_rate",
-                "source_successes",
-                "strict_successes",
-                "source_success_rate",
-            ],
+            fieldnames=list(rows[0]),
         )
         writer.writeheader()
         writer.writerows(rows)
@@ -277,6 +278,11 @@ def main(
 
     # 合并标准 RSL-RL 命令行覆盖，并在环境初始化前设置种子和设备。
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
+    if args_cli.decimation is not None:
+        env_cfg.decimation = args_cli.decimation
+    env_cfg.synchronize_control_timing()
+    agent_cfg.synchronize_control_timing(env_cfg.control_dt())
+    print("[INFO] 20+20s evaluation is a long-horizon generalization test beyond 4/10s training.")
     if args_cli.clip_actions is not None:
         agent_cfg.clip_actions = None if args_cli.clip_actions == 'none' else 1.0
 
@@ -310,6 +316,7 @@ def main(
         gym.make(args_cli.task, cfg=env_cfg),
         clip_actions=agent_cfg.clip_actions,
     )
+    assert env.unwrapped.step_dt == env_cfg.control_dt()
 
     if agent_cfg.class_name != "OnPolicyRunner":
         raise ValueError(
@@ -335,6 +342,8 @@ def main(
     grasp_steps = round(args_cli.grasp_duration_s / env.unwrapped.step_dt)
     lift_steps = round(args_cli.lift_duration_s / env.unwrapped.step_dt)
     lift_ramp_steps = round(args_cli.lift_ramp_duration_s / env.unwrapped.step_dt)
+    assert grasp_steps > 0 and lift_steps > 0 and lift_ramp_steps > 0
+    assert env.unwrapped.max_episode_length > grasp_steps + lift_steps
     print(f"[INFO] Evaluation timing: step_dt={env.unwrapped.step_dt}, "
           f"grasp={grasp_steps} steps, lift={lift_steps} steps, ramp={lift_ramp_steps} steps")
 
@@ -350,6 +359,9 @@ def main(
     object_asset = env.unwrapped.scene["object"]
     diagnostic = GraspDiagnostics(env.unwrapped, names) if args_cli.diagnostics else None
     action_term = env.unwrapped.action_manager.get_term('teacher')
+    from grasp_diagnostics import EvaluationTrajectories, PhysicsDiagnostics
+    trajectories = EvaluationTrajectories(env.unwrapped, names, args_cli)
+    physics = PhysicsDiagnostics(env.unwrapped) if args_cli.diagnostics else None
 
     # 按 robot_profile 中的顺序解析 UR5 关节索引，以正确构造抬升目标。
     arm_joint_ids, resolved_joint_names = robot.find_joints(
@@ -373,6 +385,7 @@ def main(
     attempts = {name: 0 for name in names}
     successes = {name: 0 for name in names}
     source_successes = {name: 0 for name in names}
+    paper_successes = {name: 0 for name in names}
 
     try:
         with torch.inference_mode():
@@ -384,6 +397,7 @@ def main(
                     )
 
                 obs, _ = env.reset()
+                trajectories.start_round(round_idx)
 
                 policy_nn.reset(
                     torch.ones(
@@ -398,11 +412,7 @@ def main(
                     diagnostic.start_round(round_idx)
 
                 # 标记仍参与本轮评估的环境；发生回合终止的环境不再执行动作。
-                active = torch.ones(
-                    len(names),
-                    dtype=torch.bool,
-                    device=env.device,
-                )
+                active = trajectories.active
 
                 # 保存每个环境抓取阶段最后使用的动作，抬升阶段继续沿用手部动作。
                 last_grasp_actions = torch.zeros(
@@ -425,6 +435,7 @@ def main(
 
                     done_mask = dones.to(dtype=torch.bool)
                     active &= ~done_mask
+                    trajectories.sample('grasp')
                     policy_nn.reset(dones)
                     if diagnostic is not None:
                         diagnostic.sample('grasp', actions, active)
@@ -433,7 +444,7 @@ def main(
                     robot.data.joint_pos[:, arm_joint_ids].clone()
                 )
                 if diagnostic is not None:
-                    diagnostic.end_grasp()
+                    diagnostic.end_grasp(active)
 
                 # clipping比较只改变策略动作；固定UR5抬升轨迹继续使用原控制。
                 grasp_action_clip = env.clip_actions
@@ -481,6 +492,7 @@ def main(
 
                     done_mask = dones.to(dtype=torch.bool)
                     active &= ~done_mask
+                    trajectories.sample('lift')
                     policy_nn.reset(dones)
                     if diagnostic is not None:
                         diagnostic.sample('lift', actions, active)
@@ -491,14 +503,15 @@ def main(
                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
 
                 height_gain = (
-                    object_asset.data.root_pos_w[:, 2]
+                    trajectories.final_object_pose[:, 2]
                     - initial_z
                 )
 
                 source_lifted = height_gain > args_cli.success_height
                 lifted = active & source_lifted
+                paper_lifted = trajectories.finish_round(source_lifted, lifted)
                 if diagnostic is not None:
-                    diagnostic.finish_round(height_gain, source_lifted, lifted, lift_target, arm_joint_ids)
+                    diagnostic.finish_round(height_gain, source_lifted, lifted, lift_target, arm_joint_ids, active)
 
                 round_successes = int(lifted.sum().item())
 
@@ -511,11 +524,13 @@ def main(
                     attempts[object_name] += 1
                     successes[object_name] += int(success)
                     source_successes[object_name] += int(source_success)
+                for object_name, stable in zip(names, paper_lifted.tolist(), strict=True):
+                    paper_successes[object_name] += int(stable)
 
                 print(
                     f"[INFO] Round {round_idx + 1}/{args_cli.rounds}: "
-                    f"Source lift success: {int(source_lifted.sum())} / {len(names)}; "
-                    f"Strict lift success: {round_successes} / {len(names)}"
+                    f"Source height success: {int(source_lifted.sum())} / {len(names)}; "
+                    f"Active height success: {round_successes} / {len(names)}"
                 )
 
         # 汇总每个物体和全部试验的成功数、失败数及成功率。
@@ -561,6 +576,10 @@ def main(
                     "source_successes": source_successes[name],
                     "strict_successes": object_successes,
                     "source_success_rate": source_successes[name] / object_attempts,
+                    "active_height_successes": object_successes,
+                    "active_height_success_rate": success_rate,
+                    "paper_stable_successes": paper_successes[name] if args_cli.paper_stability else None,
+                    "paper_stable_success_rate": paper_successes[name] / object_attempts if args_cli.paper_stability else None,
                 }
             )
 
@@ -576,8 +595,8 @@ def main(
 
         print("-" * 78)
         print(
-            f"Source lift success: {total_source_successes} / {total_attempts}\n"
-            f"Strict lift success: {total_successes} / {total_attempts}"
+            f"Source height success: {total_source_successes} / {total_attempts}\n"
+            f"Active height success: {total_successes} / {total_attempts}"
         )
 
         # 优先使用用户指定的结果目录，否则写入检查点运行目录下的 evaluation 子目录。
@@ -589,6 +608,9 @@ def main(
 
         # JSON 汇总保存任务、检查点、评估参数和总体/逐物体结果。
         summary = {
+            "protocol": ("paper_stability_20_20_ramp14" if args_cli.paper_stability else
+                         "source_timing_20_20_ramp16" if (args_cli.grasp_duration_s, args_cli.lift_duration_s,
+                                                        args_cli.lift_ramp_duration_s) == (20, 20, 16) else "custom_timing"),
             "task": args_cli.task,
             "checkpoint": str(checkpoint),
             "lift_hand_mode": args_cli.lift_hand_mode,
@@ -612,6 +634,13 @@ def main(
             "source_lift_success_rate": total_source_successes / total_attempts,
             "strict_lift_success_rate": overall_rate,
             "total_source_successes": total_source_successes,
+            "source_success": total_source_successes / total_attempts,
+            "active_height_success": overall_rate,
+            "paper_stable_success": sum(paper_successes.values()) / total_attempts if args_cli.paper_stability else None,
+            "episode_length_s": env_cfg.episode_length_s,
+            "decimation": env_cfg.decimation,
+            "seed": env_cfg.seed,
+            "physics": physics.summary() if physics is not None else None,
             "per_object": {
                 row["object"]: {
                     key: value
@@ -629,6 +658,7 @@ def main(
         )
         if diagnostic is not None:
             diagnostic.save(output_dir)
+        trajectories.save(output_dir)
 
     finally:
         env.close()

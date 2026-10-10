@@ -1,0 +1,107 @@
+{
+  "step": 892,
+  "time_s": 7.433333333333334,
+  "env_id": 7,
+  "object": "wood_block_oriented",
+  "joint": "joint_15_0",
+  "velocity_rad_s": 112.90217590332031,
+  "position_rad": -0.17644020915031433,
+  "target_rad": -0.16199998557567596,
+  "tracking_error_rad": 0.014440223574638367,
+  "torque_approx_nm": 0.699999988079071,
+  "contact_peak_same_env_N": 53.91059494018555,
+  "contact_peak_sensor": "teacher_af_contact_7",
+  "object_joint_rad": 0.0009954258566722274,
+  "target_substeps_equal": true,
+  "nearby": [
+    {
+      "physics_step": 887,
+      "time_s": 7.391666666666667,
+      "q_rad": -0.16652366518974304,
+      "v_rad_s": -0.3487127423286438,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 25.63226890563965
+    },
+    {
+      "physics_step": 888,
+      "time_s": 7.3999999999999995,
+      "q_rad": -0.16654343903064728,
+      "v_rad_s": -0.33841440081596375,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 25.744646072387695
+    },
+    {
+      "physics_step": 889,
+      "time_s": 7.408333333333333,
+      "q_rad": -0.1665065884590149,
+      "v_rad_s": -0.34124886989593506,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 26.36565589904785
+    },
+    {
+      "physics_step": 890,
+      "time_s": 7.416666666666667,
+      "q_rad": -0.16653579473495483,
+      "v_rad_s": -0.3429998755455017,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 26.347787857055664
+    },
+    {
+      "physics_step": 891,
+      "time_s": 7.425,
+      "q_rad": -0.16656477749347687,
+      "v_rad_s": -0.354710191488266,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 26.05630874633789
+    },
+    {
+      "physics_step": 892,
+      "time_s": 7.433333333333334,
+      "q_rad": -0.17644020915031433,
+      "v_rad_s": 112.90217590332031,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 53.91059494018555
+    },
+    {
+      "physics_step": 893,
+      "time_s": 7.441666666666666,
+      "q_rad": -0.16836772859096527,
+      "v_rad_s": 70.67786407470703,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 44.46364974975586
+    },
+    {
+      "physics_step": 894,
+      "time_s": 7.45,
+      "q_rad": -0.16408097743988037,
+      "v_rad_s": -0.2899015247821808,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 24.714954376220703
+    },
+    {
+      "physics_step": 895,
+      "time_s": 7.458333333333333,
+      "q_rad": -0.16478584706783295,
+      "v_rad_s": -0.3389328718185425,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 27.54905128479004
+    },
+    {
+      "physics_step": 896,
+      "time_s": 7.466666666666667,
+      "q_rad": -0.16504241526126862,
+      "v_rad_s": 17.893346786499023,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 42.64655685424805
+    },
+    {
+      "physics_step": 897,
+      "time_s": 7.475,
+      "q_rad": -0.14513713121414185,
+      "v_rad_s": -49.73388671875,
+      "target_rad": -0.16199998557567596,
+      "contact_N": 48.004364013671875
+    }
+  ],
+  "interpretation": "Reproduced at joint lower limit under contact with unchanged per-control-step target; root physical cause not established. Do not infer a target-cache error from velocity alone."
+}

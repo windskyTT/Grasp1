@@ -37,6 +37,8 @@ parser.add_argument(
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
+parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
+parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
@@ -120,6 +122,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         env_cfg.set_num_envs(env_cfg.scene.num_envs)
+        if args_cli.decimation is not None:
+            env_cfg.decimation = args_cli.decimation
+        if args_cli.episode_length_s is not None:
+            env_cfg.episode_length_s = args_cli.episode_length_s
+        env_cfg.synchronize_control_timing()
+        agent_cfg.synchronize_control_timing(env_cfg.control_dt())
+        print(f"[INFO] Teacher timing: physics_dt={env_cfg.sim.dt}, decimation={env_cfg.decimation}, "
+              f"control_dt={env_cfg.control_dt()}, episode_s={env_cfg.episode_length_s}, "
+              f"gamma={agent_cfg.algorithm.gamma}, lambda={agent_cfg.algorithm.lam}, "
+              f"rollout_s={agent_cfg.num_steps_per_env * env_cfg.control_dt()}")
     agent_cfg.max_iterations = (
         args_cli.max_iterations if args_cli.max_iterations is not None else agent_cfg.max_iterations
     )
@@ -196,6 +208,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
+
+    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+        assert env.unwrapped.step_dt == env_cfg.control_dt()
 
     # create runner from rsl-rl
     if agent_cfg.class_name == "OnPolicyRunner":

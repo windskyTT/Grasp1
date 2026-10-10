@@ -1,0 +1,25 @@
+{
+  "task": "Grasp1-UR5-Allegro-Teacher-v0",
+  "physics_dt": 0.008333333333333333,
+  "decimation": 2,
+  "control_dt": 0.016666666666666666,
+  "episode_s": 4.0,
+  "arm_action_scale": 0.00125,
+  "hand_action_scale": 0.00375,
+  "gamma": 0.9996660539892578,
+  "lam": 0.9957346812224394,
+  "rollout": 32,
+  "network": [
+    128,
+    128
+  ],
+  "epochs": 4,
+  "mini_batches": 4,
+  "schedule": "fixed",
+  "learning_rate": 0.0005,
+  "minimum_std": 0.2,
+  "clip_actions": null,
+  "object_armature": 0.1,
+  "self_collision": false,
+  "reward_scaling": "source_coeff/0.2"
+}

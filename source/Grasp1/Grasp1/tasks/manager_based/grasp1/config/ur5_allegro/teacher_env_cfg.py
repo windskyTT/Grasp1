@@ -34,7 +34,7 @@ from Grasp1.robots.robot_profile import (
 from Grasp1.utils.paths import object_asset_dir
 
 from ... import mdp
-from ...grasp1_env_cfg import CONTROL_DT, SOURCE_CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
+from ...grasp1_env_cfg import PHYSICS_DT, SOURCE_CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
 
 
 # -----------------------------------------------------------------------------
@@ -289,7 +289,7 @@ class TeacherEventsCfg:
     check_initial_collision = EventTerm(
         func=f"{_MDP}.events:check_initial_collision",
         mode="interval",
-        interval_range_s=(CONTROL_DT, CONTROL_DT),
+        interval_range_s=(0.0, 0.0),  # 完整配置初始化及CLI覆盖后按真实control_dt同步。
         is_global_time=True,
     )
 
@@ -298,7 +298,7 @@ class TeacherEventsCfg:
     apply_object_position_bias = EventTerm(
         func=f"{_MDP}.events:apply_object_position_bias",
         mode="interval",
-        interval_range_s=(CONTROL_DT, CONTROL_DT),
+        interval_range_s=(0.0, 0.0),
         is_global_time=True,
         params={
             "distance_threshold": OBJECT_BIAS_DISTANCE_THRESHOLD,
@@ -321,6 +321,11 @@ class TeacherRewardsCfg:
     """
 
     # 手指关键点与物体 affordance 区域的接近/抓取奖励。
+    invalid_hand_height_terminal = RewTerm(
+        func=f"{_MDP}.rewards:invalid_hand_height_terminal",
+        weight=-10.0,
+    )
+
     affordance_reward = RewTerm(
         func=f"{_MDP}.rewards:affordance_reward",
         weight=_isaaclab_reward_weight(0.5),
@@ -569,8 +574,17 @@ class UR5AllegroTeacherEnvCfg(Grasp1EnvCfg):
         self.events.reset_teacher.params["dataset_name"] = self.object_dataset
         self.events.reset_teacher.params["object_names"] = object_names
 
-        # 每回合 4 秒，即 240 个 60 Hz 策略步；PPO rollout 单独配置。
-        self.episode_length_s = 4.0
+        # 保留4秒默认；10秒候选由构造参数/Hydra/CLI设置，不在子类覆盖。
+        self.synchronize_control_timing()
+
+    def synchronize_control_timing(self) -> None:
+        """创建环境前调用，消解Hydra/CLI覆盖后的事件周期与渲染周期差异。"""
+        assert self.sim.dt == PHYSICS_DT
+        assert self.decimation in (2, 4)
+        dt = self.control_dt()
+        for event in (self.events.check_initial_collision, self.events.apply_object_position_bias):
+            event.interval_range_s = (dt, dt)
+        self.sim.render_interval = self.decimation
 
     def set_num_envs(self, num_envs: int) -> None:
         """按原物体池顺序循环分配环境，并同步 USD、观测及 reset 元数据。"""
