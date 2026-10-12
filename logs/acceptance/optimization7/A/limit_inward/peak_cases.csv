@@ -1,0 +1,2 @@
+mode,physics_step,env_id,object,joint,qvel_rad_s,delta_velocity_rad_s,q_rad,target_rad,outside_rad,contact_peak_N
+fixed,1,0,wood_block_oriented,joint_14_0,0.06907406449317932,0.0002646445936989039,-0.09999779611825943,-0.10000000149011612,0.0,0.0

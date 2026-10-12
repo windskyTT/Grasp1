@@ -22,7 +22,7 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     # 随机数种子，用于初始化训练中的随机过程。
     seed = 1
 
-    # 每次 PPO 更新采集 32 个策略步；与 240 步的 episode 分开配置。
+    # 每次PPO更新采集32个策略步；episode步数由实际control_dt和4/10秒计算。
     num_steps_per_env = 32
 
     # Dexsuite v2.3.2 reference = 15000；Grasp1 selected = 20001。
@@ -79,7 +79,7 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         learning_rate=5.0e-4,
         schedule="fixed",
 
-        # 5 Hz → 60 Hz 保持源gamma的物理时间折扣；不硬编码近似值。
+        # 按实际control_dt保持源gamma的物理时间折扣；支持60Hz/30Hz。
         # lambda同样按物理时间保持源GAE衰减；优化5中改善了500→1000的接触保持。
         gamma=0.996,
         lam=0.95,

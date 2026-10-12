@@ -1,0 +1,844 @@
+diff --git a/scripts/random_agent.py b/scripts/random_agent.py
+index c79b605..9d81037 100644
+--- a/scripts/random_agent.py
++++ b/scripts/random_agent.py
+@@ -20,6 +20,8 @@ parser.add_argument("--num_envs", type=int, default=None, help="Number of enviro
+ parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+ parser.add_argument("--steps", type=int, default=None, help="Stop after this many control steps.")
+ # append AppLauncher cli args
++parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
++parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
+ AppLauncher.add_app_launcher_args(parser)
+ # parse the arguments
+ args_cli = parser.parse_args()
+@@ -48,6 +50,11 @@ def main():
+     )
+     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+         env_cfg.set_num_envs(env_cfg.scene.num_envs)
++        if args_cli.decimation is not None:
++            env_cfg.decimation = args_cli.decimation
++        if args_cli.episode_length_s is not None:
++            env_cfg.episode_length_s = args_cli.episode_length_s
++        env_cfg.synchronize_control_timing()
+     # create environment
+     env = gym.make(args_cli.task, cfg=env_cfg)
+ 
+diff --git a/scripts/rsl_rl/evaluate.py b/scripts/rsl_rl/evaluate.py
+index 522e460..d00efe5 100644
+--- a/scripts/rsl_rl/evaluate.py
++++ b/scripts/rsl_rl/evaluate.py
+@@ -55,19 +55,19 @@ parser.add_argument(
+ parser.add_argument(
+     "--grasp_duration_s",
+     type=float,
+-    default=4.0,
+-    help="Policy-controlled grasp duration in seconds; matches the training horizon.",
++    default=20.0,
++    help="Policy-controlled grasp seconds; this tests beyond the training horizon.",
+ )
+ parser.add_argument(
+     "--lift_duration_s",
+     type=float,
+-    default=2.0,
++    default=20.0,
+     help="Lift test duration in seconds.",
+ )
+ parser.add_argument(
+     "--lift_ramp_duration_s",
+     type=float,
+-    default=1.5,
++    default=16.0,
+     help="Duration in seconds used to interpolate the UR5 arm to the lift target.",
+ )
+ parser.add_argument(
+@@ -91,16 +91,26 @@ parser.add_argument(
+ parser.add_argument('--lift_hand_mode', choices=('current-relative-repeat', 'hold-grasp-posture'),
+                     default='current-relative-repeat', help='Lift hand control A/B diagnostic.')
+ parser.add_argument('--diagnostics', action='store_true', help='Record top/bottom/table and multi-finger contacts.')
++parser.add_argument('--paper_stability', action='store_true', help='Independent 20+20s protocol with 14s ramp and final 5s hold.')
++parser.add_argument('--max_relative_translation_drift_m', type=float, default=0.02,
++                    help='Engineering slip threshold for the hold window; saved with measured trajectories.')
++parser.add_argument('--max_relative_rotation_drift_rad', type=float, default=0.2)
+ parser.add_argument('--clip_actions', choices=('none', '1.0'), default=None,
+                     help='Override policy action clipping for the stability A/B experiment.')
+ 
+ # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
+ cli_args.add_rsl_rl_args(parser)
+ # 加入 Isaac Sim 启动参数，例如运行设备和 headless 模式。
++parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
+ AppLauncher.add_app_launcher_args(parser)
+ 
+ args_cli, hydra_args = parser.parse_known_args()
+ 
++if args_cli.paper_stability:
++    assert args_cli.grasp_duration_s == args_cli.lift_duration_s == 20.0
++    args_cli.lift_ramp_duration_s = 14.0
++    args_cli.diagnostics = True
++
+ # 在启动仿真前检查评估轮数、环境复制数和各阶段秒数为正数。
+ for name in (
+     "rounds",
+@@ -199,7 +209,7 @@ def _configure_evaluation(
+     step_dt = env_cfg.sim.dt * env_cfg.decimation
+     env_cfg.episode_length_s = (
+         round(args_cli.grasp_duration_s / step_dt)
+-        + round(args_cli.lift_duration_s / step_dt) + 1
++        + round(args_cli.lift_duration_s / step_dt) + 2
+     ) * step_dt
+ 
+ 
+@@ -246,16 +256,7 @@ def _save_results(
+     with csv_path.open("w", encoding="utf-8", newline="") as file:
+         writer = csv.DictWriter(
+             file,
+-            fieldnames=[
+-                "object",
+-                "attempts",
+-                "successes",
+-                "failures",
+-                "success_rate",
+-                "source_successes",
+-                "strict_successes",
+-                "source_success_rate",
+-            ],
++            fieldnames=list(rows[0]),
+         )
+         writer.writeheader()
+         writer.writerows(rows)
+@@ -277,6 +278,11 @@ def main(
+ 
+     # 合并标准 RSL-RL 命令行覆盖，并在环境初始化前设置种子和设备。
+     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
++    if args_cli.decimation is not None:
++        env_cfg.decimation = args_cli.decimation
++    env_cfg.synchronize_control_timing()
++    agent_cfg.synchronize_control_timing(env_cfg.control_dt())
++    print("[INFO] 20+20s evaluation is a long-horizon generalization test beyond 4/10s training.")
+     if args_cli.clip_actions is not None:
+         agent_cfg.clip_actions = None if args_cli.clip_actions == 'none' else 1.0
+ 
+@@ -310,6 +316,7 @@ def main(
+         gym.make(args_cli.task, cfg=env_cfg),
+         clip_actions=agent_cfg.clip_actions,
+     )
++    assert env.unwrapped.step_dt == env_cfg.control_dt()
+ 
+     if agent_cfg.class_name != "OnPolicyRunner":
+         raise ValueError(
+@@ -335,6 +342,8 @@ def main(
+     grasp_steps = round(args_cli.grasp_duration_s / env.unwrapped.step_dt)
+     lift_steps = round(args_cli.lift_duration_s / env.unwrapped.step_dt)
+     lift_ramp_steps = round(args_cli.lift_ramp_duration_s / env.unwrapped.step_dt)
++    assert grasp_steps > 0 and lift_steps > 0 and lift_ramp_steps > 0
++    assert env.unwrapped.max_episode_length > grasp_steps + lift_steps
+     print(f"[INFO] Evaluation timing: step_dt={env.unwrapped.step_dt}, "
+           f"grasp={grasp_steps} steps, lift={lift_steps} steps, ramp={lift_ramp_steps} steps")
+ 
+@@ -350,6 +359,9 @@ def main(
+     object_asset = env.unwrapped.scene["object"]
+     diagnostic = GraspDiagnostics(env.unwrapped, names) if args_cli.diagnostics else None
+     action_term = env.unwrapped.action_manager.get_term('teacher')
++    from grasp_diagnostics import EvaluationTrajectories, PhysicsDiagnostics
++    trajectories = EvaluationTrajectories(env.unwrapped, names, args_cli)
++    physics = PhysicsDiagnostics(env.unwrapped) if args_cli.diagnostics else None
+ 
+     # 按 robot_profile 中的顺序解析 UR5 关节索引，以正确构造抬升目标。
+     arm_joint_ids, resolved_joint_names = robot.find_joints(
+@@ -373,6 +385,7 @@ def main(
+     attempts = {name: 0 for name in names}
+     successes = {name: 0 for name in names}
+     source_successes = {name: 0 for name in names}
++    paper_successes = {name: 0 for name in names}
+ 
+     try:
+         with torch.inference_mode():
+@@ -384,6 +397,7 @@ def main(
+                     )
+ 
+                 obs, _ = env.reset()
++                trajectories.start_round(round_idx)
+ 
+                 policy_nn.reset(
+                     torch.ones(
+@@ -398,11 +412,7 @@ def main(
+                     diagnostic.start_round(round_idx)
+ 
+                 # 标记仍参与本轮评估的环境；发生回合终止的环境不再执行动作。
+-                active = torch.ones(
+-                    len(names),
+-                    dtype=torch.bool,
+-                    device=env.device,
+-                )
++                active = trajectories.active
+ 
+                 # 保存每个环境抓取阶段最后使用的动作，抬升阶段继续沿用手部动作。
+                 last_grasp_actions = torch.zeros(
+@@ -425,6 +435,7 @@ def main(
+ 
+                     done_mask = dones.to(dtype=torch.bool)
+                     active &= ~done_mask
++                    trajectories.sample('grasp')
+                     policy_nn.reset(dones)
+                     if diagnostic is not None:
+                         diagnostic.sample('grasp', actions, active)
+@@ -433,7 +444,7 @@ def main(
+                     robot.data.joint_pos[:, arm_joint_ids].clone()
+                 )
+                 if diagnostic is not None:
+-                    diagnostic.end_grasp()
++                    diagnostic.end_grasp(active)
+ 
+                 # clipping比较只改变策略动作；固定UR5抬升轨迹继续使用原控制。
+                 grasp_action_clip = env.clip_actions
+@@ -481,6 +492,7 @@ def main(
+ 
+                     done_mask = dones.to(dtype=torch.bool)
+                     active &= ~done_mask
++                    trajectories.sample('lift')
+                     policy_nn.reset(dones)
+                     if diagnostic is not None:
+                         diagnostic.sample('lift', actions, active)
+@@ -491,14 +503,15 @@ def main(
+                 # 源指标只看抬升高度；严格指标同时要求环境未提前终止。
+ 
+                 height_gain = (
+-                    object_asset.data.root_pos_w[:, 2]
++                    trajectories.final_object_pose[:, 2]
+                     - initial_z
+                 )
+ 
+                 source_lifted = height_gain > args_cli.success_height
+                 lifted = active & source_lifted
++                paper_lifted = trajectories.finish_round(source_lifted, lifted)
+                 if diagnostic is not None:
+-                    diagnostic.finish_round(height_gain, source_lifted, lifted, lift_target, arm_joint_ids)
++                    diagnostic.finish_round(height_gain, source_lifted, lifted, lift_target, arm_joint_ids, active)
+ 
+                 round_successes = int(lifted.sum().item())
+ 
+@@ -511,11 +524,13 @@ def main(
+                     attempts[object_name] += 1
+                     successes[object_name] += int(success)
+                     source_successes[object_name] += int(source_success)
++                for object_name, stable in zip(names, paper_lifted.tolist(), strict=True):
++                    paper_successes[object_name] += int(stable)
+ 
+                 print(
+                     f"[INFO] Round {round_idx + 1}/{args_cli.rounds}: "
+-                    f"Source lift success: {int(source_lifted.sum())} / {len(names)}; "
+-                    f"Strict lift success: {round_successes} / {len(names)}"
++                    f"Source height success: {int(source_lifted.sum())} / {len(names)}; "
++                    f"Active height success: {round_successes} / {len(names)}"
+                 )
+ 
+         # 汇总每个物体和全部试验的成功数、失败数及成功率。
+@@ -561,6 +576,10 @@ def main(
+                     "source_successes": source_successes[name],
+                     "strict_successes": object_successes,
+                     "source_success_rate": source_successes[name] / object_attempts,
++                    "active_height_successes": object_successes,
++                    "active_height_success_rate": success_rate,
++                    "paper_stable_successes": paper_successes[name] if args_cli.paper_stability else None,
++                    "paper_stable_success_rate": paper_successes[name] / object_attempts if args_cli.paper_stability else None,
+                 }
+             )
+ 
+@@ -576,8 +595,8 @@ def main(
+ 
+         print("-" * 78)
+         print(
+-            f"Source lift success: {total_source_successes} / {total_attempts}\n"
+-            f"Strict lift success: {total_successes} / {total_attempts}"
++            f"Source height success: {total_source_successes} / {total_attempts}\n"
++            f"Active height success: {total_successes} / {total_attempts}"
+         )
+ 
+         # 优先使用用户指定的结果目录，否则写入检查点运行目录下的 evaluation 子目录。
+@@ -589,6 +608,9 @@ def main(
+ 
+         # JSON 汇总保存任务、检查点、评估参数和总体/逐物体结果。
+         summary = {
++            "protocol": ("paper_stability_20_20_ramp14" if args_cli.paper_stability else
++                         "source_timing_20_20_ramp16" if (args_cli.grasp_duration_s, args_cli.lift_duration_s,
++                                                        args_cli.lift_ramp_duration_s) == (20, 20, 16) else "custom_timing"),
+             "task": args_cli.task,
+             "checkpoint": str(checkpoint),
+             "lift_hand_mode": args_cli.lift_hand_mode,
+@@ -612,6 +634,13 @@ def main(
+             "source_lift_success_rate": total_source_successes / total_attempts,
+             "strict_lift_success_rate": overall_rate,
+             "total_source_successes": total_source_successes,
++            "source_success": total_source_successes / total_attempts,
++            "active_height_success": overall_rate,
++            "paper_stable_success": sum(paper_successes.values()) / total_attempts if args_cli.paper_stability else None,
++            "episode_length_s": env_cfg.episode_length_s,
++            "decimation": env_cfg.decimation,
++            "seed": env_cfg.seed,
++            "physics": physics.summary() if physics is not None else None,
+             "per_object": {
+                 row["object"]: {
+                     key: value
+@@ -629,6 +658,7 @@ def main(
+         )
+         if diagnostic is not None:
+             diagnostic.save(output_dir)
++        trajectories.save(output_dir)
+ 
+     finally:
+         env.close()
+diff --git a/scripts/rsl_rl/grasp_diagnostics.py b/scripts/rsl_rl/grasp_diagnostics.py
+index 37854a8..51d9237 100644
+--- a/scripts/rsl_rl/grasp_diagnostics.py
++++ b/scripts/rsl_rl/grasp_diagnostics.py
+@@ -52,7 +52,7 @@ class GraspDiagnostics:
+                 'any_streak': torch.zeros(self.env.num_envs, device=self.env.device),
+                 'any_longest': torch.zeros(self.env.num_envs, device=self.env.device),
+                 'action_sum': torch.zeros((self.env.num_envs, 2), device=self.env.device),
+-                'height_peak': torch.full((self.env.num_envs,), -torch.inf, device=self.env.device),
++                'height_peak': torch.zeros(self.env.num_envs, device=self.env.device),
+                 'retained_body_sum': torch.zeros(self.env.num_envs, device=self.env.device),
+             }
+ 
+@@ -77,15 +77,15 @@ class GraspDiagnostics:
+         state = self.states[phase]
+         state['steps'] += 1
+         state['counts'] += indicators
+-        state['peaks'] = torch.maximum(state['peaks'], torch.stack([f.max(1).values for f in forces], 1))
++        state['peaks'] = torch.maximum(state['peaks'], torch.stack([f.max(1).values for f in forces], 1) * active[:, None])
+         state['max_bodies'] = torch.maximum(state['max_bodies'], bodies)
+         state['max_tips'] = torch.maximum(state['max_tips'], tips)
+         state['streak'] = (state['streak'] + 1) * contact
+         state['longest'] = torch.maximum(state['longest'], state['streak'])
+         state['any_streak'] = (state['any_streak'] + 1) * contact.any(1)
+         state['any_longest'] = torch.maximum(state['any_longest'], state['any_streak'])
+-        state['action_sum'] += torch.stack([actions[:, :6].abs().mean(1), actions[:, 6:].abs().mean(1)], 1)
+-        state['height_peak'] = torch.maximum(state['height_peak'], e.scene['object'].data.root_pos_w[:, 2] - self.initial_z)
++        state['action_sum'] += torch.stack([actions[:, :6].abs().mean(1), actions[:, 6:].abs().mean(1)], 1) * active[:, None]
++        state['height_peak'] = torch.maximum(state['height_peak'], torch.where(active, e.scene['object'].data.root_pos_w[:, 2] - self.initial_z, state['height_peak']))
+         if phase == 'lift':
+             state['retained_body_sum'] += (contact & self.end_contact).sum(1)
+             target = e.action_manager.get_term('teacher').target[:, 6:]
+@@ -93,16 +93,17 @@ class GraspDiagnostics:
+             self.hand_target_drift = torch.maximum(self.hand_target_drift, drift)
+         self.last_contact = contact
+ 
+-    def end_grasp(self):
++    def end_grasp(self, active):
+         e = self.env
+         term = e.action_manager.get_term('teacher')
++        self.grasp_active = active.clone()
+         self.end_distance = self.distance()
+         self.hand_movement = (e.scene['robot'].data.joint_pos[:, term._joint_ids][:, 6:] - self.initial_q[:, 6:]).abs().mean(1)
+         self.end_contact = self.last_contact.clone()
+         self.end_hand_target = term.target[:, 6:].clone()
+         self.hand_target_drift = torch.zeros(e.num_envs, device=e.device)
+ 
+-    def finish_round(self, height_gain, source, strict, lift_target, arm_ids):
++    def finish_round(self, height_gain, source, strict, lift_target, arm_ids, active):
+         labels = ('object_contact', 'top_contact', 'bottom_contact', 'table_contact',
+                   'two_plus_contacts', 'three_plus_contacts', 'thumb_index', 'thumb_middle',
+                   'thumb_ring', 'thumb_multiple')
+@@ -110,10 +111,11 @@ class GraspDiagnostics:
+         for i, name in enumerate(self.names):
+             row = dict(object=name, round=self.round_index + 1,
+                        pregrasp_distance_m=float(self.pregrasp_distance[i]),
+-                       grasp_end_distance_m=float(self.end_distance[i]),
+-                       hand_joint_movement_rad=float(self.hand_movement[i]),
++                       grasp_end_distance_m=float(self.end_distance[i]) if bool(self.grasp_active[i]) else None,
++                       hand_joint_movement_rad=float(self.hand_movement[i]) if bool(self.grasp_active[i]) else None,
+                        height_gain_m=float(height_gain[i]), source_success=bool(source[i]),
+-                       strict_success=bool(strict[i]), lift_arm_target_residual_rad=float(residual[i]),
++                       strict_success=bool(strict[i]), active_height_success=bool(strict[i]),
++                       lift_arm_target_residual_rad=float(residual[i]) if bool(active[i]) else None,
+                        lift_max_hand_target_drift_rad=float(self.hand_target_drift[i]),
+                        grasp_end_contact_bodies=int(self.end_contact[i].sum()),
+                        lift_final_retained_bodies=int((self.end_contact[i] & self.last_contact[i]).sum()))
+@@ -140,3 +142,207 @@ class GraspDiagnostics:
+             writer.writeheader()
+             writer.writerows(self.rows)
+         (output_dir / 'grasp_diagnostics.json').write_text(json.dumps(self.rows, indent=2, allow_nan=False))
++
++
++class PhysicsDiagnostics:
++    """诊断入口按每个PhysX步聚合GPU峰值；只在输出摘要时转CPU。"""
++
++    def __init__(self, env):
++        self.env = env
++        self.steps = 0
++        self.q_min = torch.full((22,), torch.inf, device=env.device)
++        self.q_max = torch.full((22,), -torch.inf, device=env.device)
++        self.target_min = self.q_min.clone()
++        self.target_max = self.q_max.clone()
++        self.velocity = torch.zeros(22, device=env.device)
++        self.torque = self.velocity.clone()
++        self.tracking = self.velocity.clone()
++        self.object_min = torch.tensor(torch.inf, device=env.device)
++        self.object_max = -self.object_min
++        self.object_velocity = torch.tensor(0., device=env.device)
++        self.force_peak = torch.tensor(0., device=env.device)
++        self.friction_peak = self.force_peak.clone()
++        self.total_filtered_peak = self.force_peak.clone()
++        self.finite = torch.tensor(True, device=env.device)
++        self.clip_count = torch.tensor(0, device=env.device)
++        self.target_count = 0
++        self.raw_sum = torch.tensor(0., device=env.device)
++        self.raw_max = self.raw_sum.clone()
++        self.raw_gt1 = self.clip_count.clone()
++        self.raw_gt2 = self.clip_count.clone()
++        term = env.action_manager.get_term('teacher')
++        original_process = term.process_actions
++        self.term = term
++        self.original_process = original_process
++
++        def process(actions):
++            original_process(actions)
++            proposed = env.scene['robot'].data.joint_pos[:, term._joint_ids] + term.processed_actions
++            limits = env.scene['robot'].data.joint_pos_limits[:, term._joint_ids]
++            self.clip_count += ((proposed < limits[..., 0]) | (proposed > limits[..., 1])).sum()
++            self.target_count += actions.numel()
++            self.raw_sum += actions.abs().sum()
++            self.raw_max = torch.maximum(self.raw_max, actions.abs().max())
++            self.raw_gt1 += (actions.abs() > 1).sum()
++            self.raw_gt2 += (actions.abs() > 2).sum()
++
++        term.process_actions = process
++        original_update = env.scene.update
++        self.original_update = original_update
++
++        def update(dt):
++            original_update(dt)
++            if dt != env.physics_dt:
++                return
++            self.steps += 1
++            robot, obj = env.scene['robot'], env.scene['object']
++            q = robot.data.joint_pos[:, term._joint_ids]
++            v = robot.data.joint_vel[:, term._joint_ids]
++            effort = robot.data.applied_torque[:, term._joint_ids]
++            self.q_min = torch.minimum(self.q_min, q.amin(0))
++            self.q_max = torch.maximum(self.q_max, q.amax(0))
++            self.target_min = torch.minimum(self.target_min, term.target.amin(0))
++            self.target_max = torch.maximum(self.target_max, term.target.amax(0))
++            self.velocity = torch.maximum(self.velocity, v.abs().amax(0))
++            self.torque = torch.maximum(self.torque, effort.abs().amax(0))
++            self.tracking = torch.maximum(self.tracking, (term.target - q).abs().amax(0))
++            self.object_min = torch.minimum(self.object_min, obj.data.joint_pos.min())
++            self.object_max = torch.maximum(self.object_max, obj.data.joint_pos.max())
++            self.object_velocity = torch.maximum(self.object_velocity, obj.data.joint_vel.abs().max())
++            forces = torch.stack([sensor.data.net_forces_w.norm(dim=-1).max()
++                                  for sensor in env.scene.sensors.values()])
++            self.force_peak = torch.maximum(self.force_peak, forces.max())
++            filtered = [sensor for sensor in env.scene.sensors.values() if sensor.cfg.track_friction_forces]
++            normals = torch.stack([sensor.data.force_matrix_w[:, 0].sum(1) for sensor in filtered], 1)
++            friction = torch.stack([sensor.data.friction_forces_w[:, 0].sum(1) for sensor in filtered], 1)
++            self.friction_peak = torch.maximum(self.friction_peak, friction.norm(dim=-1).max())
++            self.total_filtered_peak = torch.maximum(self.total_filtered_peak, (normals + friction).norm(dim=-1).max())
++            self.finite &= (torch.isfinite(q).all() & torch.isfinite(v).all() & torch.isfinite(effort).all()
++                            & torch.isfinite(obj.data.body_state_w).all() & torch.isfinite(obj.data.joint_pos).all()
++                            & torch.isfinite(obj.data.joint_vel).all() & torch.isfinite(forces).all()
++                            & torch.isfinite(normals).all() & torch.isfinite(friction).all())
++
++        env.scene.update = update
++
++    def close(self):
++        self.term.process_actions = self.original_process
++        self.env.scene.update = self.original_update
++
++    def summary(self):
++        term = self.env.action_manager.get_term('teacher')
++        return dict(physics_steps=self.steps, finite=bool(self.finite),
++                    joint_names=list(term._joint_names), joint_position_min=self.q_min.tolist(),
++                    joint_position_max=self.q_max.tolist(), target_min=self.target_min.tolist(),
++                    target_max=self.target_max.tolist(), velocity_peak=self.velocity.tolist(),
++                    torque_peak=self.torque.tolist(), torque_kind='IsaacLab implicit PD torque approximation; not measured PhysX drive torque',
++                    tracking_error_peak=self.tracking.tolist(),
++                    arm_velocity_peak=float(self.velocity[:6].max()),
++                    hand_velocity_peak=float(self.velocity[6:].max()), contact_force_peak_N=float(self.force_peak),
++                    friction_force_peak_N=float(self.friction_peak), total_filtered_force_peak_N=float(self.total_filtered_peak),
++                    object_joint_min_rad=float(self.object_min), object_joint_max_rad=float(self.object_max),
++                    object_joint_velocity_peak=float(self.object_velocity),
++                    target_clipping_fraction=int(self.clip_count) / self.target_count,
++                    raw_action_mean_abs=float(self.raw_sum) / self.target_count, raw_action_max_abs=float(self.raw_max),
++                    raw_action_fraction_gt1=int(self.raw_gt1) / self.target_count,
++                    raw_action_fraction_gt2=int(self.raw_gt2) / self.target_count)
++
++
++class EvaluationTrajectories:
++    """冻结首次终止前状态，保存连续高度和物体相对手腕位姿，防止reset污染trial。"""
++
++    def __init__(self, env, names, args):
++        self.env, self.names, self.args = env, names, args
++        self.rows, self.rounds = [], []
++        self.active = None
++        self.original_reset = env._reset_idx
++
++        def reset(ids):
++            if self.active is not None:
++                first = ids[self.active[ids]]
++                self.final_object_pose[first] = env.scene['object'].data.root_pose_w[first]
++                self.failure_step[first] = self.step + 1
++                for name, mask in self.failures.items():
++                    mask[first] = env.termination_manager.get_term(name)[first]
++                self.active[first] = False
++            self.original_reset(ids)
++
++        env._reset_idx = reset
++
++    def start_round(self, index):
++        self.index, self.step = index, 0
++        e = self.env
++        self.active = torch.ones(e.num_envs, device=e.device, dtype=torch.bool)
++        self.initial_z = e.scene['object'].data.root_pos_w[:, 2].clone()
++        self.final_object_pose = e.scene['object'].data.root_pose_w.clone()
++        self.failure_step = torch.full((e.num_envs,), -1, device=e.device, dtype=torch.long)
++        self.failures = {name: torch.zeros_like(self.active) for name in e.termination_manager.active_terms}
++        self.trace = []
++
++    def sample(self, phase):
++        from isaaclab.utils.math import subtract_frame_transforms
++        e = self.env
++        self.step += 1
++        obj = e.scene['object'].data.root_pose_w
++        wrist = e.scene['robot'].data.body_link_pose_w[:, e._teacher_body_indices.wrist]
++        relative_p, relative_q = subtract_frame_transforms(wrist[:, :3], wrist[:, 3:7], obj[:, :3], obj[:, 3:7])
++        self.final_object_pose[self.active] = obj[self.active]
++        contacts = torch.stack([e.scene[f'teacher_af_contact_{i}'].data.force_matrix_w[:, 0, 0].norm(dim=-1)
++                                for i in range(13)], 1) > 0.1
++        if self.args.diagnostics:
++            contacts |= torch.stack([e.scene[f'diagnostic_bottom_{i}'].data.force_matrix_w[:, 0, 0].norm(dim=-1)
++                                     for i in range(13)], 1) > 0.1
++        height = self.final_object_pose[:, 2] - self.initial_z
++        self.trace.append(torch.cat([height[:, None], relative_p, relative_q, self.active[:, None],
++                                     (contacts.any(1) & self.active)[:, None]], 1))
++
++    def finish_round(self, source, active_height):
++        trace = torch.stack(self.trace)
++        paper = torch.zeros_like(self.active)
++        translation = rotation = None
++        if self.args.paper_stability:
++            window_steps = round(5.0 / self.env.step_dt)
++            window = trace[-window_steps - 1:]
++            translation = (window[:, :, 1:4] - window[0, :, 1:4]).norm(dim=-1).amax(0)
++            qdot = (window[:, :, 4:8] * window[0, :, 4:8]).sum(-1).abs().clamp(max=1.0)
++            rotation = (2 * torch.acos(qdot)).amax(0)
++            paper = (self.active & (window[:, :, 0] > self.args.success_height).all(0)
++                     & window[:, :, 8:10].bool().all(dim=(0, 2))
++                     & (translation <= self.args.max_relative_translation_drift_m)
++                     & (rotation <= self.args.max_relative_rotation_drift_rad))
++        for i, name in enumerate(self.names):
++            cause = [key for key, mask in self.failures.items() if bool(mask[i])]
++            valid = trace[:, i, 8].bool()
++            heights = trace[valid, i, 0]
++            self.rows.append(dict(object=name, round=self.index + 1, source_success=bool(source[i]),
++                                  active_height_success=bool(active_height[i]),
++                                  paper_stable_success=bool(paper[i]) if self.args.paper_stability else None,
++                                  final_height_gain_m=float(trace[-1, i, 0]),
++                                  max_active_height_gain_m=float(heights.max()) if heights.numel() else None,
++                                  failure_step=int(self.failure_step[i]), failure_reason='+'.join(cause) or
++                                  ('height_below_threshold' if not bool(active_height[i]) else ''),
++                                  dropped_after_crossing=bool((heights > self.args.success_height).any()) and
++                                  not bool(active_height[i]),
++                                  hold_translation_drift_m=float(translation[i]) if translation is not None else None,
++                                  hold_rotation_drift_rad=float(rotation[i]) if rotation is not None else None))
++        self.rounds.append(trace.cpu())
++        # 下一轮显式reset不属于上一trial的提前终止。
++        self.active = None
++        return paper
++
++    def save(self, output_dir):
++        path = Path(output_dir)
++        torch.save(dict(names=self.names, step_dt=self.env.step_dt,
++                        columns=['height_gain_m', 'relative_x', 'relative_y', 'relative_z',
++                                 'relative_qw', 'relative_qx', 'relative_qy', 'relative_qz', 'active', 'contact'],
++                        rounds=self.rounds), path / 'height_relative_trajectories.pt')
++        with (path / 'trials.csv').open('w', newline='') as file:
++            writer = csv.DictWriter(file, fieldnames=list(self.rows[0]))
++            writer.writeheader()
++            writer.writerows(self.rows)
++        (path / 'stability_protocol.json').write_text(json.dumps(dict(
++            enabled=self.args.paper_stability, hold_duration_s=5.0,
++            translation_threshold_m=self.args.max_relative_translation_drift_m,
++            rotation_threshold_rad=self.args.max_relative_rotation_drift_rad,
++            threshold_basis='Engineering thresholds: 2cm is 20% of 10cm lift; 0.2rad approximately 11.5deg. '
++                            'Not an original paper threshold; inspect saved sample trajectories.',
++        ), indent=2))
+diff --git a/scripts/rsl_rl/play.py b/scripts/rsl_rl/play.py
+index 5d2d17c..dac115e 100644
+--- a/scripts/rsl_rl/play.py
++++ b/scripts/rsl_rl/play.py
+@@ -51,6 +51,8 @@ parser.add_argument("--real-time",action="store_true",default=False,help="Run in
+ cli_args.add_rsl_rl_args(parser)
+ 
+ # 加入 Isaac Sim 启动参数，例如 headless、设备和相机选项。
++parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
++parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
+ AppLauncher.add_app_launcher_args(parser)
+ 
+ args_cli, hydra_args = parser.parse_known_args()
+@@ -150,6 +152,12 @@ def main(
+ 
+     # 将 RSL-RL 命令行选项覆盖到 Hydra 提供的 agent 配置。
+     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
++    if args_cli.decimation is not None:
++        env_cfg.decimation = args_cli.decimation
++    if args_cli.episode_length_s is not None:
++        env_cfg.episode_length_s = args_cli.episode_length_s
++    env_cfg.synchronize_control_timing()
++    agent_cfg.synchronize_control_timing(env_cfg.control_dt())
+ 
+     # 在场景和随机化初始化前设置环境随机种子与仿真设备。
+     env_cfg.seed = agent_cfg.seed
+diff --git a/scripts/rsl_rl/train.py b/scripts/rsl_rl/train.py
+index 86f32dc..1a48649 100644
+--- a/scripts/rsl_rl/train.py
++++ b/scripts/rsl_rl/train.py
+@@ -37,6 +37,8 @@ parser.add_argument(
+ # append RSL-RL cli arguments
+ cli_args.add_rsl_rl_args(parser)
+ # append AppLauncher cli args
++parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
++parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
+ AppLauncher.add_app_launcher_args(parser)
+ args_cli, hydra_args = parser.parse_known_args()
+ 
+@@ -120,6 +122,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
+     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
+     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+         env_cfg.set_num_envs(env_cfg.scene.num_envs)
++        if args_cli.decimation is not None:
++            env_cfg.decimation = args_cli.decimation
++        if args_cli.episode_length_s is not None:
++            env_cfg.episode_length_s = args_cli.episode_length_s
++        env_cfg.synchronize_control_timing()
++        agent_cfg.synchronize_control_timing(env_cfg.control_dt())
++        print(f"[INFO] Teacher timing: physics_dt={env_cfg.sim.dt}, decimation={env_cfg.decimation}, "
++              f"control_dt={env_cfg.control_dt()}, episode_s={env_cfg.episode_length_s}, "
++              f"gamma={agent_cfg.algorithm.gamma}, lambda={agent_cfg.algorithm.lam}, "
++              f"rollout_s={agent_cfg.num_steps_per_env * env_cfg.control_dt()}")
+     agent_cfg.max_iterations = (
+         args_cli.max_iterations if args_cli.max_iterations is not None else agent_cfg.max_iterations
+     )
+@@ -197,6 +209,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
+     # wrap around environment for rsl-rl
+     env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
+ 
++    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
++        assert env.unwrapped.step_dt == env_cfg.control_dt()
++
+     # create runner from rsl-rl
+     if agent_cfg.class_name == "OnPolicyRunner":
+         runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
+diff --git a/scripts/zero_agent.py b/scripts/zero_agent.py
+index 96189c2..05ee88e 100644
+--- a/scripts/zero_agent.py
++++ b/scripts/zero_agent.py
+@@ -20,6 +20,8 @@ parser.add_argument("--num_envs", type=int, default=None, help="Number of enviro
+ parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+ parser.add_argument("--steps", type=int, default=None, help="Stop after this many control steps.")
+ # append AppLauncher cli args
++parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
++parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
+ AppLauncher.add_app_launcher_args(parser)
+ # parse the arguments
+ args_cli = parser.parse_args()
+@@ -48,6 +50,11 @@ def main():
+     )
+     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+         env_cfg.set_num_envs(env_cfg.scene.num_envs)
++        if args_cli.decimation is not None:
++            env_cfg.decimation = args_cli.decimation
++        if args_cli.episode_length_s is not None:
++            env_cfg.episode_length_s = args_cli.episode_length_s
++        env_cfg.synchronize_control_timing()
+     # create environment
+     env = gym.make(args_cli.task, cfg=env_cfg)
+ 
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
+index 45e7c5d..7c5448a 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py
+@@ -12,7 +12,7 @@ from isaaclab_rl.rsl_rl import (
+     RslRlPpoActorCriticCfg,
+     RslRlPpoAlgorithmCfg,
+ )
+-from ....grasp1_env_cfg import CONTROL_DT, SOURCE_CONTROL_DT
++from ....grasp1_env_cfg import Grasp1EnvCfg, SOURCE_CONTROL_DT
+ 
+ 
+ @configclass
+@@ -81,14 +81,22 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+ 
+         # 5 Hz → 60 Hz 保持源gamma的物理时间折扣；不硬编码近似值。
+         # lambda同样按物理时间保持源GAE衰减；优化5中改善了500→1000的接触保持。
+-        gamma=0.996 ** (CONTROL_DT / SOURCE_CONTROL_DT),
+-        lam=0.95 ** (CONTROL_DT / SOURCE_CONTROL_DT),
++        gamma=0.996,
++        lam=0.95,
+ 
+         # 自适应学习率使用的目标 KL 散度，以及梯度范数裁剪上限。
+         desired_kl=0.01,
+         max_grad_norm=0.5,
+     )
+ 
++    def __post_init__(self) -> None:
++        self.synchronize_control_timing(Grasp1EnvCfg().control_dt())
++
++    def synchronize_control_timing(self, control_dt: float) -> None:
++        """训练/播放/评估入口在环境覆盖后显式同步源时间折扣。"""
++        self.algorithm.gamma = 0.996 ** (control_dt / SOURCE_CONTROL_DT)
++        self.algorithm.lam = 0.95 ** (control_dt / SOURCE_CONTROL_DT)
++
+ 
+ # 本模块公开的 UR5 + Allegro Teacher PPO 运行器配置类。
+ __all__ = [
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+index a611d65..3ac2eaf 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/teacher_env_cfg.py
+@@ -34,7 +34,7 @@ from Grasp1.robots.robot_profile import (
+ from Grasp1.utils.paths import object_asset_dir
+ 
+ from ... import mdp
+-from ...grasp1_env_cfg import CONTROL_DT, SOURCE_CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
++from ...grasp1_env_cfg import PHYSICS_DT, SOURCE_CONTROL_DT, TABLE_CENTER_XY, SUPPORT_HEIGHT, Grasp1EnvCfg
+ 
+ 
+ # -----------------------------------------------------------------------------
+@@ -289,7 +289,7 @@ class TeacherEventsCfg:
+     check_initial_collision = EventTerm(
+         func=f"{_MDP}.events:check_initial_collision",
+         mode="interval",
+-        interval_range_s=(CONTROL_DT, CONTROL_DT),
++        interval_range_s=(0.0, 0.0),  # 完整配置初始化及CLI覆盖后按真实control_dt同步。
+         is_global_time=True,
+     )
+ 
+@@ -298,7 +298,7 @@ class TeacherEventsCfg:
+     apply_object_position_bias = EventTerm(
+         func=f"{_MDP}.events:apply_object_position_bias",
+         mode="interval",
+-        interval_range_s=(CONTROL_DT, CONTROL_DT),
++        interval_range_s=(0.0, 0.0),
+         is_global_time=True,
+         params={
+             "distance_threshold": OBJECT_BIAS_DISTANCE_THRESHOLD,
+@@ -321,6 +321,11 @@ class TeacherRewardsCfg:
+     """
+ 
+     # 手指关键点与物体 affordance 区域的接近/抓取奖励。
++    invalid_hand_height_terminal = RewTerm(
++        func=f"{_MDP}.rewards:invalid_hand_height_terminal",
++        weight=-10.0,
++    )
++
+     affordance_reward = RewTerm(
+         func=f"{_MDP}.rewards:affordance_reward",
+         weight=_isaaclab_reward_weight(0.5),
+@@ -569,8 +574,17 @@ class UR5AllegroTeacherEnvCfg(Grasp1EnvCfg):
+         self.events.reset_teacher.params["dataset_name"] = self.object_dataset
+         self.events.reset_teacher.params["object_names"] = object_names
+ 
+-        # 每回合 4 秒，即 240 个 60 Hz 策略步；PPO rollout 单独配置。
+-        self.episode_length_s = 4.0
++        # 保留4秒默认；10秒候选由构造参数/Hydra/CLI设置，不在子类覆盖。
++        self.synchronize_control_timing()
++
++    def synchronize_control_timing(self) -> None:
++        """创建环境前调用，消解Hydra/CLI覆盖后的事件周期与渲染周期差异。"""
++        assert self.sim.dt == PHYSICS_DT
++        assert self.decimation in (2, 4)
++        dt = self.control_dt()
++        for event in (self.events.check_initial_collision, self.events.apply_object_position_bias):
++            event.interval_range_s = (dt, dt)
++        self.sim.render_interval = self.decimation
+ 
+     def set_num_envs(self, num_envs: int) -> None:
+         """按原物体池顺序循环分配环境，并同步 USD、观测及 reset 元数据。"""
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+index e1d78d4..ebce590 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/grasp1_env_cfg.py
+@@ -16,7 +16,6 @@ from Grasp1.robots.ur5_allegro_cfg import UR5_ALLEGRO_CFG
+ 
+ 
+ PHYSICS_DT: Final[float] = 1.0 / 120.0
+-CONTROL_DT: Final[float] = 1.0 / 60.0
+ # 源 Teacher 的5 Hz控制周期，用于奖励强度与折扣的物理时间等效换算。
+ SOURCE_CONTROL_DT: Final[float] = 0.2
+ TABLE_CENTER_XY: Final[tuple[float, float]] = (0.2, -0.75152)
+@@ -99,6 +98,12 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
+ 
+     # 随机数种子，供环境和训练组件初始化随机过程。
+     seed = 1
++    decimation = 2
++    episode_length_s = 4.0
++
++    def control_dt(self) -> float:
++        """真实控制周期只有sim.dt × decimation这一事实来源。"""
++        return self.sim.dt * self.decimation
+ 
+     # 并行场景配置；默认创建 1 个环境，环境之间间隔 3 米。
+     scene: Grasp1SceneCfg = Grasp1SceneCfg(num_envs=1, env_spacing=3.0)
+@@ -108,10 +113,8 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
+ 
+         # 物理频率 120 Hz；每两个物理步执行一次策略动作，控制频率 60 Hz。
+         self.sim.dt = PHYSICS_DT
+-        self.decimation = 2
+ 
+         # 每个回合持续 4 秒；渲染间隔与控制间隔一致。
+-        self.episode_length_s = 4.0
+         self.sim.render_interval = self.decimation
+         # 显式使用 TGS；保留其余 PhysX 接触配置。
+         self.sim.physx.solver_type = 1
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+index 7b08404..af71940 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py
+@@ -1,11 +1,11 @@
+-"""Teacher 相对位置动作：保留官方逐物理步语义并恢复源目标限位。"""
++"""Teacher 相对位置动作：每个策略步生成一次限位目标，物理子步保持。"""
+ 
+ from isaaclab.envs.mdp.actions import RelativeJointPositionAction
+ import torch
+ 
+ 
+ class TeacherRelativeJointPositionAction(RelativeJointPositionAction):
+-    """逐物理步限制目标，并保存实际发送的目标供观测读取。"""
++    """按源Teacher控制周期缓存目标，供物理子步和真实误差观测共用。"""
+ 
+     def __init__(self, cfg, env):
+         super().__init__(cfg, env)
+@@ -23,9 +23,14 @@ class TeacherRelativeJointPositionAction(RelativeJointPositionAction):
+         self._processed_actions[env_ids] = 0.0
+         self._target[env_ids] = self._asset.data.joint_pos[:, self._joint_ids][env_ids]
+ 
+-    def apply_actions(self) -> None:
++    def process_actions(self, actions: torch.Tensor) -> None:
++        super().process_actions(actions)
+         target = self._asset.data.joint_pos[:, self._joint_ids] + self.processed_actions
+         limits = self._asset.data.joint_pos_limits[:, self._joint_ids]
+         target.clamp_(min=limits[..., 0], max=limits[..., 1])
+         self._target[:] = target
++
++    def apply_actions(self) -> None:
+         self._asset.set_joint_position_target(self._target, joint_ids=self._joint_ids)
++        # 源vTarget始终为零；位置PD保持同一策略步目标，速度PD不引入运动目标。
++        self._asset.set_joint_velocity_target(0.0, joint_ids=self._joint_ids)
+diff --git a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+index aa29da7..047f669 100644
+--- a/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
++++ b/source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/rewards.py
+@@ -531,7 +531,14 @@ def arm_joint_vel_reward_(
+     return scaled_velocity.square().sum(dim=-1)
+ 
+ 
++def invalid_hand_height_terminal(env: ManagerBasedRLEnv) -> torch.Tensor:
++    """termination先于reward计算；除去manager的dt后仅高度终止扣一次-10。"""
++    # double中消去dt，再由RewardManager累加到float32，避免得到-9.999999。
++    return env.termination_manager.get_term("invalid_hand_height").to(torch.float64) / env.step_dt
++
++
+ __all__ = [
++    "invalid_hand_height_terminal",
+     "NUM_HAND_CONTACTS",
+     "NUM_ARM_CONTACTS",
+     "CONTACT_THRESHOLD",

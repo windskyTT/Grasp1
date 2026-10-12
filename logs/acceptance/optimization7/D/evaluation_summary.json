@@ -1,0 +1,61 @@
+{
+  "status": "blocked",
+  "formal_attempts": 0,
+  "formal_success_rate": null,
+  "reason": "No physically qualified trained candidate",
+  "interface_gate": "pass",
+  "diagnostic_attempts": 3,
+  "interfaces": [
+    {
+      "directory": "logs/acceptance/optimization7/D/interface_20_20_ramp16",
+      "protocol": "source_timing_20_20_ramp16",
+      "purpose": "nonformal_interface_diagnostic",
+      "formal": false,
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt",
+      "policy_training_updates": 3,
+      "attempts": 1,
+      "physics_steps": 4800,
+      "policy_steps": 2400,
+      "source_successes": 0,
+      "active_successes": 0,
+      "engineering_success_rate": null,
+      "active_peak": 5.295323371887207,
+      "post_reset_peak": null
+    },
+    {
+      "directory": "logs/acceptance/optimization7/D/interface_injected_20_20_ramp16",
+      "protocol": "source_timing_20_20_ramp16",
+      "purpose": "nonformal_interface_diagnostic",
+      "formal": false,
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt",
+      "policy_training_updates": 3,
+      "attempts": 1,
+      "physics_steps": 4800,
+      "policy_steps": 2400,
+      "source_successes": 0,
+      "active_successes": 0,
+      "engineering_success_rate": null,
+      "active_peak": 0.04187110811471939,
+      "post_reset_peak": 123.0
+    },
+    {
+      "directory": "logs/acceptance/optimization7/D/interface_injected_engineering_ramp14",
+      "protocol": "engineering_stability_20_20_ramp14",
+      "purpose": "nonformal_interface_diagnostic",
+      "formal": false,
+      "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt",
+      "policy_training_updates": 3,
+      "attempts": 1,
+      "physics_steps": 4800,
+      "policy_steps": 2400,
+      "source_successes": 0,
+      "active_successes": 0,
+      "engineering_success_rate": 0.0,
+      "active_peak": 0.04187110811471939,
+      "post_reset_peak": 123.0
+    }
+  ],
+  "source_30x3": "not_run",
+  "engineering_30x3": "not_run",
+  "safe_checkpoint": null
+}

@@ -1,0 +1,76 @@
+{
+  "status": "pass",
+  "synthetic": true,
+  "cases": [
+    {
+      "case": "same_semantics_resume",
+      "status": "pass",
+      "audit": {
+        "checkpoint": "/tmp/tmpmnvf83ie/model_99.pt",
+        "metadata": "/tmp/tmpmnvf83ie/env_contract_model_99.pt.json",
+        "metadata_present": true,
+        "differences": {},
+        "compatible": true,
+        "comparability_warning": null,
+        "training_episode_length_s": 10
+      }
+    },
+    {
+      "case": "D2_to_D4_resume_False",
+      "status": "pass",
+      "error": "Checkpoint /tmp/tmpmnvf83ie/model_99.pt environment contract rejected before runner.load(): {\"decimation\": {\"checkpoint\": 2, \"requested\": 4}}. Start fresh training, or audit legacy source/configuration before writing metadata. Use --allow_mismatched_checkpoint only for diagnostic inference."
+    },
+    {
+      "case": "D2_to_D4_resume_True",
+      "status": "pass",
+      "error": "Checkpoint /tmp/tmpmnvf83ie/model_99.pt environment contract rejected before runner.load(): {\"decimation\": {\"checkpoint\": 2, \"requested\": 4}}. Start fresh training, or audit legacy source/configuration before writing metadata. Training resume cannot override this check."
+    },
+    {
+      "case": "diagnostic_override",
+      "status": "pass",
+      "audit": {
+        "checkpoint": "/tmp/tmpmnvf83ie/model_99.pt",
+        "metadata": "/tmp/tmpmnvf83ie/env_contract_model_99.pt.json",
+        "metadata_present": true,
+        "differences": {
+          "decimation": {
+            "checkpoint": 2,
+            "requested": 4
+          }
+        },
+        "compatible": false,
+        "comparability_warning": "Diagnostic checkpoint override: results are excluded from formal candidate comparisons.",
+        "training_episode_length_s": 10
+      }
+    },
+    {
+      "case": "eval_horizon_is_protocol_resume_horizon_is_contract",
+      "status": "pass"
+    },
+    {
+      "case": "legacy_missing_metadata",
+      "status": "pass",
+      "error": "Checkpoint /tmp/tmpmnvf83ie/model_99.pt environment contract rejected before runner.load(): {\"action_scale_arm\": {\"checkpoint\": null, \"requested\": 0}, \"action_scale_hand\": {\"checkpoint\": null, \"requested\": 0}, \"action_semantics_version\": {\"checkpoint\": null, \"requested\": 0}, \"asset_versions\": {\"checkpoint\": null, \"requested\": 0}, \"clip_actions\": {\"checkpoint\": null, \"requested\": 0}, \"control_dt\": {\"checkpoint\": null, \"requested\": 0}, \"decimation\": {\"checkpoint\": null, \"requested\": 2}, \"observation_semantics_version\": {\"checkpoint\": null, \"requested\": 0}, \"physics_dt\": {\"checkpoint\": null, \"requested\": 0}, \"physics_parameters\": {\"checkpoint\": null, \"requested\": 0}, \"reward_semantics_version\": {\"checkpoint\": null, \"requested\": 0}, \"rsl_rl_version\": {\"checkpoint\": null, \"requested\": 0}, \"schema_version\": {\"checkpoint\": null, \"requested\": 1}, \"task_id\": {\"checkpoint\": null, \"requested\": \"Grasp1-UR5-Allegro-Teacher-v0\"}}. Start fresh training, or audit legacy source/configuration before writing metadata. Use --allow_mismatched_checkpoint only for diagnostic inference."
+    },
+    {
+      "case": "native_checkpoint_discovery_excludes_metadata",
+      "status": "pass"
+    }
+  ],
+  "native_resume": {
+    "status": "pass",
+    "resume_from": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-31-20_optimization7_contract_diagnostic/model_1.pt",
+    "checkpoint": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt",
+    "formal_training": false,
+    "diagnostic_updates_total": 3,
+    "resumed_update_index": 2,
+    "optimizer_steps_before": [
+      32.0
+    ],
+    "optimizer_steps_after": [
+      48.0
+    ],
+    "minimum_std": 0.9882509708404541,
+    "metadata": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/env_contract_model_2.pt.json"
+  }
+}

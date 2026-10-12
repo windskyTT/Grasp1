@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -97,6 +98,8 @@ parser.add_argument('--max_relative_translation_drift_m', type=float, default=0.
 parser.add_argument('--max_relative_rotation_drift_rad', type=float, default=0.2)
 parser.add_argument('--clip_actions', choices=('none', '1.0'), default=None,
                     help='Override policy action clipping for the stability A/B experiment.')
+parser.add_argument('--allow_mismatched_checkpoint', action='store_true', help='Diagnostic inference only; save semantic differences and a comparability warning.')
+parser.add_argument('--object', dest='object_name', default=None, help='One ShapeNet object for the full-duration integration test.')
 
 # 加入 RSL-RL 通用参数，例如检查点路径和训练运行目录。
 cli_args.add_rsl_rl_args(parser)
@@ -107,7 +110,8 @@ AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
 if args_cli.paper_stability:
-    assert args_cli.grasp_duration_s == args_cli.lift_duration_s == 20.0
+    if args_cli.grasp_duration_s != 20.0 or args_cli.lift_duration_s != 20.0:
+        parser.error('--paper_stability requires 20s grasp and 20s lift; it is an engineering stability proxy.')
     args_cli.lift_ramp_duration_s = 14.0
     args_cli.diagnostics = True
 
@@ -118,12 +122,16 @@ for name in (
     "grasp_duration_s",
     "lift_duration_s",
     "lift_ramp_duration_s",
+    'max_relative_translation_drift_m',
+    'max_relative_rotation_drift_rad',
 ):
-    if getattr(args_cli, name) <= 0:
+    if not math.isfinite(getattr(args_cli,name)) or getattr(args_cli, name) <= 0:
         parser.error(f"--{name} must be greater than zero.")
 
-if args_cli.success_height <= 0.0:
+if not math.isfinite(args_cli.success_height) or args_cli.success_height <= 0.0:
     parser.error("--success_height must be greater than zero.")
+if args_cli.lift_ramp_duration_s > args_cli.lift_duration_s:
+    parser.error('--lift_ramp_duration_s must not exceed --lift_duration_s.')
 
 # 保留未被 argparse 消费的参数给 Hydra 解析任务和 agent 配置。
 sys.argv = [sys.argv[0]] + hydra_args
@@ -162,6 +170,7 @@ from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import
     TEACHER_ACTION_DIM,
 )
 from Grasp1.utils.paths import object_asset_dir
+from checkpoint_contract import build_contract, validate_checkpoint
 
 
 # 旧版定量评估使用的 UR5 抬升目标关节角。
@@ -293,15 +302,24 @@ def main(
         else env_cfg.sim.device
     )
 
+    checkpoint, log_dir = _resolve_checkpoint(agent_cfg)
+    checkpoint_audit, _ = validate_checkpoint(
+        checkpoint, build_contract(args_cli.task,env_cfg,agent_cfg),
+        allow_mismatch=args_cli.allow_mismatched_checkpoint,
+    )
+    args_cli.checkpoint_compatibility = checkpoint_audit
     # 构建 ShapeNet 物体列表；repeat_per_object 控制每个物体并行复制数量。
     names = tuple(evaluation_object_names(args_cli.repeat_per_object))
+    if args_cli.object_name is not None:
+        if args_cli.object_name not in names:
+            parser.error(f'--object must name a ShapeNet evaluation object, got {args_cli.object_name!r}.')
+        names = (args_cli.object_name,)*args_cli.repeat_per_object
     _configure_evaluation(env_cfg, names)
     if args_cli.diagnostics:
         from grasp_diagnostics import configure_diagnostics, GraspDiagnostics
         configure_diagnostics(env_cfg.scene)
 
     # 解析检查点并将运行目录传给环境，供日志及评估结果路径使用。
-    checkpoint, log_dir = _resolve_checkpoint(agent_cfg)
     env_cfg.log_dir = log_dir
 
     print(f"[INFO] Task: {args_cli.task}")
@@ -343,7 +361,7 @@ def main(
     lift_steps = round(args_cli.lift_duration_s / env.unwrapped.step_dt)
     lift_ramp_steps = round(args_cli.lift_ramp_duration_s / env.unwrapped.step_dt)
     assert grasp_steps > 0 and lift_steps > 0 and lift_ramp_steps > 0
-    assert env.unwrapped.max_episode_length > grasp_steps + lift_steps
+    assert env.unwrapped.max_episode_length == grasp_steps + lift_steps + 2
     print(f"[INFO] Evaluation timing: step_dt={env.unwrapped.step_dt}, "
           f"grasp={grasp_steps} steps, lift={lift_steps} steps, ramp={lift_ramp_steps} steps")
 
@@ -360,8 +378,9 @@ def main(
     diagnostic = GraspDiagnostics(env.unwrapped, names) if args_cli.diagnostics else None
     action_term = env.unwrapped.action_manager.get_term('teacher')
     from grasp_diagnostics import EvaluationTrajectories, PhysicsDiagnostics
-    trajectories = EvaluationTrajectories(env.unwrapped, names, args_cli)
-    physics = PhysicsDiagnostics(env.unwrapped) if args_cli.diagnostics else None
+    trajectories = physics = None
+    original_eval_apply = action_term.apply_actions
+    original_eval_clip = env.clip_actions
 
     # 按 robot_profile 中的顺序解析 UR5 关节索引，以正确构造抬升目标。
     arm_joint_ids, resolved_joint_names = robot.find_joints(
@@ -388,6 +407,8 @@ def main(
     paper_successes = {name: 0 for name in names}
 
     try:
+        trajectories = EvaluationTrajectories(env.unwrapped, names, args_cli)
+        physics = PhysicsDiagnostics(env.unwrapped, trajectories) if args_cli.diagnostics else None
         with torch.inference_mode():
             # 每轮开始时重置所有并行环境及策略循环状态，并记录物体初始高度。
             for round_idx in range(args_cli.rounds):
@@ -407,7 +428,7 @@ def main(
                     ),
                 )
 
-                initial_z = object_asset.data.root_pos_w[:, 2].clone()
+                initial_z = trajectories.initial_z
                 if diagnostic is not None:
                     diagnostic.start_round(round_idx)
 
@@ -423,6 +444,7 @@ def main(
 
                 # 策略抓取阶段：执行指定步数，并记录每个环境的最后一组抓取动作。
 
+                trajectories.phase = 'grasp'
                 for _ in range(grasp_steps):
                     policy_actions = policy(obs)
 
@@ -469,6 +491,7 @@ def main(
 
                 # 评估专用抬升阶段：手指沿用抓取动作，UR5 逐步移动到固定抬升姿态。
 
+                trajectories.phase = 'lift'
                 for step_idx in range(lift_steps):
                     fraction = min(
                         (step_idx + 1) / float(lift_ramp_steps),
@@ -574,12 +597,19 @@ def main(
                     "failures": object_failures,
                     "success_rate": success_rate,
                     "source_successes": source_successes[name],
+                    'source_height_successes': source_successes[name],
+                    'source_height_success_rate': source_successes[name] / object_attempts,
                     "strict_successes": object_successes,
                     "source_success_rate": source_successes[name] / object_attempts,
                     "active_height_successes": object_successes,
                     "active_height_success_rate": success_rate,
                     "paper_stable_successes": paper_successes[name] if args_cli.paper_stability else None,
                     "paper_stable_success_rate": paper_successes[name] / object_attempts if args_cli.paper_stability else None,
+                    'engineering_stable_successes': paper_successes[name] if args_cli.paper_stability else None,
+                    'engineering_stable_success_rate': paper_successes[name] / object_attempts if args_cli.paper_stability else None,
+                    'checkpoint_compatible': checkpoint_audit['compatible'],
+                    'comparability_warning': checkpoint_audit['comparability_warning'],
+                    'checkpoint_differences': json.dumps(checkpoint_audit['differences'],sort_keys=True),
                 }
             )
 
@@ -608,11 +638,18 @@ def main(
 
         # JSON 汇总保存任务、检查点、评估参数和总体/逐物体结果。
         summary = {
-            "protocol": ("paper_stability_20_20_ramp14" if args_cli.paper_stability else
+            "protocol": ("engineering_stability_20_20_ramp14" if args_cli.paper_stability else
                          "source_timing_20_20_ramp16" if (args_cli.grasp_duration_s, args_cli.lift_duration_s,
                                                         args_cli.lift_ramp_duration_s) == (20, 20, 16) else "custom_timing"),
             "task": args_cli.task,
             "checkpoint": str(checkpoint),
+            'checkpoint_compatibility': checkpoint_audit,
+            'comparability_warning': checkpoint_audit['comparability_warning'],
+            'object_reference_body': 'top',
+            'deprecated_aliases': {'source_success':'source_height_success','strict_success':'active_height_success',
+                                   'paper_stable_success':'engineering_stable_success',
+                                   'source_lift_success_rate':'source_height_success',
+                                   'strict_lift_success_rate':'active_height_success'},
             "lift_hand_mode": args_cli.lift_hand_mode,
             "diagnostics": args_cli.diagnostics,
             "dataset": EVALUATION_DATASET,
@@ -635,8 +672,10 @@ def main(
             "strict_lift_success_rate": overall_rate,
             "total_source_successes": total_source_successes,
             "source_success": total_source_successes / total_attempts,
+            'source_height_success': total_source_successes / total_attempts,
             "active_height_success": overall_rate,
             "paper_stable_success": sum(paper_successes.values()) / total_attempts if args_cli.paper_stability else None,
+            'engineering_stable_success': sum(paper_successes.values()) / total_attempts if args_cli.paper_stability else None,
             "episode_length_s": env_cfg.episode_length_s,
             "decimation": env_cfg.decimation,
             "seed": env_cfg.seed,
@@ -659,8 +698,15 @@ def main(
         if diagnostic is not None:
             diagnostic.save(output_dir)
         trajectories.save(output_dir)
+        print('[WARNING] Historical source/strict/paper fields are deprecated aliases; engineering thresholds are not official paper thresholds.')
 
     finally:
+        action_term.apply_actions = original_eval_apply
+        env.clip_actions = original_eval_clip
+        if physics is not None:
+            physics.close()
+        if trajectories is not None:
+            trajectories.close()
         env.close()
 
 

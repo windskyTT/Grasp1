@@ -1,0 +1,166 @@
+{
+  "parameters": "logs/acceptance/optimization7/A/single_no_table_D4/loaded_parameters.json",
+  "runs": [
+    {
+      "mode": "zero",
+      "physics_step": 6,
+      "env_id": 0,
+      "object": "wood_block_oriented",
+      "joint": "joint_2_0",
+      "qvel_rad_s": 0.030554288998246193,
+      "delta_velocity_rad_s": 0.021550653502345085,
+      "q_rad": 0.20081765949726105,
+      "target_rad": 0.20058345794677734,
+      "outside_rad": 0.0,
+      "contact_peak_N": 0.0,
+      "hand_velocity_peak": 0.030554288998246193,
+      "velocity_ratio_to_7": 0.004364898428320885,
+      "hand_outside_peak_rad": 0.0,
+      "hand_outside_env_joint_frames": 0,
+      "outside_duration_env_joint_s": 0.0,
+      "normal_peak_N": 0.0,
+      "friction_peak_N": 0.0,
+      "velocity_difference_peak": 0.05635429546236992,
+      "finite": true,
+      "wall_s": 19.672637034000218,
+      "physics_steps": 1200,
+      "num_envs": 1,
+      "decimation": 4,
+      "episode_s": 10.0,
+      "seed": 1,
+      "reset_events": [
+        {
+          "step": 372,
+          "ids": [
+            0
+          ],
+          "reasons": {
+            "time_out": [
+              false
+            ],
+            "invalid_hand_height": [
+              true
+            ],
+            "invalid_observation": [
+              false
+            ]
+          }
+        },
+        {
+          "step": 984,
+          "ids": [
+            0
+          ],
+          "reasons": {
+            "time_out": [
+              false
+            ],
+            "invalid_hand_height": [
+              true
+            ],
+            "invalid_observation": [
+              false
+            ]
+          }
+        }
+      ],
+      "trace": "logs/acceptance/optimization7/A/single_no_table_D4/trace_zero.pt"
+    },
+    {
+      "mode": "fixed",
+      "physics_step": 2,
+      "env_id": 0,
+      "object": "wood_block_oriented",
+      "joint": "joint_2_0",
+      "qvel_rad_s": 0.02994879148900509,
+      "delta_velocity_rad_s": 0.02126276306807995,
+      "q_rad": 0.2002355009317398,
+      "target_rad": 0.20000000298023224,
+      "outside_rad": 0.0,
+      "contact_peak_N": 0.0,
+      "hand_velocity_peak": 0.02994879148900509,
+      "velocity_ratio_to_7": 0.004278398584574461,
+      "hand_outside_peak_rad": 0.0,
+      "hand_outside_env_joint_frames": 0,
+      "outside_duration_env_joint_s": 0.0,
+      "normal_peak_N": 0.0,
+      "friction_peak_N": 0.0,
+      "velocity_difference_peak": 0.046544238924980164,
+      "finite": true,
+      "wall_s": 19.525294954999936,
+      "physics_steps": 1200,
+      "num_envs": 1,
+      "decimation": 4,
+      "episode_s": 10.0,
+      "seed": 1,
+      "reset_events": [
+        {
+          "step": 1200,
+          "ids": [
+            0
+          ],
+          "reasons": {
+            "time_out": [
+              true
+            ],
+            "invalid_hand_height": [
+              false
+            ],
+            "invalid_observation": [
+              false
+            ]
+          }
+        }
+      ],
+      "trace": "logs/acceptance/optimization7/A/single_no_table_D4/trace_fixed.pt"
+    },
+    {
+      "mode": "replay",
+      "physics_step": 501,
+      "env_id": 0,
+      "object": "wood_block_oriented",
+      "joint": "joint_10_0",
+      "qvel_rad_s": 0.2829377055168152,
+      "delta_velocity_rad_s": 0.040367241948843,
+      "q_rad": 0.21130922436714172,
+      "target_rad": 0.21348918974399567,
+      "outside_rad": 0.0,
+      "contact_peak_N": 0.0,
+      "hand_velocity_peak": 0.2829377055168152,
+      "velocity_ratio_to_7": 0.040419671684503555,
+      "hand_outside_peak_rad": 1.862645149230957e-06,
+      "hand_outside_env_joint_frames": 302,
+      "outside_duration_env_joint_s": 2.516666889190674,
+      "normal_peak_N": 0.0,
+      "friction_peak_N": 0.0,
+      "velocity_difference_peak": 1.07256281375885,
+      "finite": true,
+      "wall_s": 19.56273540200027,
+      "physics_steps": 1200,
+      "num_envs": 1,
+      "decimation": 4,
+      "episode_s": 10.0,
+      "seed": 1,
+      "reset_events": [
+        {
+          "step": 1200,
+          "ids": [
+            0
+          ],
+          "reasons": {
+            "time_out": [
+              true
+            ],
+            "invalid_hand_height": [
+              false
+            ],
+            "invalid_observation": [
+              false
+            ]
+          }
+        }
+      ],
+      "trace": "logs/acceptance/optimization7/A/single_no_table_D4/trace_replay.pt"
+    }
+  ]
+}

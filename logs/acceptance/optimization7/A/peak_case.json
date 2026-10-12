@@ -1,0 +1,22 @@
+{
+  "physics_step": 776,
+  "time_s": 6.466666666666667,
+  "env_id": 7,
+  "object": "wood_block_oriented",
+  "joint": "joint_15_0",
+  "q_rad": -0.1732536107301712,
+  "qvel_rad_s": 120.81455993652344,
+  "position_difference_rad_s": -0.25160548090934753,
+  "cached_target_rad": -0.16199998557567596,
+  "raw_action": -0.42320820689201355,
+  "processed_action": -0.0015870307106524706,
+  "tracking_error_rad": 0.01125362515449524,
+  "torque_approx_Nm": -0.699999988079071,
+  "normal_peak_N": 53.23921585083008,
+  "friction_peak_N": 36.26886749267578,
+  "object_joint_rad": 0.0003855650429613888,
+  "object_joint_velocity_rad_s": -0.002279386855661869,
+  "source_trace": "logs/acceptance/optimization7/C/E2_screen/trace_random.pt",
+  "window": "logs/acceptance/optimization7/A/trace_peak_E2_random.pt",
+  "root_cause": "unresolved constraint coupling; target remains clamped and constant in each control period"
+}

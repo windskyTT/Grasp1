@@ -1,0 +1,7 @@
+group,phase,status,first_contact_s,two_plus_contact_fraction,three_plus_contact_fraction,contact_duration_s,affordance_distance_m,reason
+E1,0_4s,not_run,,,,,,No formal PPO training
+E2,0_4s,not_run,,,,,,No formal PPO training
+E2,4_10s,not_run,,,,,,No formal PPO training
+E3,0_4s,not_run,,,,,,No formal PPO training
+E4,0_4s,not_run,,,,,,No formal PPO training
+E4,4_10s,not_run,,,,,,No formal PPO training

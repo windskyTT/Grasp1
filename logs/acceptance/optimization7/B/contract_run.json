@@ -1,0 +1,11 @@
+{
+  "path": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-31-20_optimization7_contract_diagnostic",
+  "checkpoint": "logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-31-20_optimization7_contract_diagnostic/model_1.pt",
+  "role": "checkpoint_interface_diagnostic",
+  "formal_training": false,
+  "updates": 2,
+  "metadata_iteration": 1,
+  "optimizer_steps": [
+    32.0
+  ]
+}

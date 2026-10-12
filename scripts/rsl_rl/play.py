@@ -46,6 +46,7 @@ parser.add_argument("--agent",type=str,default="rsl_rl_cfg_entry_point",
                     )
 parser.add_argument("--seed",type=int,default=None,help="Seed used for environment reset and random object selection.")
 parser.add_argument("--real-time",action="store_true",default=False,help="Run in real time, if possible.")
+parser.add_argument('--allow_mismatched_checkpoint', action='store_true', help='Diagnostic inference only; print semantic differences.')
 
 # 加入 RSL-RL 通用参数，例如检查点路径、训练运行目录和恢复选项。
 cli_args.add_rsl_rl_args(parser)
@@ -103,6 +104,7 @@ from isaaclab_tasks.utils.hydra import hydra_task_config
 import Grasp1.tasks  # noqa: F401
 from Grasp1.data.object_set import object_names
 from Grasp1.utils.paths import object_asset_dir
+from checkpoint_contract import build_contract, validate_checkpoint
 
 
 # 播放辅助函数。
@@ -209,6 +211,15 @@ def main(
     env_cfg.log_dir = log_dir
 
     print(f"[INFO] Loading model checkpoint from: {resume_path}")
+    checkpoint_audit, _ = validate_checkpoint(
+        resume_path, build_contract(args_cli.task, env_cfg, agent_cfg),
+        allow_mismatch=args_cli.allow_mismatched_checkpoint,
+    )
+    from pathlib import Path
+    import json
+    audit_dir = Path(log_dir)/'videos'/'play' if args_cli.video else Path(log_dir)/'play'
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    (audit_dir/'checkpoint_compatibility.json').write_text(json.dumps(checkpoint_audit, indent=2))
 
     # 创建注册的 Gymnasium 环境。RslRlVecEnvWrapper 会在构造时 reset，触发 Teacher
     # 的物体放置、预抓取姿态和 IK 初始化流程。

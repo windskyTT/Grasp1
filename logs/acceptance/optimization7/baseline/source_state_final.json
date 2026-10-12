@@ -1,0 +1,4 @@
+{
+  "head": "c280cebf54ae89677b77b3c8313ed5472620151c",
+  "workspace": " M scripts/rsl_rl/evaluate.py\n M scripts/rsl_rl/grasp_diagnostics.py\n M scripts/rsl_rl/play.py\n M scripts/rsl_rl/train.py\n M source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_ppo_cfg.py\n?? \"docs/\\344\\274\\230\\345\\214\\2266\\345\\256\\214\\346\\225\\264\\345\\256\\241\\346\\237\\245\\346\\212\\245\\345\\221\\212.md\"\n?? \"docs/\\344\\274\\230\\345\\214\\2267.md\"\n?? \"docs/\\344\\274\\230\\345\\214\\2267_\\346\\211\\247\\350\\241\\214\\346\\212\\245\\345\\221\\212.md\"\n?? logs/acceptance/optimization7/\n?? logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-31-20_optimization7_contract_diagnostic/\n?? logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/\n?? outputs/2026-10-12/\n?? scripts/rsl_rl/checkpoint_contract.py\n"
+}

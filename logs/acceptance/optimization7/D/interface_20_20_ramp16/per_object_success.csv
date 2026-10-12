@@ -1,0 +1,2 @@
+object,attempts,successes,failures,success_rate,source_successes,source_height_successes,source_height_success_rate,strict_successes,source_success_rate,active_height_successes,active_height_success_rate,paper_stable_successes,paper_stable_success_rate,engineering_stable_successes,engineering_stable_success_rate,checkpoint_compatible,comparability_warning,checkpoint_differences
+Hammer_40,1,0,1,0.0,0,0,0.0,0,0.0,0,0.0,,,,,True,,{}

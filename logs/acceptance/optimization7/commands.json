@@ -1,0 +1,212 @@
+[
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization6/check.py --decimation 4 --episode 10 --trace_mode zero --output_dir logs/acceptance/optimization7/A/legacy_repro --headless",
+    "status": "executed",
+    "evidence": "A/legacy_repro.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --isolation baseline --output_dir logs/acceptance/optimization7/A/baseline_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/baseline_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes replay --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --solver tgs --isolation no_object --contact_detail --output_dir logs/acceptance/optimization7/A/collider_audit_replay --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/collider_audit_replay/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 2 --episode 10.0 --num_envs 35 --duration 12.0 --seed 1 --modes zero random fixed --source_env 7 --hand_armature 0.0012 --isolation baseline --output_dir logs/acceptance/optimization7/A/hand_armature0012_D2 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/hand_armature0012_D2/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 35 --duration 12.0 --seed 1 --modes zero random fixed --source_env 7 --hand_armature 0.0012 --isolation baseline --output_dir logs/acceptance/optimization7/A/hand_armature0012_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/hand_armature0012_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 2 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --hand_armature 0.0006 --isolation baseline --output_dir logs/acceptance/optimization7/A/hand_armature_D2 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/hand_armature_D2/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --hand_armature 0.0006 --isolation baseline --output_dir logs/acceptance/optimization7/A/hand_armature_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/hand_armature_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed replay --source_env 7 --legacy_joint_friction 0.0 --isolation baseline --contact_detail --output_dir logs/acceptance/optimization7/A/legacy_friction0_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/legacy_friction0_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes fixed --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --limit_case outward --solver tgs --isolation no_contacts --force_perturbation --output_dir logs/acceptance/optimization7/A/limit_force --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/limit_force/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes fixed --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --limit_case inward --solver tgs --isolation no_contacts --output_dir logs/acceptance/optimization7/A/limit_inward --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/limit_inward/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes fixed --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --limit_case lower --solver tgs --isolation no_contacts --output_dir logs/acceptance/optimization7/A/limit_lower --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/limit_lower/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes fixed --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --limit_case outward --solver tgs --isolation no_contacts --output_dir logs/acceptance/optimization7/A/limit_outward --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/limit_outward/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --object_velocity_iterations 4 --isolation baseline --output_dir logs/acceptance/optimization7/A/object_velocity4_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/object_velocity4_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 2 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --solver pgs --isolation baseline --output_dir logs/acceptance/optimization7/A/pgs_D2 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/pgs_D2/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes zero random fixed replay --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --isolation no_contacts --output_dir logs/acceptance/optimization7/A/single_no_contacts_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/single_no_contacts_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes zero fixed replay --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --solver tgs --isolation no_object --output_dir logs/acceptance/optimization7/A/single_no_object_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/single_no_object_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes zero fixed replay --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --solver tgs --isolation no_table --output_dir logs/acceptance/optimization7/A/single_no_table_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/single_no_table_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes zero random fixed replay --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --isolation baseline --contact_detail --output_dir logs/acceptance/optimization7/A/single_wood_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/single_wood_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 2 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --arm_armature 1.0 --solver tgs --isolation baseline --output_dir logs/acceptance/optimization7/A/source_arm_rotor_D2 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/source_arm_rotor_D2/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --arm_armature 1.0 --solver tgs --isolation baseline --output_dir logs/acceptance/optimization7/A/source_arm_rotor_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/source_arm_rotor_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 1 --duration 10.0 --seed 1 --modes replay --initial_state logs/acceptance/optimization7/A/baseline_D4/initial_zero.pt --source_env 7 --solver tgs --isolation no_object --contact_detail --output_dir logs/acceptance/optimization7/A/table_filtered_unfiltered --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/table_filtered_unfiltered/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10.0 --num_envs 16 --duration 10.0 --seed 1 --modes zero random fixed --source_env 7 --velocity_iterations 4 --isolation baseline --output_dir logs/acceptance/optimization7/A/velocity4_D4 --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/A/velocity4_D4/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 2 --episode 4 --duration 12 --num_envs 16 --modes zero random fixed --output_dir logs/acceptance/optimization7/C/E1_screen --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/C/E1_screen/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 2 --episode 10 --duration 12 --num_envs 16 --modes zero random fixed --output_dir logs/acceptance/optimization7/C/E2_screen --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/C/E2_screen/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 4 --duration 12 --num_envs 16 --modes zero random fixed --output_dir logs/acceptance/optimization7/C/E3_screen --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/C/E3_screen/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/A/minimal_repro.py --decimation 4 --episode 10 --duration 12 --num_envs 16 --modes zero random fixed --output_dir logs/acceptance/optimization7/C/E4_screen --headless",
+    "status": "executed",
+    "evidence": "logs/acceptance/optimization7/C/E4_screen/result.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization6/check.py --decimation 2 --episode 10 --duration 0.2 --output_dir logs/acceptance/optimization7/B/regression_D2 --headless",
+    "status": "executed",
+    "evidence": "B/regression_D2.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization6/check.py --decimation 4 --episode 10 --duration 0.2 --output_dir logs/acceptance/optimization7/B/regression_D4 --headless",
+    "status": "executed",
+    "evidence": "B/regression_D4.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/B/measurement_check.py --decimation 2 --num_envs 16 --output_dir logs/acceptance/optimization7/B/D2 --headless",
+    "status": "executed",
+    "evidence": "B/D2.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/B/measurement_check.py --decimation 4 --num_envs 30 --copies --output_dir logs/acceptance/optimization7/B/D4_copies30 --headless",
+    "status": "executed",
+    "evidence": "B/D4_copies30.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/B/measurement_check.py --decimation 2 --num_envs 16 --output_dir logs/acceptance/optimization7/B/final_D2 --headless",
+    "status": "executed",
+    "evidence": "B/final_D2.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/B/measurement_check.py --decimation 4 --num_envs 30 --copies --output_dir logs/acceptance/optimization7/B/final_D4_copies30 --headless",
+    "status": "executed",
+    "evidence": "B/final_D4_copies30.log"
+  },
+  {
+    "command": "python logs/acceptance/optimization7/B/protocol_tests.py",
+    "status": "executed",
+    "evidence": "B/protocol_tests.json"
+  },
+  {
+    "command": "python logs/acceptance/optimization7/B/stability_tests.py",
+    "status": "executed",
+    "evidence": "B/stability_tests.json"
+  },
+  {
+    "command": "python logs/acceptance/optimization7/B/contact_audit.py",
+    "status": "executed",
+    "evidence": "B/contact_reward_audit.json"
+  },
+  {
+    "command": "python logs/acceptance/optimization7/B/ppo_regression.py",
+    "status": "executed",
+    "evidence": "B/ppo_regression.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p scripts/rsl_rl/train.py --task Grasp1-UR5-Allegro-Teacher-v0 --num_envs 16 --decimation 2 --episode_length_s 10 --seed 1 --headless --max_iterations 2 --run_name optimization7_contract_diagnostic",
+    "status": "executed",
+    "evidence": "B/contract_train.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p scripts/rsl_rl/train.py --task Grasp1-UR5-Allegro-Teacher-v0 --num_envs 16 --decimation 2 --episode_length_s 10 --seed 1 --headless --max_iterations 1 --run_name optimization7_contract_resume_diagnostic --resume --load_run 2026-10-12_13-31-20_optimization7_contract_diagnostic agent.load_checkpoint=model_1.pt",
+    "status": "failed_metadata_discovery_then_fixed",
+    "evidence": "B/contract_resume.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p scripts/rsl_rl/train.py --task Grasp1-UR5-Allegro-Teacher-v0 --num_envs 16 --decimation 2 --episode_length_s 10 --seed 1 --headless --max_iterations 1 --run_name optimization7_contract_resume_diagnostic_retry --resume --load_run 2026-10-12_13-31-20_optimization7_contract_diagnostic agent.load_checkpoint=model_1.pt",
+    "status": "executed",
+    "evidence": "B/contract_resume_retry.log"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p scripts/rsl_rl/evaluate.py --checkpoint logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt --decimation 2 --object Hammer_40 --rounds 1 --grasp_duration_s 20 --lift_duration_s 20 --lift_ramp_duration_s 16 --diagnostics --seed 1 --output_dir logs/acceptance/optimization7/D/interface_20_20_ramp16 --headless",
+    "status": "executed_nonformal_diagnostic",
+    "evidence": "logs/acceptance/optimization7/D/interface_20_20_ramp16/quantitative_eval.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/D/injected_40s.py --checkpoint logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt --decimation 2 --object Hammer_40 --rounds 1 --grasp_duration_s 20 --lift_duration_s 20 --lift_ramp_duration_s 16 --diagnostics --seed 1 --output_dir logs/acceptance/optimization7/D/interface_injected_20_20_ramp16 --headless",
+    "status": "executed_nonformal_diagnostic",
+    "evidence": "logs/acceptance/optimization7/D/interface_injected_20_20_ramp16/quantitative_eval.json"
+  },
+  {
+    "command": "/home/windsky/IsaacLab/isaaclab.sh -p logs/acceptance/optimization7/D/injected_40s.py --checkpoint logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-12_13-35-50_optimization7_contract_resume_diagnostic_retry/model_2.pt --decimation 2 --object Hammer_40 --rounds 1 --paper_stability --diagnostics --seed 1 --output_dir logs/acceptance/optimization7/D/interface_injected_engineering_ramp14 --headless",
+    "status": "executed_nonformal_diagnostic",
+    "evidence": "logs/acceptance/optimization7/D/interface_injected_engineering_ramp14/quantitative_eval.json"
+  }
+]

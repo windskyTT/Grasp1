@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "hold_duration_s": 5.0,
+  "translation_threshold_m": 0.02,
+  "rotation_threshold_rad": 0.2,
+  "threshold_basis": "Engineering thresholds: 2cm is 20% of 10cm lift; 0.2rad approximately 11.5deg. Not an original paper threshold; inspect saved sample trajectories."
+}

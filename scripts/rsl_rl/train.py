@@ -107,6 +107,7 @@ logger = logging.getLogger(__name__)
 
 import Grasp1.tasks  # noqa: F401
 from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
+from checkpoint_contract import build_contract, save_metadata, validate_checkpoint
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -181,16 +182,20 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # set the log directory for the environment (works for all environment types)
     env_cfg.log_dir = log_dir
 
+    # 校验只需要最终配置；在创建/reset物理环境之前拒绝不兼容续训。
+    if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
+        resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
+        if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+            _, resume_metadata = validate_checkpoint(
+                resume_path, build_contract(args_cli.task, env_cfg, agent_cfg), resume=True,
+            )
+
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
 
     # convert to single-agent instance if required by the RL algorithm
     if isinstance(env.unwrapped, DirectMARLEnv):
         env = multi_agent_to_single_agent(env)
-
-    # save resume path before creating a new log_dir
-    if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
-        resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
 
     # wrap for video recording
     if args_cli.video:
@@ -239,13 +244,27 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         print(f"[INFO]: Loading model checkpoint from: {resume_path}")
         # load previously trained model
         runner.load(resume_path)
+        if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+            # RSL-RL 3.1.2保存刚完成的零基update编号；下一次从其后开始。
+            assert runner.current_learning_iteration == resume_metadata['checkpoint_iteration']
+            runner.current_learning_iteration = resume_metadata['next_update_index']
 
     # dump the configuration into log-directory
     dump_yaml(os.path.join(log_dir, "params", "env.yaml"), env_cfg)
     dump_yaml(os.path.join(log_dir, "params", "agent.yaml"), agent_cfg)
 
     # run training
-    runner.learn(num_learning_iterations=agent_cfg.max_iterations, init_at_random_ep_len=True)
+    original_save = runner.save
+    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
+        contract = build_contract(args_cli.task, env_cfg, agent_cfg)
+        def save_with_contract(path, infos=None):
+            original_save(path, infos)
+            save_metadata(path, contract, runner.current_learning_iteration)
+        runner.save = save_with_contract
+    try:
+        runner.learn(num_learning_iterations=agent_cfg.max_iterations, init_at_random_ep_len=True)
+    finally:
+        runner.save = original_save
 
     print(f"Training time: {round(time.time() - start_time, 2)} seconds")
 
@@ -255,6 +274,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
 if __name__ == "__main__":
     # run the main function
-    main()
-    # close sim app
-    simulation_app.close()
+    try:
+        main()
+    finally:
+        simulation_app.close()

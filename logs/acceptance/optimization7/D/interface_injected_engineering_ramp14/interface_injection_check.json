@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "purpose": "nonformal_40s_interface_injection",
+  "formal": false,
+  "policy_training_updates": 3,
+  "attempts": 1,
+  "simulated_duration_s": 40.0,
+  "physics_steps": 4800,
+  "policy_steps": 2400,
+  "failure_step": 120,
+  "top_frozen": true,
+  "active_trial_peak": 0.04187110811471939,
+  "post_reset_peak": 123.0,
+  "comparability_warning": null
+}
