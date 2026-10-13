@@ -1,0 +1,23 @@
+{
+  "status": "pass_interface_only",
+  "task_id": "Grasp1-UR5-Allegro-GraspTrain-v1",
+  "num_envs": 16,
+  "physics_dt": 0.008333333333333333,
+  "control_dt": 0.03333333333333333,
+  "observation_shape": [
+    16,
+    153
+  ],
+  "action_shape": [
+    16,
+    22
+  ],
+  "target_substeps_equal": true,
+  "partial_reset_target_equal_measured": true,
+  "other_partial_reset_targets_unchanged": true,
+  "object_top_reference": 1,
+  "robot_inertia_min": 1.666666626931601e-08,
+  "object_inertia_min": 1.6333329355688875e-08,
+  "formal_candidate_qualified": false,
+  "ppo_updates": 0
+}

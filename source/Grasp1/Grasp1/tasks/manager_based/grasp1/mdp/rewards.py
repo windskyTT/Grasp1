@@ -14,8 +14,9 @@ Important migration notes
 -------------------------
 - RaiSim exposes contact impulses directly; IsaacLab ContactSensor exposes
   contact forces.  The migration approximates impulse as ``force * physics_dt``.
-- ``affordance_impulse_reward`` uses tangential/friction impulse magnitude,
-  corresponding to the old contact-frame XY impulse magnitude.
+- The legacy ``affordance_impulse_reward`` uses tangential/friction magnitude.
+  Source C++ instead uses world-XY total impulse; ``rewards_grasp_v1.py``
+  provides that definition for the independent physics-aligned profile.
 - The source line ``reward_r.clip(min=-2.0)`` does not mutate the NumPy array
   because its return value is ignored.  Therefore no final reward floor is
   applied here.

@@ -1,5 +1,6 @@
 """Teacher检查点的实际控制语义；训练恢复和推理入口共用，旧权重不被重写。"""
 import importlib.metadata
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -16,6 +17,45 @@ RESUME_FIELDS = SEMANTIC_FIELDS + (
     'episode_length_s', 'gamma', 'lam', 'minimum_action_std', 'ppo_parameters',
     'object_dataset', 'object_names',
 )
+GRASP_TRAIN_FIELDS = ('reward_profile', 'reward_terms', 'termination_terms', 'asset_contents', 'scene_parameters',
+                     'normalizer_configuration', 'policy_architecture')
+GRASP_TRAIN_RESUME_FIELDS = ('curriculum_stage', 'reset_distribution', 'object_asset_contents')
+
+
+def asset_contents(env_cfg, *, include_objects=True):
+    """新Task契约消费真实USD及引用mesh/材质字节，检出未提交资产变动。"""
+    from pxr import UsdUtils
+    import omni.client
+    import carb.tokens
+    roots = [env_cfg.scene.robot.spawn.usd_path, env_cfg.scene.table.spawn.usd_path]
+    if include_objects:
+        objects = env_cfg.scene.object.spawn.usd_path
+        roots.extend(objects if isinstance(objects, list) else [objects])
+    paths, unresolved = set(), set()
+    for root in sorted(set(roots)):
+        layers, assets, missing = UsdUtils.ComputeAllDependencies(root)
+        paths.update(str(layer.realPath or layer.identifier) for layer in layers)
+        paths.update(str(path) for path in assets)
+        unresolved.update(str(path) for path in missing)
+    # USD依赖枚举不使用Kit的内置MDL搜索路径；本机实际材质为这个核心模块。
+    if 'OmniPBR.mdl' in unresolved:
+        builtin = Path(carb.tokens.get_tokens_interface().resolve('${kit}/mdl/core/Base/OmniPBR.mdl'))
+        if builtin.is_file():
+            paths.add(str(builtin))
+            unresolved.remove('OmniPBR.mdl')
+    if unresolved:
+        raise FileNotFoundError(f'GraspTrain asset dependencies unresolved: {sorted(unresolved)}')
+    values = {}
+    for path in sorted(paths):
+        if '://' in path:
+            result, _, content = omni.client.read_file(path)
+            if result != omni.client.Result.OK:
+                raise OSError(f'Cannot read loaded asset dependency {path}: {result}')
+            values[path] = hashlib.sha256(bytes(content)).hexdigest()
+        else:
+            with Path(path).open('rb') as handle:
+                values[path] = hashlib.file_digest(handle, 'sha256').hexdigest()
+    return values
 
 
 def build_contract(task_id, env_cfg, agent_cfg):
@@ -28,7 +68,7 @@ def build_contract(task_id, env_cfg, agent_cfg):
     scale = env_cfg.actions.teacher.scale
     arm_names = env_cfg.actions.teacher.joint_names[:6]
     hand_names = env_cfg.actions.teacher.joint_names[6:]
-    return dict(
+    contract = dict(
         schema_version=SCHEMA_VERSION, task_id=task_id, physics_dt=env_cfg.sim.dt,
         decimation=env_cfg.decimation, control_dt=env_cfg.sim.dt*env_cfg.decimation,
         episode_length_s=env_cfg.episode_length_s,
@@ -55,6 +95,23 @@ def build_contract(task_id, env_cfg, agent_cfg):
         training_working_tree=git('status','--short'),
         rsl_rl_version=importlib.metadata.version('rsl-rl-lib'),
     )
+    if task_id == 'Grasp1-UR5-Allegro-GraspTrain-v1':
+        shared_assets = asset_contents(env_cfg, include_objects=False)
+        all_assets = asset_contents(env_cfg)
+        contract.update(schema_version=2, reward_profile=env_cfg.reward_profile,
+            reward_semantics_version=f'{env_cfg.reward_profile}_latest_physics_frame_v1',
+            reward_terms=env_cfg.rewards.to_dict(), termination_terms=env_cfg.terminations.to_dict(),
+            asset_contents=shared_assets,
+            object_asset_contents={path:sha for path,sha in all_assets.items() if path not in shared_assets},
+            curriculum_stage=env_cfg.curriculum_stage,
+            normalizer_configuration=dict(actor=agent_cfg.policy.actor_obs_normalization,
+                critic=agent_cfg.policy.critic_obs_normalization),
+            policy_architecture=dict(actor_hidden_dims=agent_cfg.policy.actor_hidden_dims,
+                critic_hidden_dims=agent_cfg.policy.critic_hidden_dims, activation=agent_cfg.policy.activation),
+            reset_distribution=env_cfg.events.reset_teacher.to_dict(),
+            scene_parameters=dict(robot_initial_state=robot.init_state.to_dict(), table=env_cfg.scene.table.to_dict(),
+                physics_material=env_cfg.sim.physics_material.to_dict()))
+    return contract
 
 
 def metadata_path(checkpoint):
@@ -65,8 +122,22 @@ def metadata_path(checkpoint):
 
 def compare_contract(saved, current, *, resume):
     fields = RESUME_FIELDS if resume else SEMANTIC_FIELDS
-    return {key:dict(checkpoint=saved.get(key), requested=current.get(key))
-            for key in fields if key not in saved or saved[key] != current[key]}
+    if saved.get('schema_version') == 2 or current.get('schema_version') == 2:
+        fields += GRASP_TRAIN_FIELDS
+        if resume:
+            fields += GRASP_TRAIN_RESUME_FIELDS
+    differences = {key:dict(checkpoint=saved.get(key), requested=current.get(key))
+                   for key in fields if key not in saved or saved[key] != current[key]}
+    if not resume and current.get('schema_version') == 2:
+        # 允许heldout新对象；同一对象路径的字节改变仍是动力学不兼容。
+        saved_objects = saved.get('object_asset_contents', {})
+        current_objects = current.get('object_asset_contents', {})
+        changed = {path:dict(checkpoint=saved_objects[path], requested=current_objects[path])
+                   for path in saved_objects.keys() & current_objects.keys()
+                   if saved_objects[path] != current_objects[path]}
+        if changed:
+            differences['object_asset_contents'] = changed
+    return differences
 
 
 def validate_checkpoint(checkpoint, current, *, resume=False, allow_mismatch=False):
@@ -76,6 +147,11 @@ def validate_checkpoint(checkpoint, current, *, resume=False, allow_mismatch=Fal
     # JSON规范化将配置中的tuple转换为list，和磁盘记录一致。
     current = json.loads(json.dumps(current))
     differences = compare_contract(saved, current, resume=resume)
+    if saved.get('schema_version') == 2:
+        with Path(checkpoint).open('rb') as handle:
+            actual_hash = hashlib.file_digest(handle, 'sha256').hexdigest()
+        if saved.get('checkpoint_sha256') != actual_hash:
+            differences['checkpoint_sha256'] = dict(checkpoint=saved.get('checkpoint_sha256'), requested=actual_hash)
     warning = ('Diagnostic checkpoint override: results are excluded from formal candidate comparisons.'
                if differences else None)
     audit = dict(checkpoint=str(checkpoint), metadata=str(path), metadata_present=path.exists(),
@@ -94,4 +170,7 @@ def validate_checkpoint(checkpoint, current, *, resume=False, allow_mismatch=Fal
 def save_metadata(checkpoint, contract, iteration):
     data = dict(contract, checkpoint_iteration=int(iteration), completed_updates=int(iteration)+1,
                 next_update_index=int(iteration)+1)
+    if contract['schema_version'] == 2:
+        with Path(checkpoint).open('rb') as handle:
+            data['checkpoint_sha256'] = hashlib.file_digest(handle, 'sha256').hexdigest()
     metadata_path(checkpoint).write_text(json.dumps(data,indent=2,allow_nan=False)+'\n')

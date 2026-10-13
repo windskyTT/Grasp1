@@ -1,0 +1,8 @@
+{
+  "status": "blocked",
+  "native_task_registered": true,
+  "independent_interfaces": "pass",
+  "strict_contract_tests": "pass",
+  "formal_candidate_qualified": false,
+  "reason": "物理修复、窄范围可抓初始化、脚本抓握正对照及128env真实物理Gate尚未完成。"
+}

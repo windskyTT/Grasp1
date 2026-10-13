@@ -1,0 +1,8 @@
+{
+  "repeated_no_object_q_v_target_exact": true,
+  "old_requested_target_max_error_rad": 3.725290298461914e-09,
+  "initial_state_source": "optimization7/A/baseline_D4/initial_zero.pt env7",
+  "target_source": "optimization6/diagnosis/zero_physics_trace.pt env7",
+  "D2_input": "optimization7/C/E2_screen initial_random and saved target; no fresh Gaussian claim",
+  "historical_16env_peaks_reproduced_exactly": false
+}

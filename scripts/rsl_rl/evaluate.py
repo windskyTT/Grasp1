@@ -166,7 +166,6 @@ from Grasp1.data.object_set import (
 )
 from Grasp1.robots.robot_profile import UR5_JOINT_NAMES
 from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import (
-    ARM_ACTION_SCALE,
     TEACHER_ACTION_DIM,
 )
 from Grasp1.utils.paths import object_asset_dir
@@ -507,7 +506,7 @@ def main(
                     actions[:, : len(arm_joint_ids)] = (
                         arm_target
                         - robot.data.joint_pos[:, arm_joint_ids]
-                    ) / ARM_ACTION_SCALE
+                    ) / action_term._scale[:, : len(arm_joint_ids)]
 
                     actions[~active] = 0.0
 

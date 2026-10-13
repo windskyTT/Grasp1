@@ -1,0 +1,75 @@
+{
+  "status": "cpu_network_compatible",
+  "checkpoint": "/home/windsky/project/RobustDexGrasp/raisimGymTorch/data_all/teacher/teacher_ckpt/full_12500_r.pt",
+  "sha256": "7197d06c77fb77807cd80169f00924e1f0b3eab204028062ac33653443c97dcc",
+  "source_module": "/home/windsky/project/RobustDexGrasp/raisimGymTorch/raisimGymTorch/algo/ppo/module.py",
+  "input_dim": 153,
+  "action_dim": 22,
+  "hidden_dims": [
+    128,
+    128
+  ],
+  "activation": "LeakyReLU",
+  "negative_slope": 0.01,
+  "key_shapes": {
+    "actor_architecture_state_dict": {
+      "architecture.0.weight": [
+        128,
+        153
+      ],
+      "architecture.0.bias": [
+        128
+      ],
+      "architecture.2.weight": [
+        128,
+        128
+      ],
+      "architecture.2.bias": [
+        128
+      ],
+      "architecture.4.weight": [
+        22,
+        128
+      ],
+      "architecture.4.bias": [
+        22
+      ]
+    },
+    "actor_distribution_state_dict": {
+      "std": [
+        22
+      ]
+    },
+    "critic_architecture_state_dict": {
+      "architecture.0.weight": [
+        128,
+        153
+      ],
+      "architecture.0.bias": [
+        128
+      ],
+      "architecture.2.weight": [
+        128,
+        128
+      ],
+      "architecture.2.bias": [
+        128
+      ],
+      "architecture.4.weight": [
+        1,
+        128
+      ],
+      "architecture.4.bias": [
+        1
+      ]
+    }
+  },
+  "action_order": "6 UR5 then 16 Allegro from robot_profile and source hardware contract",
+  "observation_contract": "102D source state + 51D affordance vectors; source-to-Isaac field formulas require physical validation",
+  "normalization": "train.py uses RaisimGymVecEnvOther.observe_vision_new which directly concatenates raw102D and rotated51D without normalizer; mean/var CSVs are not consumed in this path",
+  "std_min": 0.9909452199935913,
+  "std_max": 1.0043946504592896,
+  "optimizer_migrated": false,
+  "physical_transfer_status": "blocked_gate_A",
+  "attempts": 0
+}

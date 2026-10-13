@@ -14,3 +14,13 @@ gym.register(
     },
     disable_env_checker=True,
 )
+
+gym.register(
+    id="Grasp1-UR5-Allegro-GraspTrain-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.grasp_train_env_cfg:UR5AllegroGraspTrainEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_grasp_train_ppo_cfg:UR5AllegroGraspTrainPPORunnerCfg",
+    },
+    disable_env_checker=True,
+)

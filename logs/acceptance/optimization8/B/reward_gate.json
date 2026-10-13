@@ -1,0 +1,10 @@
+{
+  "status": "blocked",
+  "independent_static_synthetic_tests": "pass",
+  "source_terms_audited": 17,
+  "diagnostic_contact_samples": 1165,
+  "qualified_physical_distribution_test": "not_run",
+  "reason": "缺少Gate A通过的真实轨迹；方向/单位单测通过不能替代真实Gate B。",
+  "profile_isaac_grasp_v1": "not_enabled",
+  "weights_tuned": false
+}

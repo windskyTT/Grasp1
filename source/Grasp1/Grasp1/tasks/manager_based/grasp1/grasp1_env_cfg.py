@@ -103,6 +103,7 @@ class Grasp1EnvCfg(ManagerBasedRLEnvCfg):
 
     def control_dt(self) -> float:
         """真实控制周期只有sim.dt × decimation这一事实来源。"""
+        assert self.sim.dt == PHYSICS_DT
         return self.sim.dt * self.decimation
 
     # 并行场景配置；默认创建 1 个环境，环境之间间隔 3 米。

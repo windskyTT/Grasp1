@@ -1,0 +1,11 @@
+{
+  "0": "pass",
+  "A": "fail",
+  "B": "blocked",
+  "C": "blocked",
+  "D": "blocked",
+  "E": "partial_cpu_pass",
+  "F": "blocked",
+  "G": "blocked",
+  "H": "partial_checks_pass"
+}

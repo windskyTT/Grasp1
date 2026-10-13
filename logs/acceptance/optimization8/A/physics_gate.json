@@ -1,0 +1,24 @@
+{
+  "status": "fail",
+  "physics_stable": false,
+  "root_cause_established": false,
+  "physical_fix_adopted": false,
+  "engineering_thresholds": {
+    "violation_p9999_rad": 0.001,
+    "violation_max_rad": 0.005
+  },
+  "reason": "Same historical fixture reproduces 30.95708rad/s and 0.08780555rad actual violation twice; base/table filter, Box and stiffness150 all fail. No accepted scene configuration exists.",
+  "evaluated_env_sizes": [
+    1
+  ],
+  "not_run": [
+    "Gate A 16/128 multi-seed accepted-configuration screen",
+    "scripted grasp/lift positive control"
+  ],
+  "evidence": [
+    "before_after_physics.csv",
+    "loaded_colliders.json",
+    "loaded_parameters.json"
+  ],
+  "formal_training_allowed": false
+}

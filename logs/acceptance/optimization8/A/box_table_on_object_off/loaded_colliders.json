@@ -1,0 +1,681 @@
+{
+  "physics_dt": 0.008333333333333333,
+  "control_dt": 0.03333333333333333,
+  "colliders": [
+    {
+      "path": "/World/envs/env_0/Robot/base_link/collisions/base_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        -0.26747940480709076,
+        -0.8615199774503708,
+        0.771000012522336
+      ],
+      "aabb_max": [
+        -0.12026670575141907,
+        -0.6779685765504837,
+        0.7950027119368315
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/shoulder_link/collisions/shoulder_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        -0.25330400466918945,
+        -0.8112663775682449,
+        0.7949612066149712
+      ],
+      "aabb_max": [
+        -0.13439980521798134,
+        -0.6810186803340912,
+        0.9286211058497429
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/upper_arm_link/collisions/upperarm_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        -0.25364610552618017,
+        -0.6808699816465378,
+        0.8006815089746587
+      ],
+      "aabb_max": [
+        0.2909990103337673,
+        -0.5470726788043976,
+        0.9200538099941394
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/forearm_link/collisions/forearm_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.17311450836216608,
+        -0.7925460711121559,
+        0.8016273862330221
+      ],
+      "aabb_max": [
+        0.6623790114072797,
+        -0.6808592714369297,
+        0.9180735870178172
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/wrist_1_link/collisions/wrist1_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.5844602100551128,
+        -0.6878705732524395,
+        0.8126614652574062
+      ],
+      "aabb_max": [
+        0.6619501076638699,
+        -0.6028699800372124,
+        0.9173374623060226
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/wrist_2_link/collisions/wrist2_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.5846557095646858,
+        -0.6995581015944481,
+        0.7267783582210541
+      ],
+      "aabb_max": [
+        0.662239708006382,
+        -0.594870001077652,
+        0.8110115639865398
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/wrist_3_link/collisions/wrist3_stl/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.5858343094587326,
+        -0.5950453020632267,
+        0.7225113622844219
+      ],
+      "aabb_max": [
+        0.6608657091856003,
+        -0.5605449005961418,
+        0.8030270636081696
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/ee_link/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6183500094339252,
+        -0.5750700375065207,
+        0.7605113638564944
+      ],
+      "aabb_max": [
+        0.6283500092104077,
+        -0.5650700377300382,
+        0.770511363632977
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/Allegro_base_link/collisions/palm_sim/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.6029500085860491,
+        -0.5500700399279594,
+        0.7087723650038242
+      ],
+      "aabb_max": [
+        0.6437500091269612,
+        -0.45337004109751433,
+        0.8222503624856472
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_1_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.44346522814848705,
+        0.7965687008004207
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.40122065861528294,
+        0.8274502838355475
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_2_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.392659309525164,
+        0.8010136349587816
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.3559934282552187,
+        0.8314071461104829
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_3_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.34543968263644265,
+        0.8051448075786785
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.33138742252729536,
+        0.8335598836305527
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_3_0_tip/collisions/tip/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.602261989377439,
+        -0.33362750333233454,
+        0.8080034977352851
+      ],
+      "aabb_max": [
+        0.6263009896501899,
+        -0.3099560875657642,
+        0.8327513403629809
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_13_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6137000324918193,
+        -0.5424495770362332,
+        0.8250710927010507
+      ],
+      "aabb_max": [
+        0.6412000356844397,
+        -0.52199158974538,
+        0.8374386290114888
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_14_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6137000325245366,
+        -0.5465023196305899,
+        0.8471866048985573
+      ],
+      "aabb_max": [
+        0.6412000358938307,
+        -0.5239264480587199,
+        0.8837616720938969
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_15_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6137000325049062,
+        -0.5499013842882441,
+        0.8957012708932127
+      ],
+      "aabb_max": [
+        0.6412000358036762,
+        -0.5281709233495537,
+        0.922613249223614
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_15_0_tip/collisions/tip/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.6154740339753798,
+        -0.5531603080527615,
+        0.9212416696824476
+      ],
+      "aabb_max": [
+        0.6393540344255066,
+        -0.528288676673751,
+        0.9452029654866941
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_5_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.4399700425565243,
+        0.7517613377422094
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.39997004345059395,
+        0.7792613375931978
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_6_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.38897005282342434,
+        0.7517613265663385
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.3545700516551733,
+        0.7792613264173269
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_7_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.34157005744054914,
+        0.7517613191157579
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.32987005775794387,
+        0.7792613189667463
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_7_0_tip/collisions/tip/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.602261989377439,
+        -0.3298700675368309,
+        0.7536073131486773
+      ],
+      "aabb_max": [
+        0.6263009896501899,
+        -0.3069820674136281,
+        0.777487313374877
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_9_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.44346522814848705,
+        0.7035724064010209
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.40122065861528294,
+        0.7344539894361477
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_10_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.392659309525164,
+        0.699615525499634
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.3559934282552187,
+        0.7300090366513353
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_11_0/collisions/mesh_0/box",
+      "type": "Cube",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        0.6044499892741442,
+        -0.34543968263644265,
+        0.6974627730784031
+      ],
+      "aabb_max": [
+        0.6240499895066023,
+        -0.33138742252729536,
+        0.7258778491302773
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_11_0_tip/collisions/tip/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.602261989377439,
+        -0.3336233199068224,
+        0.6983603206918318
+      ],
+      "aabb_max": [
+        0.6263009896501899,
+        -0.3096137398663804,
+        0.7230669645797065
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Object/top/collisions/top_watertight_tiny/World",
+      "type": "Xform",
+      "instance_proxy": true,
+      "enabled": true,
+      "approximation": "convexHull",
+      "aabb_min": [
+        0.15229200199246407,
+        -0.8370509743690491,
+        0.877723004668951
+      ],
+      "aabb_max": [
+        0.2434620037674904,
+        -0.6315629780292511,
+        0.966693002730608
+      ],
+      "material": {}
+    },
+    {
+      "path": "/World/envs/env_0/Table/geometry/mesh",
+      "type": "Cube",
+      "instance_proxy": false,
+      "enabled": true,
+      "approximation": null,
+      "aabb_min": [
+        -0.4400000198483467,
+        -1.2065199745297432,
+        1.3828277578564752e-08
+      ],
+      "aabb_max": [
+        0.8400000258088112,
+        -0.2965199815630913,
+        0.7710000138282775
+      ],
+      "material": {
+        "path": "/World/envs/env_0/Table/geometry/material",
+        "static_friction": 1.0,
+        "dynamic_friction": 1.0,
+        "restitution": 0.0
+      }
+    }
+  ],
+  "rigid_bodies": [
+    {
+      "path": "/World/envs/env_0/Robot/base_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/base",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/shoulder_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/upper_arm_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/forearm_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/wrist_1_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/wrist_2_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/wrist_3_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/ee_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/tool0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/Flange_base_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/Allegro_base_link",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_0_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_1_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_2_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_3_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_3_0_tip",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_12_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_13_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_14_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_15_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_15_0_tip",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_4_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_5_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_6_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_7_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_7_0_tip",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_8_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_9_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_10_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_11_0",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Robot/link_11_0_tip",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Object/bottom",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Object/top",
+      "kinematic": false,
+      "filtered_pairs": []
+    },
+    {
+      "path": "/World/envs/env_0/Table",
+      "kinematic": true,
+      "filtered_pairs": []
+    }
+  ],
+  "collision_groups": [],
+  "base_table_aabb_overlap_m": [
+    0.1472126990556717,
+    0.18355140089988708,
+    1.3059415771010663e-09
+  ],
+  "aabb_note": "Broad-phase bounds are evidence of proximity; overlap alone does not prove a contact constraint."
+}

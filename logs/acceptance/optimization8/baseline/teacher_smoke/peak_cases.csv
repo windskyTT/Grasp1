@@ -1,0 +1,3 @@
+mode,physics_step,env_id,object,joint,qvel_rad_s,delta_velocity_rad_s,q_rad,target_rad,outside_rad,contact_peak_N
+zero,2,0,off_water_body,joint_2_0,0.030523594468832016,0.01512050535529852,0.20013287663459778,0.20000000298023224,0.0,0.0
+fixed,2,0,off_water_body,joint_2_0,0.030523594468832016,0.01512050535529852,0.20013287663459778,0.20000000298023224,0.0,0.0
