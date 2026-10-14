@@ -1,0 +1,677 @@
+[
+  {
+    "path": "/World/envs/env_0/Robot/base_link/visuals/base/Scene/mesh",
+    "points": 5796,
+    "collision_api": false,
+    "min": [
+      -0.26726580411195755,
+      -0.8615199774503708,
+      0.7710024509578943
+    ],
+    "max": [
+      -0.12053414434194565,
+      -0.6781541779637337,
+      0.7950021326541901
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/base_link/collisions/base_stl/World/mesh",
+    "points": 1734,
+    "collision_api": false,
+    "min": [
+      -0.26747940480709076,
+      -0.8615199774503708,
+      0.771000012522336
+    ],
+    "max": [
+      -0.12026670575141907,
+      -0.6779685765504837,
+      0.7950027119368315
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/shoulder_link/visuals/shoulder/Scene/mesh",
+    "points": 40476,
+    "collision_api": false,
+    "min": [
+      -0.2533998042345047,
+      -0.8110199347138405,
+      0.7949612811207771
+    ],
+    "max": [
+      -0.13440020382404327,
+      -0.6810201853513718,
+      0.928672157227993
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/shoulder_link/collisions/shoulder_stl/World/mesh",
+    "points": 2022,
+    "collision_api": false,
+    "min": [
+      -0.25330400466918945,
+      -0.8112663775682449,
+      0.7949612066149712
+    ],
+    "max": [
+      -0.13439980521798134,
+      -0.6810186803340912,
+      0.9286211058497429
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/upper_arm_link/visuals/upperarm/Scene/mesh",
+    "points": 88308,
+    "collision_api": false,
+    "min": [
+      -0.25339980423450464,
+      -0.6808699518442154,
+      0.800661594029644
+    ],
+    "max": [
+      0.2905998975038525,
+      -0.5471590384840965,
+      0.9196611493825912
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/upper_arm_link/collisions/upperarm_stl/World/mesh",
+    "points": 3528,
+    "collision_api": false,
+    "min": [
+      -0.25364610552618017,
+      -0.6808699816465378,
+      0.8006815089746587
+    ],
+    "max": [
+      0.2909990103337673,
+      -0.5470726788043976,
+      0.9200538099941394
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/forearm_link/visuals/forearm/Scene/mesh",
+    "points": 63084,
+    "collision_api": false,
+    "min": [
+      0.17310027778148657,
+      -0.792569924145937,
+      0.8021616563200951
+    ],
+    "max": [
+      0.6622800081968349,
+      -0.6808699928224087,
+      0.9181611649692059
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/forearm_link/collisions/forearm_stl/World/mesh",
+    "points": 3150,
+    "collision_api": false,
+    "min": [
+      0.17311450836216608,
+      -0.7925460711121559,
+      0.8016273862330221
+    ],
+    "max": [
+      0.6623790114072797,
+      -0.6808592714369297,
+      0.9180735870178172
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/wrist_1_link/visuals/wrist1/Scene/mesh",
+    "points": 42222,
+    "collision_api": false,
+    "min": [
+      0.5846000798046589,
+      -0.6878699623048306,
+      0.8126614205539227
+    ],
+    "max": [
+      0.6620998792350292,
+      -0.6030162796378136,
+      0.9173612482845783
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/wrist_1_link/collisions/wrist1_stl/World/mesh",
+    "points": 2106,
+    "collision_api": false,
+    "min": [
+      0.5844602100551128,
+      -0.6878705732524395,
+      0.8126614652574062
+    ],
+    "max": [
+      0.6619501076638699,
+      -0.6028699800372124,
+      0.9173374623060226
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/wrist_2_link/visuals/wrist2/Scene/mesh",
+    "points": 42222,
+    "collision_api": false,
+    "min": [
+      0.5846000798046589,
+      -0.6995699517428875,
+      0.7267614603042603
+    ],
+    "max": [
+      0.6620998792350292,
+      -0.5948700495064259,
+      0.8110113739967346
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/wrist_2_link/collisions/wrist2_stl/World/mesh",
+    "points": 2106,
+    "collision_api": false,
+    "min": [
+      0.5846557095646858,
+      -0.6995581015944481,
+      0.7267783582210541
+    ],
+    "max": [
+      0.662239708006382,
+      -0.594870001077652,
+      0.8110115639865398
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/wrist_3_link/visuals/wrist3/Scene/mesh",
+    "points": 4974,
+    "collision_api": false,
+    "min": [
+      0.5858500488102436,
+      -0.5950450487434864,
+      0.7225113846361637
+    ],
+    "max": [
+      0.6608499698340893,
+      -0.5605451092123985,
+      0.8030113242566586
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/wrist_3_link/collisions/wrist3_stl/World/mesh",
+    "points": 1338,
+    "collision_api": false,
+    "min": [
+      0.5858343094587326,
+      -0.5950453020632267,
+      0.7225113622844219
+    ],
+    "max": [
+      0.6608657091856003,
+      -0.5605449005961418,
+      0.8030270636081696
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/Allegro_base_link/visuals/base_link/node_STL_BINARY_/mesh",
+    "points": 9828,
+    "collision_api": false,
+    "min": [
+      0.6029500085860491,
+      -0.5500700399279594,
+      0.7087728306651115
+    ],
+    "max": [
+      0.6437500091269612,
+      -0.45337004109751433,
+      0.8222498968243599
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/Allegro_base_link/collisions/palm_sim/World/mesh",
+    "points": 107,
+    "collision_api": false,
+    "min": [
+      0.6029500085860491,
+      -0.5500700399279594,
+      0.7087723650038242
+    ],
+    "max": [
+      0.6437500091269612,
+      -0.45337004109751433,
+      0.8222503624856472
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_0_0/visuals/link_0_0/node_STL_BINARY_/mesh",
+    "points": 3450,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.45778429508007795,
+      0.7956125209982859
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.4335235227141781,
+      0.8243275852363653
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_1_0/visuals/link_1_0/node_STL_BINARY_/mesh",
+    "points": 4200,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.44999531570876955,
+      0.7976394967192336
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.3767677827919541,
+      0.8278486718521636
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_2_0/visuals/link_2_0/node_STL_BINARY_/mesh",
+    "points": 3168,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.3939282151531032,
+      0.8010995711877269
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.3385139127609634,
+      0.8311954439481366
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_3_0/visuals/link_3_0/node_STL_BINARY_/mesh",
+    "points": 1080,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.35567434156644856,
+      0.8045459614902754
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.3314135696644382,
+      0.8332610256877696
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_3_0_tip/visuals/link_3_0_tip/node_STL_BINARY_/mesh",
+    "points": 4314,
+    "collision_api": false,
+    "min": [
+      0.6022499892860651,
+      -0.3336274764650332,
+      0.8079078632436929
+    ],
+    "max": [
+      0.6262499894946814,
+      -0.3096346842954221,
+      0.8327907365340432
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_3_0_tip/collisions/tip/World/mesh",
+    "points": 55,
+    "collision_api": false,
+    "min": [
+      0.602261989377439,
+      -0.33362750333233454,
+      0.8080034977352851
+    ],
+    "max": [
+      0.6263009896501899,
+      -0.3099560875657642,
+      0.8327513403629809
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_12_0/visuals/link_12_0_right/node_STL_BINARY_/mesh",
+    "points": 12252,
+    "collision_api": false,
+    "min": [
+      0.6064500286738951,
+      -0.5405349138789457,
+      0.7737546130706597
+    ],
+    "max": [
+      0.6404500356826848,
+      -0.4952293648103776,
+      0.8261864247138715
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_13_0/visuals/link_13_0/node_STL_BINARY_/mesh",
+    "points": 1344,
+    "collision_api": false,
+    "min": [
+      0.6140000319540836,
+      -0.5428359282436697,
+      0.8212186932874769
+    ],
+    "max": [
+      0.6409000362262888,
+      -0.5216545485578135,
+      0.8435550637314607
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_14_0/visuals/link_14_0/node_STL_BINARY_/mesh",
+    "points": 2808,
+    "collision_api": false,
+    "min": [
+      0.6139000322196886,
+      -0.5475046104453634,
+      0.8306870746253496
+    ],
+    "max": [
+      0.6409000364870614,
+      -0.5228805798366616,
+      0.8969863164101674
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_15_0/visuals/link_15_0/node_STL_BINARY_/mesh",
+    "points": 2592,
+    "collision_api": false,
+    "min": [
+      0.6139000322196886,
+      -0.549944962209657,
+      0.8818914654491907
+    ],
+    "max": [
+      0.6409000363169312,
+      -0.5273603755310128,
+      0.9231113475803366
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_15_0/merged_tip/visuals/link_15_0_tip/node_STL_BINARY_/mesh",
+    "points": 4314,
+    "collision_api": false,
+    "min": [
+      0.6154737136003331,
+      -0.5531341996171775,
+      0.921212392577634
+    ],
+    "max": [
+      0.6394500341266391,
+      -0.5282399462090164,
+      0.9452085908630197
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_15_0/merged_tip/collisions/tip/World/mesh",
+    "points": 55,
+    "collision_api": false,
+    "min": [
+      0.6154740339753797,
+      -0.5531603080527615,
+      0.9212416696824476
+    ],
+    "max": [
+      0.6393540344255065,
+      -0.528288676673751,
+      0.9452029654866941
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_4_0/visuals/link_0_0/node_STL_BINARY_/mesh",
+    "points": 3450,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.45437005162239097,
+      0.75206134095788
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.43237005174160004,
+      0.7789613418281078
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_5_0/visuals/link_1_0/node_STL_BINARY_/mesh",
+    "points": 4200,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.446770042181015,
+      0.751961337402463
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.3751700446009636,
+      0.7789613381028175
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_6_0/visuals/link_2_0/node_STL_BINARY_/mesh",
+    "points": 3168,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.3902700520120561,
+      0.7519613262265921
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.33677005022764206,
+      0.7789613269269466
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_7_0/visuals/link_3_0/node_STL_BINARY_/mesh",
+    "points": 1080,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.3518700576387346,
+      0.7520613186061382
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.32987005822360516,
+      0.778961319476366
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_7_0_tip/visuals/link_3_0_tip/node_STL_BINARY_/mesh",
+    "points": 4314,
+    "collision_api": false,
+    "min": [
+      0.6022499892860651,
+      -0.3298700675368309,
+      0.7535113133490086
+    ],
+    "max": [
+      0.6262499894946814,
+      -0.3068700674921274,
+      0.7774876337498426
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_7_0_tip/collisions/tip/World/mesh",
+    "points": 55,
+    "collision_api": false,
+    "min": [
+      0.602261989377439,
+      -0.3298700675368309,
+      0.7536073131486773
+    ],
+    "max": [
+      0.6263009896501899,
+      -0.3069820674136281,
+      0.777487313374877
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_8_0/visuals/link_0_0/node_STL_BINARY_/mesh",
+    "points": 3450,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.457784295080078,
+      0.7066951124507838
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.4335235227141781,
+      0.7354101766888631
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_9_0/visuals/link_1_0/node_STL_BINARY_/mesh",
+    "points": 4200,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.44998660015101843,
+      0.7030743990836722
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.37675906723420294,
+      0.7332835742166022
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_10_0/visuals/link_2_0/node_STL_BINARY_/mesh",
+    "points": 3168,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.39393693071085434,
+      0.6997276083612476
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.3385051972032122,
+      0.7298234811216574
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_11_0/visuals/link_3_0/node_STL_BINARY_/mesh",
+    "points": 1080,
+    "collision_api": false,
+    "min": [
+      0.6044499892741442,
+      -0.35567434156644856,
+      0.6977616310211862
+    ],
+    "max": [
+      0.6240499895066023,
+      -0.3314135696644382,
+      0.7264766952186804
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_11_0_tip/visuals/link_3_0_tip/node_STL_BINARY_/mesh",
+    "points": 4314,
+    "collision_api": false,
+    "min": [
+      0.6022499892860651,
+      -0.3336316868390168,
+      0.6982319089990416
+    ],
+    "max": [
+      0.6262499894946814,
+      -0.3096346842954221,
+      0.7230666574849859
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Robot/link_11_0_tip/collisions/tip/World/mesh",
+    "points": 55,
+    "collision_api": false,
+    "min": [
+      0.602261989377439,
+      -0.3336233199068224,
+      0.6983603206918318
+    ],
+    "max": [
+      0.6263009896501899,
+      -0.3096137398663804,
+      0.7230669645797065
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Object/bottom/visuals/bottom_watertight_tiny/node_STL_BINARY_/mesh",
+    "points": 36,
+    "collision_api": false,
+    "min": [
+      0.5414080172777176,
+      -0.4101119637489319,
+      1.2624080181121826
+    ],
+    "max": [
+      0.5514080077409744,
+      -0.40011197328567505,
+      1.2724080085754395
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Object/top/visuals/top_watertight_tiny/node_STL_BINARY_/mesh",
+    "points": 600,
+    "collision_api": false,
+    "min": [
+      0.15229200199246407,
+      -0.8370509743690491,
+      0.877723004668951
+    ],
+    "max": [
+      0.2434620037674904,
+      -0.6315629780292511,
+      0.966693002730608
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Object/top/collisions/top_watertight_tiny/World/mesh",
+    "points": 102,
+    "collision_api": false,
+    "min": [
+      0.15229200199246407,
+      -0.8370509743690491,
+      0.877723004668951
+    ],
+    "max": [
+      0.2434620037674904,
+      -0.6315629780292511,
+      0.966693002730608
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Table/Visuals/TableGeom",
+    "points": 49901,
+    "collision_api": false,
+    "min": [
+      -0.5084551037047412,
+      -1.211020187710509,
+      -0.028392027001343356
+    ],
+    "max": [
+      0.9102269247041682,
+      0.44848007209289587,
+      1.3246828152811165
+    ]
+  },
+  {
+    "path": "/World/envs/env_0/Table/Collisions/Cube",
+    "points": 8,
+    "collision_api": true,
+    "min": [
+      -0.44000002258349225,
+      -1.2065200052957592,
+      -4.184246060745522e-08
+    ],
+    "max": [
+      0.84000000856448,
+      -0.2965199614832262,
+      0.7709999858140946
+    ]
+  }
+]

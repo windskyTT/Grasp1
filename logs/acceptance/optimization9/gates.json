@@ -1,0 +1,56 @@
+{
+  "0": {
+    "status": "pass",
+    "evidence": "0/baseline.json"
+  },
+  "A": {
+    "status": "fail",
+    "evidence": "A/physics_gate.json"
+  },
+  "B": {
+    "status": "blocked",
+    "reason": "Gate A真实关节/速度问题未解决",
+    "attempts": 0,
+    "success_rate": null,
+    "evidence": "B/scripted_gate.json"
+  },
+  "C": {
+    "status": "blocked",
+    "reason": "Gate A真实关节/速度问题未解决",
+    "attempts": 0,
+    "success_rate": null,
+    "evidence": "C/task_gate.json"
+  },
+  "D": {
+    "status": "blocked",
+    "reason": "Gate A真实关节/速度问题未解决",
+    "attempts": 0,
+    "success_rate": null,
+    "evidence": "D/learning_gate.json"
+  },
+  "E": {
+    "status": "blocked",
+    "reason": "Gate A真实关节/速度问题未解决",
+    "attempts": 0,
+    "success_rate": null,
+    "evidence": "E/play_gate.json"
+  },
+  "F": {
+    "status": "blocked",
+    "reason": "Gate A真实关节/速度问题未解决",
+    "attempts": 0,
+    "success_rate": null,
+    "evidence": "F/curriculum_gate.json"
+  },
+  "G": {
+    "status": "blocked",
+    "reason": "Gate A真实关节/速度问题未解决",
+    "attempts": 0,
+    "success_rate": null,
+    "evidence": "G/training_gate.json"
+  },
+  "H": {
+    "status": "partial",
+    "reason": "已交付基线、真实诊断、GUI接口截图与报告；完整任务/新训练权重/自主抓取未完成"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "status": "blocked",
+  "full_grasp_task_id": null,
+  "inspected_candidate": {
+    "config_file": "source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/grasp_train_env_cfg.py",
+    "current_candidate_observation_dim": 153,
+    "action_dim": 22,
+    "decimation": 4,
+    "physics_dt": 0.008333333333333333,
+    "control_dt": 0.03333333333333333,
+    "arm_scale": 0.0008333333333333333,
+    "hand_scale": 0.0025,
+    "episode_s": 4,
+    "training_objects": [
+      "wood_block_oriented"
+    ],
+    "curriculum_stage": "C1_pending_physics",
+    "reward_profile": "source_physics_aligned",
+    "object_representation": "bottom/top Articulation",
+    "reference_body": "top"
+  },
+  "full_grasp_mdp_implemented": false,
+  "reset_graspable_fraction": null,
+  "scripted_action_reachability": "blocked",
+  "static_findings": [
+    "独立tip刚体不在13个Teacher手部接触槽中，真实tip/table接触漏测",
+    "153D未显式提供top速度、抬升高度目标、阶段和保持时间",
+    "obj_vel及obj_displacement仍保留源系数-15/-5，没有Lift/Hold奖励",
+    "目前只有超时、关键点高度及非有限观测终止，没有连续保持成功判定"
+  ],
+  "reason": "Gate A未通过，未建立可脚本抓取的物理基线；未改造或训练新语义Task"
+}

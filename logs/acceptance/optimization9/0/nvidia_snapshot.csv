@@ -1,0 +1,2 @@
+name, driver_version, memory.total [MiB], memory.used [MiB], utilization.gpu [%]
+NVIDIA GeForce RTX 3070 Ti Laptop GPU, 580.178.04, 8192 MiB, 16 MiB, 9 %

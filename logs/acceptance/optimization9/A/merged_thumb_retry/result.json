@@ -1,0 +1,62 @@
+{
+  "parameters": "logs/acceptance/optimization9/A/merged_thumb_retry/loaded_parameters.json",
+  "runs": [
+    {
+      "mode": "replay",
+      "physics_step": 826,
+      "env_id": 0,
+      "object": "wood_block_oriented",
+      "joint": "joint_15_0",
+      "qvel_rad_s": 6.102414608001709,
+      "delta_velocity_rad_s": -0.12731729447841644,
+      "q_rad": -0.18770472705364227,
+      "target_rad": -0.1429172158241272,
+      "outside_rad": 0.02570474147796631,
+      "contact_peak_N": 37.961483001708984,
+      "hand_velocity_peak": 6.102414608001709,
+      "velocity_ratio_to_7": 0.8717735409736633,
+      "hand_outside_peak_rad": 0.08632707595825195,
+      "hand_outside_env_joint_frames": 1028,
+      "outside_duration_env_joint_s": 8.566667556762695,
+      "normal_peak_N": 64.47837829589844,
+      "friction_peak_N": 30.59604263305664,
+      "net_normal_peak_N": 64.47837829589844,
+      "velocity_difference_peak": 6.229732036590576,
+      "finite": true,
+      "wall_s": 22.689652984000077,
+      "physics_steps": 1200,
+      "num_envs": 1,
+      "decimation": 4,
+      "episode_s": 10.0,
+      "seed": 1,
+      "reset_events": [
+        {
+          "step": 1200,
+          "ids": [
+            0
+          ],
+          "reasons": {
+            "time_out": [
+              true
+            ],
+            "invalid_hand_height": [
+              false
+            ],
+            "invalid_observation": [
+              false
+            ]
+          }
+        }
+      ],
+      "trace": "logs/acceptance/optimization9/A/merged_thumb_retry/trace_replay.pt",
+      "joint_violation_p9999_rad": 0.08631408959627151,
+      "joint_violation_max_rad": 0.08632707595825195,
+      "contact_report_pairs": 0,
+      "target_substeps_equal": true,
+      "target_outside_fraction": 0.0,
+      "optimization6_reference_rad_s": null,
+      "reference_difference_rad_s": null,
+      "exact_reference_peak_reproduced": null
+    }
+  ]
+}

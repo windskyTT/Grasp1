@@ -1,0 +1,13 @@
+{
+  "historical_reference": {
+    "q": true,
+    "v": true,
+    "target": true
+  },
+  "passive_sampler": {
+    "q": true,
+    "v": true,
+    "target": true
+  },
+  "first_tip_table_contact_step": 470
+}

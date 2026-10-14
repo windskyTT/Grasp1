@@ -1,0 +1,11 @@
+{
+  "status": "blocked",
+  "reason": "Gate A真实关节/速度问题未解决",
+  "ppo_updates": 0,
+  "transitions": 0,
+  "wall_s": 0,
+  "fps": null,
+  "vram_peak_mb": null,
+  "best_checkpoint": null,
+  "last_checkpoint": null
+}

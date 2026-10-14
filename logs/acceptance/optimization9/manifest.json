@@ -1,0 +1,16 @@
+{
+  "started_at": "2026-10-14T12:33:16.660033+02:00",
+  "base_sha": "eea2e97d0c97797119b802760e4dcc9fccad57f8",
+  "branch": "optimization9-training-grasp",
+  "dataset": "new_training_set",
+  "physics_dt": 0.008333333333333333,
+  "initial_untracked": [
+    "docs/优化8_完整审查报告.md",
+    "docs/优化9.md"
+  ],
+  "display": {
+    "DISPLAY": ":1",
+    "XAUTHORITY": "/run/user/1000/gdm/Xauthority",
+    "WAYLAND_DISPLAY": null
+  }
+}

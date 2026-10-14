@@ -1,0 +1,10 @@
+{
+  "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+  "conda_prefix": "/home/windsky/miniconda3/envs/grasp",
+  "torch": "2.7.0+cu128",
+  "rsl_rl": "3.1.2",
+  "isaaclab": "2.3.2",
+  "isaacsim": "5.1.0-rc.19+release.26219.9c81211b.gl",
+  "cuda_available": true,
+  "gpu": "NVIDIA GeForce RTX 3070 Ti Laptop GPU"
+}
