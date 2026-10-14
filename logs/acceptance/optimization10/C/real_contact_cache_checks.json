@@ -1,0 +1,30 @@
+{
+  "real_tip_object_positive_N": [
+    29.649314880371094,
+    18.49737548828125,
+    15.980043411254883,
+    71.64525604248047
+  ],
+  "first_0p5s_object_max_N": 0.0,
+  "tip_table_negative_peak_N": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "opposing_contact_frames": 7234,
+  "target_substep_cache_equal": true,
+  "body_velocity_finite": true,
+  "kind": "real_scripted_diagnostics_not_policy_success",
+  "action_semantics": "FullGraspJointDeltaAction",
+  "object_joint_q_min": -6.047911824680341e-07,
+  "object_joint_q_max": 0.00033217514283023775,
+  "object_table_support_positive_N": [
+    53.49504852294922,
+    0.0
+  ],
+  "object_table_support_last_trial_frame_N": [
+    0.0,
+    0.0
+  ]
+}

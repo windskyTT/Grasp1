@@ -1,0 +1,2 @@
+trial,env,seed,object,controller,reset_valid,reset_attempts,success,max_lift_m,max_hold_s,failure,simulated_s,initial_top_z,initial_palm
+0,0,21,wood_block_oriented,scripted,True,1,True,0.13066858053207397,1.0166664123535156,0,6.916666507720947,0.815277099609375,"[0.44127142429351807, -0.7274386882781982, 0.9583727717399597]"

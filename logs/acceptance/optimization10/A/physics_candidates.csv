@@ -1,0 +1,9 @@
+candidate,scope,changed_parameter,q_violation_max_rad,q_violation_p9999_rad,reported_qd_peak,decision,reason
+pgs_history_retry,historical_fixed_replay,solver=TGS->PGS,0.05436691641807556,0.05396377667784691,1.198004126548767,rejected,real joint limit violation remains
+zero_legacy_history,historical_fixed_replay,legacy_joint_friction=0,0.07629595696926117,0.07628639042377472,14.065887451171875,rejected,real joint limit violation remains
+new_static_friction_history,historical_fixed_replay,modern_static_friction=0.01,0.08070120215415955,0.08068878203630447,47.158416748046875,rejected,real joint limit violation remains
+new_scripted_P32,new_task,trajectory_or_action_semantics; see actual config,0.0017042309045791626,0.0016001202166080475,2.594179630279541,rejected,p99.99 joint limit violation exceeds .001 rad
+new_scripted_P64,new_task,32P->64P,0.0008471310138702393,0.0005870623281225562,4.71087121963501,conditional,limit screen passes only legal script domain; lift insufficient at 8s
+historical_P64,historical_fixed_replay,32P->64P,0.027507483959197998,0.027311991900205612,6.507823944091797,rejected_for_history,historical target replay still fails
+final_target_delta_scripted,new_task,trajectory_or_action_semantics; see actual config,0.0010430067777633667,0.0007402615156024694,7.039291858673096,selected_script_domain,true 10/10 lift+hold; full random safety admission remains failed
+target_delta_random,new_task,trajectory_or_action_semantics; see actual config,0.0,0.0,0.793975293636322,fail,2/3 unsafe thumb/table contact

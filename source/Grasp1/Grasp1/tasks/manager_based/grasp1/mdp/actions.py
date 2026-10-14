@@ -34,3 +34,18 @@ class TeacherRelativeJointPositionAction(RelativeJointPositionAction):
         self._asset.set_joint_position_target(self._target, joint_ids=self._joint_ids)
         # 源vTarget始终为零；位置PD保持同一策略步目标，速度PD不引入运动目标。
         self._asset.set_joint_velocity_target(0.0, joint_ids=self._joint_ids)
+
+
+class FullGraspJointDeltaAction(TeacherRelativeJointPositionAction):
+    """仅v2：策略增量累计到上一目标，零动作保持；22D无辅助控制。
+
+    复用官方raw/scale处理及Teacher的reset/子步缓存；旧Teacher仍以当前q为基准。
+    观测中的target-q使累计目标对actor可观测，目标只在控制步更新一次。
+    """
+
+    def process_actions(self, actions: torch.Tensor) -> None:
+        RelativeJointPositionAction.process_actions(self, actions)
+        target = self._target + self.processed_actions
+        limits = self._asset.data.joint_pos_limits[:, self._joint_ids]
+        target.clamp_(min=limits[..., 0], max=limits[..., 1])
+        self._target[:] = target

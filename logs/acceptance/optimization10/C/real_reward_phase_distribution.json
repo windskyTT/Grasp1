@@ -1,0 +1,71 @@
+{
+  "profile": "full_grasp_phase_orientation_v5",
+  "source": "C/reward_scripted_final/control_rewards.csv",
+  "kind": "one_real_scripted_trajectory_not_policy_learning",
+  "phases": {
+    "0": {
+      "frames": 0,
+      "mean_reward_terms": {
+        "reward_approach": null,
+        "reward_alignment": null,
+        "reward_grasp": null,
+        "reward_lift": null,
+        "reward_hold": null,
+        "reward_success": null,
+        "reward_failure": null,
+        "reward_table_contact": null,
+        "reward_speed": null,
+        "reward_action_rate": null,
+        "reward_joint_limit": null
+      }
+    },
+    "1": {
+      "frames": 36,
+      "mean_reward_terms": {
+        "reward_approach": 0.048016138581766024,
+        "reward_alignment": 0.0034410820614236095,
+        "reward_grasp": 0.0,
+        "reward_lift": 0.0,
+        "reward_hold": 0.0,
+        "reward_success": 0.0,
+        "reward_failure": 0.0,
+        "reward_table_contact": 0.0,
+        "reward_speed": -1.549188234485478e-06,
+        "reward_action_rate": -1.9976640530806306e-06,
+        "reward_joint_limit": 0.0
+      }
+    },
+    "2": {
+      "frames": 151,
+      "mean_reward_terms": {
+        "reward_approach": 0.06802080088103844,
+        "reward_alignment": 0.003318793929817266,
+        "reward_grasp": 0.09425681094262774,
+        "reward_lift": 0.06426259637320729,
+        "reward_hold": 0.0,
+        "reward_success": 0.0,
+        "reward_failure": 0.0,
+        "reward_table_contact": 0.0,
+        "reward_speed": -1.2337299539322939e-05,
+        "reward_action_rate": -5.706272207128774e-07,
+        "reward_joint_limit": -0.0002493398571688572
+      }
+    },
+    "3": {
+      "frames": 30,
+      "mean_reward_terms": {
+        "reward_approach": 0.06806710064411163,
+        "reward_alignment": 0.0030732502695173026,
+        "reward_grasp": 0.09686902885635694,
+        "reward_lift": 0.2666666805744171,
+        "reward_hold": 0.3333333432674408,
+        "reward_success": 0.6666665395100911,
+        "reward_failure": 0.0,
+        "reward_table_contact": 0.0,
+        "reward_speed": -2.388479551503527e-06,
+        "reward_action_rate": -1.5825552503979258e-07,
+        "reward_joint_limit": -0.0005358772274727622
+      }
+    }
+  }
+}

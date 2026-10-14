@@ -1,0 +1,22 @@
+{
+  "target_max_abs_error": 2.1827872842550278e-11,
+  "window_steps": [
+    410,
+    531
+  ],
+  "contact_data_columns": [
+    "normal_force_N",
+    "point_x",
+    "point_y",
+    "point_z",
+    "normal_x",
+    "normal_y",
+    "normal_z",
+    "separation_m"
+  ],
+  "tip_table_normal_peak_N": 92.51006317138672,
+  "contact_separation_min_m": -0.00016221404075622559,
+  "note": "Actual GPU contact points/normals/separations and rigid-body velocity; no decomposed limit/drive impulse available",
+  "initial_q_from_fixture_max_abs_error": 0.0,
+  "first_integrated_q_difference_vs_P32": 6.42538070678711e-05
+}

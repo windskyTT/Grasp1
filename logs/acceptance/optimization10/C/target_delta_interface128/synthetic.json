@@ -1,0 +1,1117 @@
+{
+  "status": "pass",
+  "kind": "synthetic_not_grasp_success",
+  "cases": [
+    "continuous_hold",
+    "contact_loss",
+    "opposing_contact",
+    "table_support",
+    "relative_drift",
+    "relative_angle",
+    "relative_speed",
+    "unsafe",
+    "lift_direction",
+    "contact_positive_negative",
+    "checkpoint_semantic_mismatch"
+  ],
+  "contract": {
+    "schema_version": 3,
+    "task_id": "Grasp1-UR5-Allegro-GraspTrain-v2",
+    "physics_dt": 0.008333333333333333,
+    "decimation": 4,
+    "control_dt": 0.03333333333333333,
+    "episode_length_s": 10.0,
+    "action_semantics_version": "previous_target_delta_clamped_once_per_control_step_full_grasp_v1",
+    "action_scale_arm": [
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005,
+      0.005
+    ],
+    "action_scale_hand": [
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015,
+      0.015
+    ],
+    "observation_semantics_version": "teacher153_plus_full_grasp58_hold_reference_v2",
+    "reward_semantics_version": "full_grasp_phase_hold_reference_v2",
+    "gamma": 0.9993322194984537,
+    "lam": 0.9914875553891529,
+    "minimum_action_std": 0.2,
+    "clip_actions": 1.0,
+    "ppo_parameters": {
+      "rollout": 32,
+      "algorithm": {
+        "class_name": "PPO",
+        "num_learning_epochs": 4,
+        "num_mini_batches": 4,
+        "learning_rate": 0.0003,
+        "schedule": "fixed",
+        "gamma": 0.9993322194984537,
+        "lam": 0.9914875553891529,
+        "entropy_coef": 0.0,
+        "desired_kl": 0.01,
+        "max_grad_norm": 0.5,
+        "value_loss_coef": 0.5,
+        "use_clipped_value_loss": true,
+        "clip_param": 0.2,
+        "normalize_advantage_per_mini_batch": false,
+        "rnd_cfg": null,
+        "symmetry_cfg": null
+      },
+      "policy": {
+        "class_name": "ActorCritic",
+        "init_noise_std": 1.0,
+        "noise_std_type": "scalar",
+        "state_dependent_std": false,
+        "actor_obs_normalization": true,
+        "critic_obs_normalization": true,
+        "actor_hidden_dims": [
+          128,
+          128
+        ],
+        "critic_hidden_dims": [
+          128,
+          128
+        ],
+        "activation": "lrelu"
+      }
+    },
+    "physics_parameters": {
+      "solver": 1,
+      "robot_articulation": {
+        "articulation_enabled": null,
+        "enabled_self_collisions": false,
+        "solver_position_iteration_count": 64,
+        "solver_velocity_iteration_count": 1,
+        "sleep_threshold": null,
+        "stabilization_threshold": null,
+        "fix_root_link": true
+      },
+      "actuators": {
+        "arm": {
+          "class_type": "isaaclab.actuators.actuator_pd:ImplicitActuator",
+          "joint_names_expr": [
+            "shoulder_pan_joint",
+            "shoulder_lift_joint",
+            "elbow_joint",
+            "wrist_1_joint",
+            "wrist_2_joint",
+            "wrist_3_joint"
+          ],
+          "effort_limit": null,
+          "velocity_limit": null,
+          "effort_limit_sim": {
+            "shoulder_pan_joint": 150.0,
+            "shoulder_lift_joint": 150.0,
+            "elbow_joint": 150.0,
+            "wrist_1_joint": 28.0,
+            "wrist_2_joint": 28.0,
+            "wrist_3_joint": 28.0
+          },
+          "velocity_limit_sim": {
+            "shoulder_pan_joint": 3.15,
+            "shoulder_lift_joint": 3.15,
+            "elbow_joint": 3.15,
+            "wrist_1_joint": 3.2,
+            "wrist_2_joint": 3.2,
+            "wrist_3_joint": 3.2
+          },
+          "stiffness": {
+            "shoulder_pan_joint": 15845.1220703125,
+            "shoulder_lift_joint": 16202.208984375,
+            "elbow_joint": 15775.421875,
+            "wrist_1_joint": 16162.2900390625,
+            "wrist_2_joint": 16039.8310546875,
+            "wrist_3_joint": 16183.51953125
+          },
+          "damping": {
+            "shoulder_pan_joint": 478.6603698730469,
+            "shoulder_lift_joint": 512.3048706054688,
+            "elbow_joint": 281.6572265625,
+            "wrist_1_joint": 577.3147583007812,
+            "wrist_2_joint": 576.9467163085938,
+            "wrist_3_joint": 443.34552001953125
+          },
+          "armature": null,
+          "friction": null,
+          "dynamic_friction": null,
+          "viscous_friction": null
+        },
+        "hand": {
+          "class_type": "isaaclab.actuators.actuator_pd:ImplicitActuator",
+          "joint_names_expr": [
+            "joint_0_0",
+            "joint_1_0",
+            "joint_2_0",
+            "joint_3_0",
+            "joint_4_0",
+            "joint_5_0",
+            "joint_6_0",
+            "joint_7_0",
+            "joint_8_0",
+            "joint_9_0",
+            "joint_10_0",
+            "joint_11_0",
+            "joint_12_0",
+            "joint_13_0",
+            "joint_14_0",
+            "joint_15_0"
+          ],
+          "effort_limit": null,
+          "velocity_limit": null,
+          "effort_limit_sim": 0.7,
+          "velocity_limit_sim": 7.0,
+          "stiffness": 600.0,
+          "damping": 20.0,
+          "armature": null,
+          "friction": null,
+          "dynamic_friction": null,
+          "viscous_friction": null
+        }
+      },
+      "object_articulation": {
+        "articulation_enabled": null,
+        "enabled_self_collisions": false,
+        "solver_position_iteration_count": 16,
+        "solver_velocity_iteration_count": 0,
+        "sleep_threshold": null,
+        "stabilization_threshold": null,
+        "fix_root_link": false
+      },
+      "object_rigid": {
+        "rigid_body_enabled": null,
+        "kinematic_enabled": null,
+        "disable_gravity": false,
+        "linear_damping": null,
+        "angular_damping": null,
+        "max_linear_velocity": null,
+        "max_angular_velocity": null,
+        "max_depenetration_velocity": 5.0,
+        "max_contact_impulse": null,
+        "enable_gyroscopic_forces": null,
+        "retain_accelerations": null,
+        "solver_position_iteration_count": null,
+        "solver_velocity_iteration_count": null,
+        "sleep_threshold": null,
+        "stabilization_threshold": null
+      },
+      "object_joint_drive": {
+        "drive_type": null,
+        "max_effort": null,
+        "max_velocity": null,
+        "stiffness": 0.0,
+        "damping": 0.0
+      },
+      "object_armature": 0.1
+    },
+    "asset_versions": {
+      "robot": "522d3c153cf05c9989b34600f5ee00546a0f5eb6",
+      "objects": "4fd81ca76c2c87811602a1d01bb243852f889553",
+      "table": "4fd81ca76c2c87811602a1d01bb243852f889553"
+    },
+    "object_dataset": "new_training_set",
+    "object_names": [
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented",
+      "wood_block_oriented"
+    ],
+    "training_git_sha": "04603ca58023a47175d2b1dc61dd2b5a9b75e9d2",
+    "training_working_tree": "M scripts/rsl_rl/checkpoint_contract.py\n M scripts/rsl_rl/play.py\n M scripts/rsl_rl/train.py\n M source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/__init__.py\n M source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py\n?? \"docs/\\344\\274\\230\\345\\214\\22610.md\"\n?? logs/acceptance/optimization10/\n?? scripts/rsl_rl/scripted_grasp_probe.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_full_grasp_ppo_cfg.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/full_grasp_env_cfg.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_events.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_metrics.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_observations.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_rewards.py\n?? source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_terminations.py",
+    "rsl_rl_version": "3.1.2",
+    "reward_terms": {
+      "approach": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:approach",
+        "params": {},
+        "weight": 2.5
+      },
+      "alignment": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:alignment",
+        "params": {},
+        "weight": 0.5
+      },
+      "grasp": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:stable_grasp",
+        "params": {},
+        "weight": 3.0
+      },
+      "lift": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:lift",
+        "params": {},
+        "weight": 8.0
+      },
+      "hold": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:hold",
+        "params": {},
+        "weight": 10.0
+      },
+      "success": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:success_event",
+        "params": {},
+        "weight": 20.0
+      },
+      "failure": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:safety_event",
+        "params": {},
+        "weight": -10.0
+      },
+      "table_contact": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:table_contact",
+        "params": {},
+        "weight": -5.0
+      },
+      "speed": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:speed",
+        "params": {},
+        "weight": -0.05
+      },
+      "action_rate": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:action_rate",
+        "params": {},
+        "weight": -0.01
+      },
+      "joint_limit": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_rewards:limit",
+        "params": {},
+        "weight": -100.0
+      }
+    },
+    "termination_terms": {
+      "time_out": {
+        "func": "isaaclab.envs.mdp.terminations:time_out",
+        "params": {},
+        "time_out": true
+      },
+      "unsafe": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_terminations:unsafe",
+        "params": {},
+        "time_out": false
+      },
+      "reset_failed": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_terminations:reset_failed",
+        "params": {},
+        "time_out": false
+      },
+      "dropped": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_terminations:dropped",
+        "params": {},
+        "time_out": false
+      },
+      "success": {
+        "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_terminations:success",
+        "params": {},
+        "time_out": false
+      }
+    },
+    "reset_distribution": {
+      "func": "Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_events:reset_full_grasp",
+      "params": {
+        "dataset_name": "new_training_set",
+        "object_names": [
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented",
+          "wood_block_oriented"
+        ]
+      },
+      "mode": "reset",
+      "interval_range_s": null,
+      "is_global_time": false,
+      "min_step_count_between_reset": 0
+    },
+    "curriculum_stage": "C1_wood_block_narrow_P64_T10_v2",
+    "full_grasp_parameters": {
+      "legacy_joint_friction": null,
+      "hand_static_friction": null,
+      "reset_xy_center": [
+        0.35,
+        -0.75152
+      ],
+      "reset_xy_range": 0.015,
+      "reset_yaw_range": 0.15,
+      "reset_clearance": 0.02,
+      "pregrasp_distance": 0.13,
+      "reset_max_attempts": 8,
+      "lift_height": 0.1,
+      "hold_duration_s": 1.0,
+      "tip_contact_threshold_N": 0.05,
+      "arm_action_speed": 0.15,
+      "hand_action_speed": 0.45
+    },
+    "tip_sensor_configuration": {
+      "full_tip_0": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "prim_path": "/World/envs/env_.*/Robot/link_3_0_tip",
+        "update_period": 0,
+        "history_length": 0,
+        "debug_vis": false,
+        "track_pose": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "max_contact_data_count_per_prim": 32,
+        "track_air_time": false,
+        "force_threshold": 1.0,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "visualizer_cfg": {
+          "prim_path": "/Visuals/ContactSensor",
+          "markers": {
+            "contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": true,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            },
+            "no_contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": false,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            }
+          }
+        }
+      },
+      "full_tip_1": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "prim_path": "/World/envs/env_.*/Robot/link_7_0_tip",
+        "update_period": 0,
+        "history_length": 0,
+        "debug_vis": false,
+        "track_pose": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "max_contact_data_count_per_prim": 32,
+        "track_air_time": false,
+        "force_threshold": 1.0,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "visualizer_cfg": {
+          "prim_path": "/Visuals/ContactSensor",
+          "markers": {
+            "contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": true,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            },
+            "no_contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": false,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            }
+          }
+        }
+      },
+      "full_tip_2": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "prim_path": "/World/envs/env_.*/Robot/link_11_0_tip",
+        "update_period": 0,
+        "history_length": 0,
+        "debug_vis": false,
+        "track_pose": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "max_contact_data_count_per_prim": 32,
+        "track_air_time": false,
+        "force_threshold": 1.0,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "visualizer_cfg": {
+          "prim_path": "/Visuals/ContactSensor",
+          "markers": {
+            "contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": true,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            },
+            "no_contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": false,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            }
+          }
+        }
+      },
+      "full_tip_3": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "prim_path": "/World/envs/env_.*/Robot/link_15_0_tip",
+        "update_period": 0,
+        "history_length": 0,
+        "debug_vis": false,
+        "track_pose": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "max_contact_data_count_per_prim": 32,
+        "track_air_time": false,
+        "force_threshold": 1.0,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "visualizer_cfg": {
+          "prim_path": "/Visuals/ContactSensor",
+          "markers": {
+            "contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": true,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            },
+            "no_contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": false,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            }
+          }
+        }
+      },
+      "full_support_top": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "prim_path": "/World/envs/env_.*/Object/top",
+        "update_period": 0,
+        "history_length": 0,
+        "debug_vis": false,
+        "track_pose": false,
+        "track_contact_points": false,
+        "track_friction_forces": false,
+        "max_contact_data_count_per_prim": 32,
+        "track_air_time": false,
+        "force_threshold": 1.0,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Table"
+        ],
+        "visualizer_cfg": {
+          "prim_path": "/Visuals/ContactSensor",
+          "markers": {
+            "contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": true,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            },
+            "no_contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": false,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            }
+          }
+        }
+      },
+      "full_support_bottom": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "prim_path": "/World/envs/env_.*/Object/bottom",
+        "update_period": 0,
+        "history_length": 0,
+        "debug_vis": false,
+        "track_pose": false,
+        "track_contact_points": false,
+        "track_friction_forces": false,
+        "max_contact_data_count_per_prim": 32,
+        "track_air_time": false,
+        "force_threshold": 1.0,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Table"
+        ],
+        "visualizer_cfg": {
+          "prim_path": "/Visuals/ContactSensor",
+          "markers": {
+            "contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": true,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            },
+            "no_contact": {
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "visible": false,
+              "semantic_tags": null,
+              "copy_from_source": true,
+              "mass_props": null,
+              "rigid_props": null,
+              "collision_props": null,
+              "activate_contact_sensors": false,
+              "visual_material_path": "material",
+              "visual_material": {
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "roughness": 0.5,
+                "metallic": 0.0,
+                "opacity": 1.0
+              },
+              "physics_material_path": "material",
+              "physics_material": null,
+              "radius": 0.02
+            }
+          }
+        }
+      }
+    },
+    "normalizer_configuration": {
+      "actor": true,
+      "critic": true
+    },
+    "policy_architecture": {
+      "actor_hidden_dims": [
+        128,
+        128
+      ],
+      "critic_hidden_dims": [
+        128,
+        128
+      ],
+      "activation": "lrelu"
+    }
+  }
+}

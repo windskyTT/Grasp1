@@ -105,6 +105,7 @@ import Grasp1.tasks  # noqa: F401
 from Grasp1.data.object_set import object_names
 from Grasp1.utils.paths import object_asset_dir
 from checkpoint_contract import build_contract, validate_checkpoint
+from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.full_grasp_env_cfg import UR5AllegroFullGraspEnvCfg
 
 
 # 播放辅助函数。
@@ -128,6 +129,11 @@ def _configure_play_object(
     返回值是按环境顺序重复的物体名称元组。
     """
     repeated_names = (object_name,) * num_envs
+    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
+        assert dataset_name == 'new_training_set'
+        env_cfg.training_objects = (object_name,)
+        env_cfg.set_num_envs(num_envs)
+        return repeated_names
     env_cfg.scene.num_envs = num_envs
     object_usd = object_asset_dir(dataset_name, object_name) / f"{object_name}.usd"
     env_cfg.scene.object.spawn.usd_path = [str(object_usd)]
@@ -170,7 +176,8 @@ def main(
     )
 
     # 读取数据集物体；若未指定名称，则用种子随机选择一个物体。
-    available_objects = object_names(args_cli.dataset)
+    available_objects = (env_cfg.training_objects if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg)
+                         else object_names(args_cli.dataset))
     if args_cli.object_name is not None and args_cli.object_name not in available_objects:
         raise ValueError(f"Object {args_cli.object_name!r} is not in dataset {args_cli.dataset!r}.")
     object_name = args_cli.object_name or random.Random(agent_cfg.seed).choice(available_objects)
@@ -280,6 +287,7 @@ def main(
     # 记录总控制步数及各并行环境完成的回合数。
     timestep = 0
     episode_counts = torch.zeros(args_cli.num_envs, dtype=torch.long, device=env.unwrapped.device)
+    full_grasp_trials = []
 
     # 推理循环：根据观测生成动作、推进环境并统计回合结束情况。
 
@@ -297,6 +305,15 @@ def main(
 
         timestep += 1
         episode_counts += dones
+        if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
+            memory = env.unwrapped._full_grasp_state
+            for index in dones.nonzero(as_tuple=True)[0].tolist():
+                trial = dict(env=index, episode=int(episode_counts[index]), seed=agent_cfg.seed,
+                    object=object_name, success=bool(memory.last_success[index]),
+                    failure_bits=int(memory.last_failure[index]), lift_m=float(memory.last_lift[index]),
+                    hold_s=float(memory.last_hold[index]), controller='policy')
+                full_grasp_trials.append(trial)
+                print('[FULL_GRASP] '+json.dumps(trial), flush=True)
 
         # 达到视频长度，或所有环境均达到指定回合数时退出播放循环。
         if args_cli.video and timestep >= args_cli.video_length:
@@ -317,6 +334,16 @@ def main(
         f"Completed environment episodes: {int(episode_counts.sum().item())}."
     )
 
+    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
+        import csv
+        with (audit_dir/'full_grasp_trials.csv').open('w', newline='') as handle:
+            writer = csv.DictWriter(handle, fieldnames=('env','episode','seed','object','success','failure_bits','lift_m','hold_s','controller'))
+            writer.writeheader()
+            writer.writerows(full_grasp_trials)
+        (audit_dir/'full_grasp_result.json').write_text(json.dumps(dict(attempts=len(full_grasp_trials),
+            successes=sum(row['success'] for row in full_grasp_trials),
+            success_rate=sum(row['success'] for row in full_grasp_trials)/len(full_grasp_trials) if full_grasp_trials else None,
+            checkpoint=resume_path, task=args_cli.task, controller='policy'), indent=2))
     env.close()
 
 

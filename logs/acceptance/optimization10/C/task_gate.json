@@ -1,0 +1,80 @@
+{
+  "status": "pass",
+  "kind": "MDP_interface_and_scripted_consistency_not_policy_learning",
+  "task": "Grasp1-UR5-Allegro-GraspTrain-v2",
+  "observation_dim": 211,
+  "action_dim": 22,
+  "real_interfaces": [
+    {
+      "num_envs": 1,
+      "status": "pass",
+      "valid_resets": 1
+    },
+    {
+      "num_envs": 16,
+      "status": "pass",
+      "valid_resets": 16
+    },
+    {
+      "num_envs": 128,
+      "status": "pass",
+      "valid_resets": 128
+    }
+  ],
+  "standard_runner_forward": "pass",
+  "partial_reset": "pass",
+  "target_substep_cache": "pass",
+  "zero_holds_target": "pass",
+  "synthetic_cases": [
+    "continuous_hold",
+    "contact_loss",
+    "opposing_contact",
+    "table_support",
+    "relative_drift",
+    "relative_angle",
+    "relative_speed",
+    "corotating_velocity",
+    "orientation_direction",
+    "unsafe",
+    "lift_direction",
+    "contact_positive_negative",
+    "phase_transitions",
+    "checkpoint_semantic_mismatch"
+  ],
+  "scripted_runtime": [
+    {
+      "num_envs": 1,
+      "successes": 10,
+      "attempts": 10,
+      "physics_status": "pass"
+    },
+    {
+      "num_envs": 16,
+      "successes": 16,
+      "attempts": 16,
+      "physics_status": "pass"
+    },
+    {
+      "num_envs": 128,
+      "successes": 128,
+      "attempts": 128,
+      "physics_status": "pass"
+    }
+  ],
+  "D2": {
+    "status": "interface_and_one_scripted_trial_pass",
+    "successes": 1,
+    "attempts": 1,
+    "source": "C/scripted_D2/result.json"
+  },
+  "final_corotating_velocity": {
+    "synthetic": "pass",
+    "real_trial": "pass",
+    "saved_hold_windows": "C/corotating_saved_trajectory_check.json"
+  },
+  "reward_terms": "C/real_reward_phase_distribution.json",
+  "formal_training_allowed": false,
+  "remaining_blocker": "Gate A random action safety fails",
+  "reward_orientation": "C1 palm +x points down; synthetic aligned/sideways/inverted directions pass",
+  "final_contract_interface": "C/reward_contract_final/result.json"
+}

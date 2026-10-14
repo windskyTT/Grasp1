@@ -20,6 +20,9 @@ RESUME_FIELDS = SEMANTIC_FIELDS + (
 GRASP_TRAIN_FIELDS = ('reward_profile', 'reward_terms', 'termination_terms', 'asset_contents', 'scene_parameters',
                      'normalizer_configuration', 'policy_architecture')
 GRASP_TRAIN_RESUME_FIELDS = ('curriculum_stage', 'reset_distribution', 'object_asset_contents')
+FULL_GRASP_FIELDS = ('episode_length_s', 'full_grasp_parameters', 'tip_sensor_configuration',
+                     'reward_terms', 'termination_terms', 'reset_distribution', 'curriculum_stage',
+                     'normalizer_configuration', 'policy_architecture')
 
 
 def asset_contents(env_cfg, *, include_objects=True):
@@ -111,6 +114,23 @@ def build_contract(task_id, env_cfg, agent_cfg):
             reset_distribution=env_cfg.events.reset_teacher.to_dict(),
             scene_parameters=dict(robot_initial_state=robot.init_state.to_dict(), table=env_cfg.scene.table.to_dict(),
                 physics_material=env_cfg.sim.physics_material.to_dict()))
+    if task_id == 'Grasp1-UR5-Allegro-GraspTrain-v2':
+        contract.update(schema_version=3,
+            action_semantics_version='previous_target_delta_clamped_once_per_control_step_full_grasp_v1',
+            observation_semantics_version='teacher153_plus_full_grasp58_corotating_velocity_v4',
+            reward_semantics_version=env_cfg.reward_profile,
+            reward_terms=env_cfg.rewards.to_dict(), termination_terms=env_cfg.terminations.to_dict(),
+            reset_distribution=env_cfg.events.reset_teacher.to_dict(), curriculum_stage=env_cfg.curriculum_stage,
+            full_grasp_parameters={name:getattr(env_cfg, name) for name in (
+                'legacy_joint_friction', 'hand_static_friction', 'reset_xy_center', 'reset_xy_range', 'reset_yaw_range',
+                'reset_clearance', 'pregrasp_distance', 'reset_max_attempts', 'lift_height',
+                'hold_duration_s', 'tip_contact_threshold_N', 'arm_action_speed', 'hand_action_speed')},
+            tip_sensor_configuration={name:value.to_dict() for name,value in vars(env_cfg.scene).items()
+                if name.startswith('full_tip_') or name.startswith('full_support_')},
+            normalizer_configuration=dict(actor=agent_cfg.policy.actor_obs_normalization,
+                critic=agent_cfg.policy.critic_obs_normalization),
+            policy_architecture=dict(actor_hidden_dims=agent_cfg.policy.actor_hidden_dims,
+                critic_hidden_dims=agent_cfg.policy.critic_hidden_dims, activation=agent_cfg.policy.activation))
     return contract
 
 
@@ -126,8 +146,13 @@ def compare_contract(saved, current, *, resume):
         fields += GRASP_TRAIN_FIELDS
         if resume:
             fields += GRASP_TRAIN_RESUME_FIELDS
+    if saved.get('schema_version') == 3 or current.get('schema_version') == 3:
+        fields += FULL_GRASP_FIELDS
     differences = {key:dict(checkpoint=saved.get(key), requested=current.get(key))
                    for key in fields if key not in saved or saved[key] != current[key]}
+    if not resume and current.get('schema_version') == 3:
+        if not set(current['object_names']).issubset(saved.get('object_names', [])):
+            differences['object_names'] = dict(checkpoint=saved.get('object_names'), requested=current['object_names'])
     if not resume and current.get('schema_version') == 2:
         # 允许heldout新对象；同一对象路径的字节改变仍是动力学不兼容。
         saved_objects = saved.get('object_asset_contents', {})

@@ -216,6 +216,26 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         assert env.unwrapped.step_dt == env_cfg.control_dt()
+    if args_cli.task == 'Grasp1-UR5-Allegro-GraspTrain-v2':
+        # 每物理子步读取真实q/qd；自动reset不能抹掉训练中的物理异常。
+        from pathlib import Path
+        real_env = env.unwrapped
+        original_scene_update = real_env.scene.update
+        def full_grasp_physics_check(dt):
+            original_scene_update(dt)
+            if dt != real_env.physics_dt:
+                return
+            robot = real_env.scene['robot']
+            term = real_env.action_manager.get_term('teacher')
+            q, qd = robot.data.joint_pos[:, term._joint_ids], robot.data.joint_vel[:, term._joint_ids]
+            limits = robot.data.joint_pos_limits[:, term._joint_ids]
+            outside = torch.maximum(limits[..., 0]-q, q-limits[..., 1]).clamp_min(0)
+            if bool((outside > 0.005).any() or (qd[:, 6:].abs() > 14).any() or not torch.isfinite(q).all() or not torch.isfinite(qd).all()):
+                torch.save(dict(q=q.cpu(), qd=qd.cpu(), target=term.target.cpu(), violation=outside.cpu(),
+                    physics_step=real_env._sim_step_counter, object_pose=real_env.scene['object'].data.body_link_pose_w.cpu()),
+                    Path(log_dir)/'physics_failure.pt')
+                raise RuntimeError('FullGrasp真实物理越限/速度异常；现场已保存，停止PPO。')
+        real_env.scene.update = full_grasp_physics_check
 
     # create runner from rsl-rl
     if agent_cfg.class_name == "OnPolicyRunner":
@@ -265,12 +285,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         runner.learn(num_learning_iterations=agent_cfg.max_iterations, init_at_random_ep_len=True)
     finally:
         runner.save = original_save
+        env.close()
 
     print(f"Training time: {round(time.time() - start_time, 2)} seconds")
-
-    # close the simulator
-    env.close()
-
 
 if __name__ == "__main__":
     # run the main function

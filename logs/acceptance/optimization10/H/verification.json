@@ -1,0 +1,10 @@
+{
+  "compile": "pass",
+  "git_diff_check": "pass",
+  "json_files_parsed": 229,
+  "report_links": "pass",
+  "assets_unchanged": true,
+  "generated_policy_checkpoint": null,
+  "sim_processes_remaining": 0,
+  "corrected_verification_error": "initial git diff mistakenly compared assets with an outside-repo IsaacLab path; repeated only with assets scope, which is unchanged"
+}

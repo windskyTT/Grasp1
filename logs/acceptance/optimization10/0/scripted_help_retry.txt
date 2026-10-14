@@ -1,0 +1,11 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H   [INFO] Using python from: /home/windsky/miniconda3/envs/grasp/bin/python
+usage: scripted_grasp_probe.py [-h] [--task TASK]
+                               [--dataset {new_training_set}]
+                               [--object OBJECT] [--num_envs NUM_ENVS]
+                               [--seed SEED] [--trials TRIALS]
+                               [--mode {scripted,zero,random,replay,interface}]
+                               [--solver {tgs,pgs}] [--original_friction]
+                               [--position_iterations POSITION_ITERATIONS]
+                               [--hand_stiffness HAND_STIFFNESS]
+                               [--decimation {2,4}] --output_dir OUTPUT_DIR
+scripted_grasp_probe.py: error: the following arguments are required: --output_dir

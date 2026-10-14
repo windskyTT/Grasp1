@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "kind": "real_interface",
+  "observation_dim": [
+    16,
+    211
+  ],
+  "action_dim": 22,
+  "partial_reset": "pass",
+  "num_envs": 16,
+  "reset_valid": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "physics_dt": 0.008333333333333333,
+  "decimation": 4
+}
