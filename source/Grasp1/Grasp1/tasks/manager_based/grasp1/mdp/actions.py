@@ -49,3 +49,46 @@ class FullGraspJointDeltaAction(TeacherRelativeJointPositionAction):
         limits = self._asset.data.joint_pos_limits[:, self._joint_ids]
         target.clamp_(min=limits[..., 0], max=limits[..., 1])
         self._target[:] = target
+
+
+class TableClearanceJointDeltaAction(FullGraspJointDeltaAction):
+    """v3候选：以真实碰撞顶点和刚体Jacobian约束目标下降，保留22D策略控制。
+
+    对下一关节目标的一阶预测按桌面间距统一缩放；不写实际q/qd，
+    不删除碰撞、不控制物体、不生成抓取/抬升动作。真实物理仍独立验收。
+    """
+
+    def process_actions(self, actions):
+        from .full_grasp_metrics import world_vertices
+        from ..grasp1_env_cfg import SUPPORT_HEIGHT, TABLE_XY_BOUNDS
+        previous = self._target.clone()
+        super().process_actions(actions)
+        q = self._asset.data.joint_pos[:, self._joint_ids]
+        increment = self._target-previous
+        tracking = previous-q
+        jacobians = self._asset.root_physx_view.get_jacobians()
+        fraction = torch.ones(self._env.num_envs, device=self._env.device)
+        for body, points in self._env._full_grasp_state.hand_geometry:
+            pose = self._asset.data.body_link_pose_w[:, body]
+            vertices = world_vertices(pose, points)
+            # PhysX dense Jacobian的线速度参考点为COM，顶点杠杆臂必须也从COM起算。
+            relative = vertices-self._asset.data.body_com_pos_w[:, body, None]
+            jacobian = jacobians[:, body-1, :, self._joint_ids]
+            motion = (jacobian @ increment[..., None]).squeeze(-1)
+            preload = (jacobian @ tracking[..., None]).squeeze(-1)
+            dz = motion[:, None, 2]+motion[:, None, 3]*relative[..., 1]-motion[:, None, 4]*relative[..., 0]
+            local = vertices-self._env.scene.env_origins[:, None]
+            inside = ((local[..., 0] >= TABLE_XY_BOUNDS[0]) & (local[..., 0] <= TABLE_XY_BOUNDS[1])
+                & (local[..., 1] >= TABLE_XY_BOUNDS[2]) & (local[..., 1] <= TABLE_XY_BOUNDS[3]))
+            clearance = (local[..., 2]-SUPPORT_HEIGHT+preload[:, None, 2]
+                +preload[:, None, 3]*relative[..., 1]-preload[:, None, 4]*relative[..., 0])
+            descending = inside & (dz < 0)
+            allowed = (clearance-self._env.cfg.action_table_clearance_m)/(-dz).clamp_min(1e-12)
+            fraction = torch.minimum(fraction, torch.where(descending, allowed, torch.ones_like(allowed)).amin(1))
+        fraction.clamp_(0, 1)
+        # 只限制新的策略增量，保留已有PD承重目标；每步退回实测q会消除承重误差并持续下沉。
+        projected = previous+fraction[:, None]*increment
+        limits = self._asset.data.joint_pos_limits[:, self._joint_ids]
+        projected.clamp_(min=limits[..., 0], max=limits[..., 1])
+        self._target[:] = torch.where(fraction[:, None] < 1, projected, self._target)
+        self.projection_fraction = fraction

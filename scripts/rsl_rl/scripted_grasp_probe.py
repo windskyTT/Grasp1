@@ -14,7 +14,7 @@ parser.add_argument('--object', default='wood_block_oriented')
 parser.add_argument('--num_envs', type=int, default=1)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--trials', type=int, default=10)
-parser.add_argument('--mode', choices=['scripted', 'zero', 'random', 'replay', 'interface'], default='scripted')
+parser.add_argument('--mode', choices=['scripted', 'grasp_only', 'zero', 'random', 'replay', 'interface'], default='scripted')
 parser.add_argument('--solver', choices=['tgs', 'pgs'], default='tgs')
 parser.add_argument('--legacy_joint_friction', type=float)
 parser.add_argument('--hand_friction', type=float)
@@ -24,6 +24,7 @@ parser.add_argument('--approach_distance', type=float, default=0.04)
 parser.add_argument('--episode_length_s', type=float)
 parser.add_argument('--arm_action_speed', type=float)
 parser.add_argument('--decimation', type=int, choices=[2,4], default=4)
+parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
 AppLauncher.add_app_launcher_args(parser)
 parser.add_argument('--output_dir', type=Path, required=True)
 args = parser.parse_args()
@@ -31,7 +32,7 @@ app = AppLauncher(args).app
 
 import gymnasium as gym
 import torch
-from isaaclab_tasks.utils import parse_env_cfg
+from isaaclab_tasks.utils import parse_env_cfg, load_cfg_from_registry
 import Grasp1.tasks
 from Grasp1.tasks.manager_based.grasp1.mdp.full_grasp_metrics import contact_forces
 
@@ -92,18 +93,45 @@ def synthetic_checks(cfg):
     forces, table, support, _ = contact_forces(SimpleNamespace(scene=scene))
     assert forces[0].tolist() == [1.,2.,3.,4.] and table[0].tolist() == [2.,4.,6.,8.]
     assert not bool(forces[1].any()) and not bool(table[1].any())
-    contract = build_contract(args.task, cfg, UR5AllegroFullGraspPPORunnerCfg())
+    contract = build_contract(args.task, cfg, load_cfg_from_registry(args.task, 'rsl_rl_cfg_entry_point'))
     normalized = json.loads(json.dumps(contract))
     assert not compare_contract(normalized, normalized, resume=True)
     for key in ('episode_length_s','full_grasp_parameters','observation_semantics_version','curriculum_stage'):
         changed = dict(normalized)
         changed[key] = 'changed'
         assert key in compare_contract(normalized, changed, resume=False)
+    if args.task == 'Grasp1-UR5-Allegro-GraspTrain-v3':
+        for key in ('mount_semantics_version', 'tcp_semantics_version', 'mount_tcp_parameters', 'scene_parameters'):
+            changed = dict(normalized)
+            changed[key] = 'changed'
+            assert key in compare_contract(normalized, changed, resume=False)
+        from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.full_grasp_env_cfg import UR5AllegroFullGraspEnvCfg
+        old = build_contract('Grasp1-UR5-Allegro-GraspTrain-v2', UR5AllegroFullGraspEnvCfg(), UR5AllegroFullGraspPPORunnerCfg())
+        assert 'schema_version' in compare_contract(json.loads(json.dumps(old)), normalized, resume=False)
+        for stage in ('C2', 'C3'):
+            candidate = cfg.copy()
+            candidate.set_curriculum(stage)
+            new = json.loads(json.dumps(build_contract(args.task, candidate, load_cfg_from_registry(args.task, 'rsl_rl_cfg_entry_point'))))
+            assert 'mount_tcp_parameters' in compare_contract(normalized, new, resume=False)
+        from tempfile import TemporaryDirectory
+        from checkpoint_contract import metadata_path, validate_checkpoint
+        with TemporaryDirectory() as temporary:
+            dummy = Path(temporary)/'old.pt'
+            metadata_path(dummy).write_text(json.dumps(old))
+            try:
+                validate_checkpoint(dummy, normalized, allow_mismatch=True)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError('v3 must reject v2 even when a diagnostic override is requested')
+        tests = ['mount_version', 'tcp_version', 'mount_tcp_parameters', 'robot_base_and_table', 'v2_rejection', 'curriculum_rejection']
+    else:
+        tests = []
     cfg_dict = cfg.rewards.to_dict()
     assert 'obj_displacement_reward' not in cfg_dict and 'obj_vel_reward_' not in cfg_dict
     return dict(status='pass', kind='synthetic_not_grasp_success',
         cases=['continuous_hold','contact_loss','opposing_contact','table_support','relative_drift','relative_angle',
-            'relative_speed','corotating_velocity','orientation_direction','unsafe','lift_direction','contact_positive_negative','phase_transitions','checkpoint_semantic_mismatch'], contract=contract)
+            'relative_speed','corotating_velocity','orientation_direction','unsafe','lift_direction','contact_positive_negative','phase_transitions','checkpoint_semantic_mismatch']+tests, contract=contract)
 
 
 def scripted_actions(env, palm_start, open_hand, time_s):
@@ -113,7 +141,8 @@ def scripted_actions(env, palm_start, open_hand, time_s):
     q = robot.data.joint_pos[:, term._joint_ids]
     goal = palm_start.clone()
     goal[:, 2] -= args.approach_distance*min(max((time_s-1.5)/2, 0), 1)
-    goal[:, 2] += 0.15*min(max((time_s-4)/2.5, 0), 1)
+    if args.mode != 'grasp_only':
+        goal[:, 2] += 0.15*min(max((time_s-4)/2.5, 0), 1)
     palm = robot.data.body_link_pos_w[:, memory.palm_id]
     jacobian = robot.root_physx_view.get_jacobians()[:, memory.palm_id-1, :3, term._joint_ids[:6]]
     error = (goal-palm).clamp(-0.005, 0.005)
@@ -133,6 +162,8 @@ def main():
     (out/'command.json').write_text(json.dumps(vars(args), default=str, indent=2))
     cfg = parse_env_cfg(args.task, device=args.device or 'cuda:0', num_envs=args.num_envs)
     cfg.seed = args.seed
+    if args.curriculum is not None:
+        cfg.set_curriculum(args.curriculum)
     cfg.object_dataset = args.dataset
     cfg.training_objects = (args.object,)
     cfg.set_num_envs(args.num_envs)
@@ -174,8 +205,7 @@ def main():
             (out/'synthetic.json').write_text(json.dumps(tests, default=str, indent=2))
             from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
             from rsl_rl.runners import OnPolicyRunner
-            from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.agents.rsl_rl_full_grasp_ppo_cfg import UR5AllegroFullGraspPPORunnerCfg
-            agent = UR5AllegroFullGraspPPORunnerCfg()
+            agent = load_cfg_from_registry(args.task, 'rsl_rl_cfg_entry_point')
             agent.synchronize_control_timing(env.step_dt)
             wrapped = RslRlVecEnvWrapper(env, clip_actions=agent.clip_actions)
             runner = OnPolicyRunner(wrapped, agent.to_dict(), log_dir=None, device=env.device)
@@ -183,6 +213,39 @@ def main():
                 forward = runner.get_inference_policy()(wrapped.get_observations())
             assert forward.shape == (env.num_envs, 22) and bool(torch.isfinite(forward).all())
             obs, _ = env.reset(seed=args.seed)
+            if args.task == 'Grasp1-UR5-Allegro-GraspTrain-v3':
+                # 有限FK差分核验新安全投影的COM→TCP点Jacobian，避免坐标错误伪装成安全域。
+                from isaaclab.utils.math import quat_apply
+                from Grasp1.tasks.manager_based.grasp1.grasp1_env_cfg import SUPPORT_HEIGHT
+                q_before = robot.data.joint_pos.clone()
+                palm_id = memory.palm_id
+                palm = robot.data.body_link_pose_w[:, palm_id].clone()
+                offset = q_before.new_tensor(cfg.tcp_offset_h).expand(env.num_envs, -1)
+                point_before = palm[:, :3]+quat_apply(palm[:, 3:7], offset)
+                expected_tcp_obs = point_before-robot.data.root_pos_w+point_before.new_tensor((0., 0., SUPPORT_HEIGHT))
+                assert torch.allclose(obs['policy'][:, 93:96], expected_tcp_obs, atol=1e-5)
+                lever = point_before-robot.data.body_com_pos_w[:, palm_id]
+                jacobian = robot.root_physx_view.get_jacobians()[:, palm_id-1, :, term._joint_ids]
+                dq = torch.zeros_like(term.target)
+                dq[:, 4] = .001
+                motion = (jacobian @ dq[..., None]).squeeze(-1)
+                expected = point_before+motion[:, :3]+torch.cross(motion[:, 3:], lever, dim=-1)
+                q_shift = q_before.clone()
+                q_shift[:, term._joint_ids] += dq
+                robot.write_joint_state_to_sim(q_shift, torch.zeros_like(q_shift))
+                env.sim.forward()
+                env.scene.update(0.)
+                palm = robot.data.body_link_pose_w[:, palm_id]
+                actual = palm[:, :3]+quat_apply(palm[:, 3:7], offset)
+                jacobian_error = float((actual-expected).norm(dim=-1).max())
+                assert jacobian_error < 1e-5, f'COM point Jacobian/FK mismatch: {jacobian_error}m'
+                (out/'point_jacobian.json').write_text(json.dumps(dict(error_m=jacobian_error,
+                    tolerance_m=1e-5, perturbation_rad=.001, reference='body_COM', status='pass'), indent=2))
+                robot.write_joint_state_to_sim(q_before, torch.zeros_like(q_before))
+                env.sim.forward()
+                env.scene.update(0.)
+                term.reset()
+                env._teacher_runtime_features.invalidate()
             target_before = term.target.clone()
             term.process_actions(torch.zeros((env.num_envs,22), device=env.device))
             assert torch.equal(term.target, target_before)
@@ -296,7 +359,7 @@ def main():
                 start_index = len(frames)
                 steps = round(cfg.episode_length_s/env.step_dt) if args.mode != 'replay' else len(replay['target'])//cfg.decimation
                 for step in range(steps):
-                    if args.mode == 'scripted':
+                    if args.mode in ('scripted', 'grasp_only'):
                         actions = scripted_actions(env, initial_palm, open_hand, step*env.step_dt)
                     elif args.mode == 'random':
                         actions = torch.rand((env.num_envs, 22), device=env.device)*2-1
@@ -333,7 +396,8 @@ def main():
                                 hold_s=float(memory.last_hold[index] if just_done[index] else memory.hold[index]),
                                 done=bool(just_done[index]),
                                 **{'reward_'+name:float(env.reward_manager._step_reward[index,i]*env.step_dt)
-                                   for i,name in enumerate(env.reward_manager.active_terms)}))
+                                    for i,name in enumerate(env.reward_manager.active_terms)},
+                                projection_fraction=float(term.projection_fraction[index]) if args.task.endswith('-v3') else 1.))
                     if not args.headless and step % 15 == 0:
                         print('FULL_GRASP_STATE '+json.dumps(dict(time_s=(step+1)*env.step_dt,
                             top_lift_m=float(s['lift'][0]), hold_s=float(memory.hold[0]), phase=int(memory.phase[0]),
@@ -403,6 +467,10 @@ def main():
                     candidate=dict(solver=args.solver, legacy_joint_friction=cfg.legacy_joint_friction, hand_static_friction=cfg.hand_static_friction,
                         position_iterations=cfg.scene.robot.spawn.articulation_props.solver_position_iteration_count,
                         hand_stiffness=cfg.scene.robot.actuators['hand'].stiffness))
+                if controls:
+                    fractions = [row['projection_fraction'] for row in controls]
+                    result.update(projection_min_fraction=min(fractions),
+                        projection_active_control_fraction=sum(value < .999 for value in fractions)/len(fractions))
                 (out/'result.json').write_text(json.dumps(result, indent=2))
                 print('FULL_GRASP_RESULT '+json.dumps(result), flush=True)
     finally:

@@ -1,0 +1,64 @@
+{
+  "physics_dt": 0.008333333333333333,
+  "control_dt": 0.03333333333333333,
+  "gamma": 0.9993322194984537,
+  "rows": [
+    {
+      "trajectory": "success",
+      "seed": 21,
+      "steps": 217,
+      "return_undiscounted": 79.54556773701108,
+      "return_discounted": 71.17758271802036,
+      "max_lift_m": 0.12888628244400024,
+      "max_hold_s": 1.0000003576278687
+    },
+    {
+      "trajectory": "success",
+      "seed": 22,
+      "steps": 221,
+      "return_undiscounted": 81.07735369369739,
+      "return_discounted": 72.42247019163547,
+      "max_lift_m": 0.13003623485565186,
+      "max_hold_s": 1.0000003576278687
+    },
+    {
+      "trajectory": "success",
+      "seed": 23,
+      "steps": 216,
+      "return_undiscounted": 79.1025448250746,
+      "return_discounted": 70.80039001243287,
+      "max_lift_m": 0.13124626874923706,
+      "max_hold_s": 1.0000003576278687
+    },
+    {
+      "trajectory": "grasp_only",
+      "seed": 21,
+      "steps": 300,
+      "return_undiscounted": 49.94607691746485,
+      "return_discounted": 44.76547352288585,
+      "max_lift_m": 0.013005375862121582,
+      "max_hold_s": 0.0
+    },
+    {
+      "trajectory": "grasp_only",
+      "seed": 22,
+      "steps": 300,
+      "return_undiscounted": 50.33617463831424,
+      "return_discounted": 45.0921681202833,
+      "max_lift_m": 0.01306229829788208,
+      "max_hold_s": 0.0
+    },
+    {
+      "trajectory": "grasp_only",
+      "seed": 23,
+      "steps": 300,
+      "return_undiscounted": 49.863408102569885,
+      "return_discounted": 44.6682235576231,
+      "max_lift_m": 0.01172405481338501,
+      "max_hold_s": 0.0
+    }
+  ],
+  "successful_return_exceeds_grasp_only": true,
+  "interpretation": "real_scripted_trajectories_not_PPO_regression_or_all_possible_reward_exploits",
+  "reward_changed": false
+}

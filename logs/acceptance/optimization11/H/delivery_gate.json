@@ -1,0 +1,8 @@
+{
+  "status": "partial",
+  "code_delivered": true,
+  "source_files": 16,
+  "physics_C1": "pass",
+  "policy_goal_completed": false,
+  "remaining": "missing target reference PNG and subsequent PPO/policy GUI"
+}

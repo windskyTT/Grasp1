@@ -457,6 +457,20 @@ def sample_rot_mats(
     return rotations, widths
 
 
+def tcp_pose_for_ur5_ik(tcp_position_w, palm_rotation_w, tcp_offset_h, ur5_base_pos_w, ur5_base_rotation_w):
+    """v3：TCP在掌局部系的正向偏移；源模型tool0→法兰→掌为单位变换。
+
+    先由p_F=p_TCP-R_H*p_H_TCP求法兰，再转入解析IK的base系。
+    HAND_CENTER在旧reset公式中是中心→法兰，因此几何TCP取其负值；
+    旧Teacher观测的HAND_CENTER点保持原定义，不静默更改旧策略输入。
+    """
+    flange_position_w = tcp_position_w-(palm_rotation_w @ tcp_offset_h[..., None]).squeeze(-1)
+    target = torch.eye(4, device=tcp_position_w.device, dtype=tcp_position_w.dtype).repeat(len(tcp_position_w), 1, 1)
+    target[:, :3, :3] = ur5_base_rotation_w.transpose(-1, -2) @ palm_rotation_w
+    target[:, :3, 3] = (ur5_base_rotation_w.transpose(-1, -2) @ (flange_position_w-ur5_base_pos_w)[..., None]).squeeze(-1)
+    return target
+
+
 def wrist_poses_for_ur5_ik(
     visible_points_w: torch.Tensor,
     hand_dir_x_w: torch.Tensor,

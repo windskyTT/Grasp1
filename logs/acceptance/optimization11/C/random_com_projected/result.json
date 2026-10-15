@@ -1,0 +1,58 @@
+{
+  "status": "fail",
+  "physics_status": "fail",
+  "attempts": 3,
+  "successes": 0,
+  "success_rate": 0.0,
+  "controller": "random",
+  "reset_valid_count": 3,
+  "physical_steps": 2544,
+  "completed_physics_steps_per_trial": [
+    1200,
+    328,
+    1016
+  ],
+  "wall_s": 51.770528226999886,
+  "limit_max_rad": 0.0,
+  "limit_p9999_rad": 0.0,
+  "qd_peak": 2.9390292167663574,
+  "delta_qd_peak": 0.6072162985801697,
+  "tip_object_peak_N": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "tip_table_peak_N": [
+    0.0,
+    0.0,
+    0.0,
+    105.4504623413086
+  ],
+  "tip_other_normal_peak_N": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "observation_dim": {
+    "policy": [
+      211
+    ]
+  },
+  "action_dim": 22,
+  "vram_peak_bytes": 42242560,
+  "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+  "seed": 101,
+  "action_semantics": "TableClearanceJointDeltaAction",
+  "episode_length_s": 10.0,
+  "candidate": {
+    "solver": "tgs",
+    "legacy_joint_friction": null,
+    "hand_static_friction": null,
+    "position_iterations": 64,
+    "hand_stiffness": 600.0
+  },
+  "projection_min_fraction": 0.0,
+  "projection_active_control_fraction": 0.014150943396226415
+}

@@ -255,7 +255,8 @@ HAND_CONTACT_LINK_NAMES: Final[tuple[str, ...]] = (
 # 抓取中心相对于手部连接坐标系的偏移。
 # -----------------------------------------------------------------------------
 
-# 抓取坐标系在 Flange2hand_fixed_joint 坐标系中的位置。
+# 源Teacher的观测点偏移，同时被旧reset用作中心→法兰的偏移参数。
+# v3几何TCP遵循旧reset的反解，使用下面GRASP_TCP_OFFSET；保留旧观测语义。
 # 数值迁移自 cfg_reg.yaml：
 #
 #     hand_center: [-0.0091, 0.0, -0.095]
@@ -265,6 +266,9 @@ HAND_CENTER: Final[tuple[float, float, float]] = (
     0.0,
     -0.095,
 )
+
+# 法兰/掌→几何抓取中心；与源pregrasp的p_flange=p_center+R*HAND_CENTER一致。
+GRASP_TCP_OFFSET: Final[tuple[float, float, float]] = tuple(-value for value in HAND_CENTER)
 
 
 # -----------------------------------------------------------------------------
@@ -441,6 +445,7 @@ __all__ = [
 
     # 抓取中心偏移。
     "HAND_CENTER",
+    "GRASP_TCP_OFFSET",
 
     # 合并后的关节名称顺序和手臂/手部切片。
     "CONTROLLED_JOINT_NAMES",

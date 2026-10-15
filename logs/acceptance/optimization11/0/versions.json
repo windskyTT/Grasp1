@@ -1,0 +1,7 @@
+{
+  "conda_prefix": "/home/windsky/miniconda3/envs/grasp",
+  "rsl_rl": "3.1.2",
+  "isaaclab_git_tag": "v2.3.2",
+  "gpu": "NVIDIA GeForce RTX 3070 Ti Laptop GPU, 580.178.04, 8192 MiB, 2535 MiB",
+  "isaacsim": "5.1.0-rc.19 (runtime startup log)"
+}

@@ -39,6 +39,7 @@ cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
 parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
 parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
+parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
@@ -120,6 +121,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     """Train with RSL-RL agent."""
     # override configurations with non-hydra CLI arguments
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
+    if args_cli.curriculum is not None:
+        env_cfg.set_curriculum(args_cli.curriculum)
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         env_cfg.set_num_envs(env_cfg.scene.num_envs)
@@ -216,7 +219,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         assert env.unwrapped.step_dt == env_cfg.control_dt()
-    if args_cli.task == 'Grasp1-UR5-Allegro-GraspTrain-v2':
+    if args_cli.task in ('Grasp1-UR5-Allegro-GraspTrain-v2', 'Grasp1-UR5-Allegro-GraspTrain-v3'):
         # 每物理子步读取真实q/qd；自动reset不能抹掉训练中的物理异常。
         from pathlib import Path
         real_env = env.unwrapped

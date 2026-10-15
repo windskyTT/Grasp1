@@ -1,5 +1,6 @@
 """Teacher153之外显式添加58D自主Lift/Hold状态；旧观测不变。"""
 import torch
+from isaaclab.utils.math import quat_apply
 from .observations import TeacherObservation
 from .full_grasp_metrics import FullGraspState, state
 
@@ -9,9 +10,14 @@ class FullGraspObservation(TeacherObservation):
         super().__init__(cfg, env)
         env._full_grasp_state = FullGraspState(env)
 
-    def __call__(self, env, support_height):
+    def __call__(self, env, support_height, tcp_offset_h=None):
         base = super().__call__(env, support_height)
         s, memory = state(env), env._full_grasp_state
+        if tcp_offset_h is not None:
+            # 仅v3把93:96统一为Reset/IK采用的几何TCP；旧Teacher/v1/v2保留源观测点。
+            offset = base.new_tensor(tcp_offset_h).expand(env.num_envs, -1)
+            tcp = s['palm'][:, :3]+quat_apply(s['palm'][:, 3:7], offset)
+            base[:, 93:96] = tcp-env.scene['robot'].data.root_pos_w+base.new_tensor((0., 0., support_height))
         extra = torch.cat((s['qd'], s['relpos'], s['relvel'], s['relquat'],
             s['force']*env.physics_dt, s['table']*env.physics_dt, s['support']*env.physics_dt,
             torch.nn.functional.one_hot(memory.phase, 4).float(),

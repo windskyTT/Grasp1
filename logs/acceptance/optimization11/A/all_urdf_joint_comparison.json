@@ -1,0 +1,23 @@
+{
+  "common_joints": 31,
+  "different": {},
+  "source_platform_only": [
+    "Link_1",
+    "platform2ur5_joint",
+    "worldur5_to_base"
+  ],
+  "source_platform_transforms": {
+    "Link_1": {
+      "xyz": "0 0 0.771",
+      "rpy": "0 0 0"
+    },
+    "platform2ur5_joint": {
+      "rpy": "0.0 0.0 -1.57",
+      "xyz": "0.0 0.0 0.0"
+    },
+    "worldur5_to_base": {
+      "rpy": "0.0 0.0 0.0",
+      "xyz": "0.0 0.0 0.0"
+    }
+  }
+}

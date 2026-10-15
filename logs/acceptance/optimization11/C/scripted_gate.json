@@ -1,0 +1,180 @@
+{
+  "status": "pass",
+  "primary": {
+    "status": "pass",
+    "physics_status": "pass",
+    "attempts": 10,
+    "successes": 10,
+    "success_rate": 1.0,
+    "controller": "scripted",
+    "reset_valid_count": 10,
+    "physical_steps": 8700,
+    "completed_physics_steps_per_trial": [
+      868,
+      884,
+      864,
+      880,
+      860,
+      872,
+      868,
+      860,
+      884,
+      860
+    ],
+    "wall_s": 227.475888038,
+    "limit_max_rad": 0.0010430067777633667,
+    "limit_p9999_rad": 0.0007043620571494102,
+    "qd_peak": 7.039291858673096,
+    "delta_qd_peak": 2.599031686782837,
+    "tip_object_peak_N": [
+      29.649314880371094,
+      18.467769622802734,
+      15.980043411254883,
+      71.64525604248047
+    ],
+    "tip_table_peak_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "tip_other_normal_peak_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "observation_dim": {
+      "policy": [
+        211
+      ]
+    },
+    "action_dim": 22,
+    "vram_peak_bytes": 122808320,
+    "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+    "seed": 21,
+    "action_semantics": "TableClearanceJointDeltaAction",
+    "episode_length_s": 10.0,
+    "candidate": {
+      "solver": "tgs",
+      "legacy_joint_friction": null,
+      "hand_static_friction": null,
+      "position_iterations": 64,
+      "hand_stiffness": 600.0
+    },
+    "projection_min_fraction": 1.0,
+    "projection_active_control_fraction": 0.0
+  },
+  "batch16": {
+    "status": "pass",
+    "physics_status": "pass",
+    "attempts": 16,
+    "successes": 16,
+    "success_rate": 1.0,
+    "controller": "scripted",
+    "reset_valid_count": 16,
+    "physical_steps": 888,
+    "completed_physics_steps_per_trial": [
+      888
+    ],
+    "wall_s": 27.543361986000036,
+    "limit_max_rad": 0.0009556412696838379,
+    "limit_p9999_rad": 0.000681951642036438,
+    "qd_peak": 7.0428786277771,
+    "delta_qd_peak": 3.156745195388794,
+    "tip_object_peak_N": [
+      38.1170539855957,
+      28.5622501373291,
+      19.39376449584961,
+      73.00395202636719
+    ],
+    "tip_table_peak_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "tip_other_normal_peak_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "observation_dim": {
+      "policy": [
+        211
+      ]
+    },
+    "action_dim": 22,
+    "vram_peak_bytes": 48706048,
+    "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+    "seed": 21,
+    "action_semantics": "TableClearanceJointDeltaAction",
+    "episode_length_s": 10.0,
+    "candidate": {
+      "solver": "tgs",
+      "legacy_joint_friction": null,
+      "hand_static_friction": null,
+      "position_iterations": 64,
+      "hand_stiffness": 600.0
+    },
+    "projection_min_fraction": 1.0,
+    "projection_active_control_fraction": 0.0
+  },
+  "batch128": {
+    "status": "pass",
+    "physics_status": "pass",
+    "attempts": 128,
+    "successes": 128,
+    "success_rate": 1.0,
+    "controller": "scripted",
+    "reset_valid_count": 128,
+    "physical_steps": 888,
+    "completed_physics_steps_per_trial": [
+      888
+    ],
+    "wall_s": 50.81604463099984,
+    "limit_max_rad": 0.0010959506034851074,
+    "limit_p9999_rad": 0.0006543844938278198,
+    "qd_peak": 7.0536885261535645,
+    "delta_qd_peak": 3.715102434158325,
+    "tip_object_peak_N": [
+      43.04914093017578,
+      37.05443572998047,
+      20.259836196899414,
+      80.22174072265625
+    ],
+    "tip_table_peak_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "tip_other_normal_peak_N": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "observation_dim": {
+      "policy": [
+        211
+      ]
+    },
+    "action_dim": 22,
+    "vram_peak_bytes": 294602240,
+    "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+    "seed": 21,
+    "action_semantics": "TableClearanceJointDeltaAction",
+    "episode_length_s": 10.0,
+    "candidate": {
+      "solver": "tgs",
+      "legacy_joint_friction": null,
+      "hand_static_friction": null,
+      "position_iterations": 64,
+      "hand_stiffness": 600.0
+    },
+    "projection_min_fraction": 1.0,
+    "projection_active_control_fraction": 0.0
+  }
+}

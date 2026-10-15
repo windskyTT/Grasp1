@@ -1,0 +1,21 @@
+{
+  "controller": "diagnostic_joint_target_approach",
+  "policy_success": null,
+  "reached": true,
+  "unsafe": false,
+  "elapsed_s": 5.266666666666667,
+  "target_tcp_w": [
+    0.19999979436397552,
+    -0.7515200972557068,
+    0.9509999752044678
+  ],
+  "final_tcp_w": [
+    0.1970619559288025,
+    -0.7509526014328003,
+    0.9547702074050903
+  ],
+  "position_error_m": 0.004813272971659899,
+  "angle_error_rad": 0.033345144242048264,
+  "lift_hold_time_still_required_s": 3.5,
+  "episode_s": 10.0
+}

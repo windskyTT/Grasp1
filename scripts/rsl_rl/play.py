@@ -47,6 +47,10 @@ parser.add_argument("--agent",type=str,default="rsl_rl_cfg_entry_point",
 parser.add_argument("--seed",type=int,default=None,help="Seed used for environment reset and random object selection.")
 parser.add_argument("--real-time",action="store_true",default=False,help="Run in real time, if possible.")
 parser.add_argument('--allow_mismatched_checkpoint', action='store_true', help='Diagnostic inference only; print semantic differences.')
+parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
+parser.add_argument('--output_dir', type=str, help='Write policy trials and compatibility audit here.')
+parser.add_argument('--show_frames', action='store_true', help='Read-only flange, palm, TCP and tip axes.')
+parser.add_argument('--capture_frames', action='store_true', help='GUI screenshots of initial, grasp, lift and hold policy states.')
 
 # 加入 RSL-RL 通用参数，例如检查点路径、训练运行目录和恢复选项。
 cli_args.add_rsl_rl_args(parser)
@@ -160,6 +164,8 @@ def main(
 
     # 将 RSL-RL 命令行选项覆盖到 Hydra 提供的 agent 配置。
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
+    if args_cli.curriculum is not None:
+        env_cfg.set_curriculum(args_cli.curriculum)
     if args_cli.decimation is not None:
         env_cfg.decimation = args_cli.decimation
     if args_cli.episode_length_s is not None:
@@ -224,7 +230,7 @@ def main(
     )
     from pathlib import Path
     import json
-    audit_dir = Path(log_dir)/'videos'/'play' if args_cli.video else Path(log_dir)/'play'
+    audit_dir = Path(args_cli.output_dir) if args_cli.output_dir else (Path(log_dir)/'videos'/'play' if args_cli.video else Path(log_dir)/'play')
     audit_dir.mkdir(parents=True, exist_ok=True)
     (audit_dir/'checkpoint_compatibility.json').write_text(json.dumps(checkpoint_audit, indent=2))
 
@@ -287,7 +293,28 @@ def main(
     # 记录总控制步数及各并行环境完成的回合数。
     timestep = 0
     episode_counts = torch.zeros(args_cli.num_envs, dtype=torch.long, device=env.unwrapped.device)
+    episode_steps = torch.zeros_like(episode_counts)
     full_grasp_trials = []
+    frame_rows = []
+    if args_cli.show_frames:
+        from Grasp1.tasks.manager_based.grasp1.mdp.mount_frames import MountFrames
+        mount_frames = MountFrames(env.unwrapped)
+        frame_rows.append(dict(step=0, **mount_frames.update()))
+    captured = set()
+    def capture_policy_frame(label):
+        from omni.kit.viewport.utility import get_active_viewport, capture_viewport_to_file
+        memory = env.unwrapped._full_grasp_state
+        state = memory.read()
+        data = dict(controller='policy', checkpoint=resume_path, label=label, control_step=timestep,
+            top_lift_m=float(state['lift'][0]), hold_s=float(memory.hold[0]),
+            palm_pose_wxyz=state['palm'][0].cpu().tolist())
+        (audit_dir/(label+'.json')).write_text(json.dumps(data, indent=2))
+        capture_viewport_to_file(get_active_viewport(), str(audit_dir/(label+'.png')))
+        for _ in range(10):
+            simulation_app.update()
+        captured.add(label)
+    if args_cli.capture_frames:
+        capture_policy_frame('initial')
 
     # 推理循环：根据观测生成动作、推进环境并统计回合结束情况。
 
@@ -304,6 +331,9 @@ def main(
             policy_nn.reset(dones)
 
         timestep += 1
+        episode_steps += 1
+        if args_cli.show_frames:
+            frame_rows.append(dict(step=timestep, **mount_frames.update()))
         episode_counts += dones
         if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
             memory = env.unwrapped._full_grasp_state
@@ -311,9 +341,16 @@ def main(
                 trial = dict(env=index, episode=int(episode_counts[index]), seed=agent_cfg.seed,
                     object=object_name, success=bool(memory.last_success[index]),
                     failure_bits=int(memory.last_failure[index]), lift_m=float(memory.last_lift[index]),
-                    hold_s=float(memory.last_hold[index]), controller='policy')
+                    hold_s=float(memory.last_hold[index]), elapsed_s=float(episode_steps[index])*dt, controller='policy')
                 full_grasp_trials.append(trial)
                 print('[FULL_GRASP] '+json.dumps(trial), flush=True)
+            if args_cli.capture_frames and not bool(dones[0]):
+                s = memory.read()
+                for label, condition in (('grasp', memory.phase[0] >= 2), ('lift', s['lift'][0] >= env_cfg.lift_height),
+                                         ('hold', memory.hold[0] >= .5)):
+                    if label not in captured and bool(condition):
+                        capture_policy_frame(label)
+        episode_steps[dones] = 0
 
         # 达到视频长度，或所有环境均达到指定回合数时退出播放循环。
         if args_cli.video and timestep >= args_cli.video_length:
@@ -335,9 +372,11 @@ def main(
     )
 
     if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
+        if args_cli.show_frames:
+            (audit_dir/'mount_frames.json').write_text(json.dumps(frame_rows, indent=2))
         import csv
         with (audit_dir/'full_grasp_trials.csv').open('w', newline='') as handle:
-            writer = csv.DictWriter(handle, fieldnames=('env','episode','seed','object','success','failure_bits','lift_m','hold_s','controller'))
+            writer = csv.DictWriter(handle, fieldnames=('env','episode','seed','object','success','failure_bits','lift_m','hold_s','elapsed_s','controller'))
             writer.writeheader()
             writer.writerows(full_grasp_trials)
         (audit_dir/'full_grasp_result.json').write_text(json.dumps(dict(attempts=len(full_grasp_trials),

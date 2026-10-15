@@ -1,0 +1,18 @@
+[
+  "scripts/diagnostics/audit_ur5_allegro_mount.py",
+  "scripts/diagnostics/check_initial_tcp_pose.py",
+  "scripts/rsl_rl/checkpoint_contract.py",
+  "scripts/rsl_rl/compare_training_checkpoints.py",
+  "scripts/rsl_rl/play.py",
+  "scripts/rsl_rl/scripted_grasp_probe.py",
+  "scripts/rsl_rl/train.py",
+  "source/Grasp1/Grasp1/robots/robot_profile.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/__init__.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/agents/rsl_rl_mount_grasp_ppo_cfg.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/mount_grasp_env_cfg.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/actions.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_events.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/full_grasp_observations.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/geometry.py",
+  "source/Grasp1/Grasp1/tasks/manager_based/grasp1/mdp/mount_frames.py"
+]

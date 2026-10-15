@@ -1,0 +1,219 @@
+{
+  "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+  "tcp_offset_h": [
+    0.0091,
+    -0.0,
+    0.095
+  ],
+  "quaternion_order": "wxyz",
+  "rows": [
+    {
+      "label": "C1",
+      "height_m": null,
+      "reset_valid": true,
+      "tcp_target_w": [
+        0.34627142548561096,
+        -0.7274386286735535,
+        0.949272871017456
+      ],
+      "tcp_fk_w": [
+        0.34627142548561096,
+        -0.7274386286735535,
+        0.949272871017456
+      ],
+      "fk_position_error_m": 0.0,
+      "fk_angle_error_rad": 6.976544568715326e-07,
+      "settled_tcp_w": [
+        0.3464032709598541,
+        -0.7274569272994995,
+        0.946761965751648
+      ],
+      "settled_position_error_m": 0.002514431020244956,
+      "min_hand_table_clearance_m": 0.03509223461151123,
+      "tip_table_peak_N": 0.0,
+      "arm_contact_peak_N": 0.0,
+      "joint_violation_peak_rad": 0.0,
+      "reported_qd_peak": 0.04768688231706619,
+      "close_pose_ik_feasible": true,
+      "minimum_target_travel_s": 0.024045009166002274,
+      "episode_s": 10.0,
+      "reset_pose_status": "pass",
+      "time_budget_status": "not_proven",
+      "policy_success": null
+    },
+    {
+      "label": "table_center_0.50m",
+      "height_m": 0.5,
+      "reset_valid": true,
+      "tcp_target_w": [
+        0.20000000298023224,
+        -0.7515199780464172,
+        1.2710000276565552
+      ],
+      "tcp_fk_w": [
+        0.19627156853675842,
+        -0.7274388074874878,
+        0.949272632598877
+      ],
+      "fk_position_error_m": 0.32264891266822815,
+      "fk_angle_error_rad": 6.376471901603509e-07,
+      "settled_tcp_w": [
+        0.1962185502052307,
+        -0.7274340987205505,
+        0.9478999972343445
+      ],
+      "settled_position_error_m": 0.32401859760284424,
+      "min_hand_table_clearance_m": 0.03632456064224243,
+      "tip_table_peak_N": 0.0,
+      "arm_contact_peak_N": 0.0,
+      "joint_violation_peak_rad": 0.0,
+      "reported_qd_peak": 0.04497606307268143,
+      "close_pose_ik_feasible": true,
+      "minimum_target_travel_s": 0.02564271166920662,
+      "episode_s": 10.0,
+      "reset_pose_status": "fail",
+      "time_budget_status": "not_proven",
+      "policy_success": null
+    },
+    {
+      "label": "table_center_0.45m",
+      "height_m": 0.45,
+      "reset_valid": true,
+      "tcp_target_w": [
+        0.20000000298023224,
+        -0.7515199780464172,
+        1.2209999561309814
+      ],
+      "tcp_fk_w": [
+        0.19627156853675842,
+        -0.7274388074874878,
+        0.949272632598877
+      ],
+      "fk_position_error_m": 0.27281779050827026,
+      "fk_angle_error_rad": 6.376471901603509e-07,
+      "settled_tcp_w": [
+        0.1962185502052307,
+        -0.7274340987205505,
+        0.9478999972343445
+      ],
+      "settled_position_error_m": 0.2741861045360565,
+      "min_hand_table_clearance_m": 0.03632456064224243,
+      "tip_table_peak_N": 0.0,
+      "arm_contact_peak_N": 0.0,
+      "joint_violation_peak_rad": 0.0,
+      "reported_qd_peak": 0.04497606307268143,
+      "close_pose_ik_feasible": true,
+      "minimum_target_travel_s": 0.02564271166920662,
+      "episode_s": 10.0,
+      "reset_pose_status": "fail",
+      "time_budget_status": "not_proven",
+      "policy_success": null
+    },
+    {
+      "label": "table_center_0.40m",
+      "height_m": 0.4,
+      "reset_valid": true,
+      "tcp_target_w": [
+        0.20000000298023224,
+        -0.7515199780464172,
+        1.1710000038146973
+      ],
+      "tcp_fk_w": [
+        0.19627156853675842,
+        -0.7274388074874878,
+        0.949272632598877
+      ],
+      "fk_position_error_m": 0.2230623960494995,
+      "fk_angle_error_rad": 6.376471901603509e-07,
+      "settled_tcp_w": [
+        0.1962185502052307,
+        -0.7274340987205505,
+        0.9478999972343445
+      ],
+      "settled_position_error_m": 0.22442825138568878,
+      "min_hand_table_clearance_m": 0.03632456064224243,
+      "tip_table_peak_N": 0.0,
+      "arm_contact_peak_N": 0.0,
+      "joint_violation_peak_rad": 0.0,
+      "reported_qd_peak": 0.04497606307268143,
+      "close_pose_ik_feasible": true,
+      "minimum_target_travel_s": 0.02564271166920662,
+      "episode_s": 10.0,
+      "reset_pose_status": "fail",
+      "time_budget_status": "not_proven",
+      "policy_success": null
+    },
+    {
+      "label": "table_center_0.35m",
+      "height_m": 0.35,
+      "reset_valid": true,
+      "tcp_target_w": [
+        0.20000000298023224,
+        -0.7515199780464172,
+        1.121000051498413
+      ],
+      "tcp_fk_w": [
+        0.19627156853675842,
+        -0.7274388074874878,
+        0.949272632598877
+      ],
+      "fk_position_error_m": 0.17344771325588226,
+      "fk_angle_error_rad": 6.376471901603509e-07,
+      "settled_tcp_w": [
+        0.1962185502052307,
+        -0.7274340987205505,
+        0.9478999972343445
+      ],
+      "settled_position_error_m": 0.17480863630771637,
+      "min_hand_table_clearance_m": 0.03632456064224243,
+      "tip_table_peak_N": 0.0,
+      "arm_contact_peak_N": 0.0,
+      "joint_violation_peak_rad": 0.0,
+      "reported_qd_peak": 0.04497606307268143,
+      "close_pose_ik_feasible": true,
+      "minimum_target_travel_s": 0.02564271166920662,
+      "episode_s": 10.0,
+      "reset_pose_status": "fail",
+      "time_budget_status": "not_proven",
+      "policy_success": null
+    },
+    {
+      "label": "table_center_0.30m",
+      "height_m": 0.3,
+      "reset_valid": true,
+      "tcp_target_w": [
+        0.20000000298023224,
+        -0.7515199780464172,
+        1.0709999799728394
+      ],
+      "tcp_fk_w": [
+        0.19627156853675842,
+        -0.7274388074874878,
+        0.949272632598877
+      ],
+      "fk_position_error_m": 0.12414246052503586,
+      "fk_angle_error_rad": 6.376471901603509e-07,
+      "settled_tcp_w": [
+        0.1962185502052307,
+        -0.7274340987205505,
+        0.9478999972343445
+      ],
+      "settled_position_error_m": 0.1254911720752716,
+      "min_hand_table_clearance_m": 0.03632456064224243,
+      "tip_table_peak_N": 0.0,
+      "arm_contact_peak_N": 0.0,
+      "joint_violation_peak_rad": 0.0,
+      "reported_qd_peak": 0.04497606307268143,
+      "close_pose_ik_feasible": true,
+      "minimum_target_travel_s": 0.02564271166920662,
+      "episode_s": 10.0,
+      "reset_pose_status": "fail",
+      "time_budget_status": "not_proven",
+      "policy_success": null
+    }
+  ],
+  "checks": {
+    "old_C1_formula_equivalent": true
+  },
+  "source_visual_confirmation": false
+}

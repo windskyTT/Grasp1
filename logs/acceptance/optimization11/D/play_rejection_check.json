@@ -1,0 +1,8 @@
+{
+  "expected_exit_code": 1,
+  "observed_exit_code": 1,
+  "rejection_before_runner_load": true,
+  "mismatch_override_rejected": true,
+  "policy_attempts": 0,
+  "log": "D/rejected_play.log"
+}

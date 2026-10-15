@@ -23,6 +23,7 @@ GRASP_TRAIN_RESUME_FIELDS = ('curriculum_stage', 'reset_distribution', 'object_a
 FULL_GRASP_FIELDS = ('episode_length_s', 'full_grasp_parameters', 'tip_sensor_configuration',
                      'reward_terms', 'termination_terms', 'reset_distribution', 'curriculum_stage',
                      'normalizer_configuration', 'policy_architecture')
+MOUNT_GRASP_FIELDS = ('mount_semantics_version', 'tcp_semantics_version', 'mount_tcp_parameters', 'scene_parameters')
 
 
 def asset_contents(env_cfg, *, include_objects=True):
@@ -114,7 +115,7 @@ def build_contract(task_id, env_cfg, agent_cfg):
             reset_distribution=env_cfg.events.reset_teacher.to_dict(),
             scene_parameters=dict(robot_initial_state=robot.init_state.to_dict(), table=env_cfg.scene.table.to_dict(),
                 physics_material=env_cfg.sim.physics_material.to_dict()))
-    if task_id == 'Grasp1-UR5-Allegro-GraspTrain-v2':
+    if task_id in ('Grasp1-UR5-Allegro-GraspTrain-v2', 'Grasp1-UR5-Allegro-GraspTrain-v3'):
         contract.update(schema_version=3,
             action_semantics_version='previous_target_delta_clamped_once_per_control_step_full_grasp_v1',
             observation_semantics_version='teacher153_plus_full_grasp58_corotating_velocity_v4',
@@ -131,6 +132,16 @@ def build_contract(task_id, env_cfg, agent_cfg):
                 critic=agent_cfg.policy.critic_obs_normalization),
             policy_architecture=dict(actor_hidden_dims=agent_cfg.policy.actor_hidden_dims,
                 critic_hidden_dims=agent_cfg.policy.critic_hidden_dims, activation=agent_cfg.policy.activation))
+    if task_id == 'Grasp1-UR5-Allegro-GraspTrain-v3':
+        contract.update(schema_version=4,
+            action_semantics_version='previous_target_delta_COM_vertex_increment_projection_preserve_preload_v3',
+            observation_semantics_version='teacher153_geometric_TCP93_96_plus_full_grasp58_corotating_velocity_v5',
+            mount_semantics_version=env_cfg.mount_semantics_version, tcp_semantics_version=env_cfg.tcp_semantics_version,
+            mount_tcp_parameters=dict(robot_usd_path=robot.spawn.usd_path,
+                flange_to_hand_xyz=(0., 0., 0.), flange_to_hand_quaternion_wxyz=(1., 0., 0., 0.),
+                palm_quaternion_w=env_cfg.palm_quaternion_w, tcp_offset_h=env_cfg.tcp_offset_h,
+                tcp_initial_height=env_cfg.tcp_initial_height, action_table_clearance_m=env_cfg.action_table_clearance_m),
+            scene_parameters=dict(robot_initial_state=robot.init_state.to_dict(), table=env_cfg.scene.table.to_dict()))
     return contract
 
 
@@ -146,11 +157,13 @@ def compare_contract(saved, current, *, resume):
         fields += GRASP_TRAIN_FIELDS
         if resume:
             fields += GRASP_TRAIN_RESUME_FIELDS
-    if saved.get('schema_version') == 3 or current.get('schema_version') == 3:
+    if saved.get('schema_version') in (3, 4) or current.get('schema_version') in (3, 4):
         fields += FULL_GRASP_FIELDS
+    if saved.get('schema_version') == 4 or current.get('schema_version') == 4:
+        fields += MOUNT_GRASP_FIELDS
     differences = {key:dict(checkpoint=saved.get(key), requested=current.get(key))
                    for key in fields if key not in saved or saved[key] != current[key]}
-    if not resume and current.get('schema_version') == 3:
+    if not resume and current.get('schema_version') in (3, 4):
         if not set(current['object_names']).issubset(saved.get('object_names', [])):
             differences['object_names'] = dict(checkpoint=saved.get('object_names'), requested=current['object_names'])
     if not resume and current.get('schema_version') == 2:
@@ -182,11 +195,13 @@ def validate_checkpoint(checkpoint, current, *, resume=False, allow_mismatch=Fal
     audit = dict(checkpoint=str(checkpoint), metadata=str(path), metadata_present=path.exists(),
                  differences=differences, compatible=not differences,
                  comparability_warning=warning, training_episode_length_s=saved.get('episode_length_s'))
-    if differences and (resume or not allow_mismatch):
+    if differences and (resume or not allow_mismatch or current.get('schema_version') == 4):
         raise ValueError(f'Checkpoint {checkpoint} environment contract rejected before runner.load(): '
                          + json.dumps(differences, sort_keys=True)
                          + '. Start fresh training, or audit legacy source/configuration before writing metadata. '
-                         + ('Use --allow_mismatched_checkpoint only for diagnostic inference.' if not resume else 'Training resume cannot override this check.'))
+                         + ('v3 requires matching mount, TCP and curriculum; overrides are disabled.' if current.get('schema_version') == 4
+                            else 'Use --allow_mismatched_checkpoint only for diagnostic inference.' if not resume
+                            else 'Training resume cannot override this check.'))
     if differences:
         print('[WARNING] '+warning+' '+json.dumps(differences,sort_keys=True), flush=True)
     return audit, saved

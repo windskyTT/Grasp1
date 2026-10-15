@@ -16,3 +16,6 @@ logs/acceptance/2026-09-29/torch-profile.json filter=lfs diff=lfs merge=lfs -tex
 logs/acceptance/**/profile-before.json filter=lfs diff=lfs merge=lfs -text
 logs/acceptance/**/profile-after.json filter=lfs diff=lfs merge=lfs -text
 logs/acceptance/optimization10/C/scripted128/steps.csv filter=lfs diff=lfs merge=lfs -text
+logs/acceptance/optimization11/C/final_random128/steps.csv filter=lfs diff=lfs merge=lfs -text
+logs/acceptance/optimization11/C/final_random16/steps.csv filter=lfs diff=lfs merge=lfs -text
+logs/acceptance/optimization11/C/final_scripted128/steps.csv filter=lfs diff=lfs merge=lfs -text

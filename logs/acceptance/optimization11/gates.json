@@ -1,0 +1,11 @@
+{
+  "0": "partial_missing_target_reference",
+  "A": "needs_reference_image",
+  "B": "pass_reset_and_approach_only",
+  "C": "pass_C1_tested_domain",
+  "D": "blocked",
+  "E": "blocked",
+  "F": "blocked",
+  "G": "not_run",
+  "H": "partial_code_and_evidence_delivered"
+}

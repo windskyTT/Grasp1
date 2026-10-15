@@ -1,6 +1,6 @@
 """窄训练课程的真实IK/碰撞几何reset；回合动作始终由actor控制。"""
 import torch
-from isaaclab.utils.math import quat_from_euler_xyz
+from isaaclab.utils.math import quat_from_euler_xyz, matrix_from_quat
 from . import events, geometry
 
 
@@ -23,7 +23,7 @@ def configure_hand_model(env, env_ids):
         robot.write_joint_friction_coefficient_to_sim(env.cfg.hand_static_friction, joint_ids=hand)
 
 
-def reset_full_grasp(env, env_ids, dataset_name, object_names):
+def reset_full_grasp(env, env_ids, dataset_name, object_names, palm_quaternion_w=None, tcp_offset_h=None, tcp_height=None):
     """最多8次静态IK/真实碰撞顶点筛选；首物理步仍检查真实危险接触。"""
     from ..grasp1_env_cfg import SUPPORT_HEIGHT
     ids = events._env_ids(env, env_ids)
@@ -60,14 +60,25 @@ def reset_full_grasp(env, env_ids, dataset_name, object_names):
         cloud = geometry.object_points_to_world(data['points'][pending], pose[:, :3], pose[:, 3:7])
         direction = torch.zeros((n, 3), device=env.device)
         direction[:, 2] = 1
-        rotations, widths = geometry.sample_rot_mats(direction, 8, cloud)
         base_pos, base_rotation = events._solver_base_pose(robot, pending)
-        targets = geometry.wrist_poses_for_ur5_ik(cloud, direction, rotations, base_pos, base_rotation,
-            pregrasp_distance=env.cfg.pregrasp_distance)
+        if palm_quaternion_w is None:
+            rotations, widths = geometry.sample_rot_mats(direction, 8, cloud)
+            targets = geometry.wrist_poses_for_ur5_ik(cloud, direction, rotations, base_pos, base_rotation,
+                pregrasp_distance=env.cfg.pregrasp_distance)
+        else:
+            # 新任务固定掌轴，避免Reset在8个朝向间隐式切换；绝不旋转机器人root。
+            rotation = matrix_from_quat(pose.new_tensor(palm_quaternion_w).expand(n, -1))
+            tcp = cloud.mean(1)+direction*env.cfg.pregrasp_distance
+            if tcp_height is not None:
+                tcp[:, :2] = env.scene.env_origins[pending, :2]+pose.new_tensor(env.cfg.reset_xy_center)
+                tcp[:, 2] = SUPPORT_HEIGHT+tcp_height+env.scene.env_origins[pending, 2]
+            targets = geometry.tcp_pose_for_ur5_ik(tcp, rotation, pose.new_tensor(tcp_offset_h).expand(n, -1),
+                base_pos, base_rotation)[:, None]
+            widths = torch.zeros((n, 1), device=env.device)
         solutions, feasible = geometry.ur5_inverse_kinematics(targets)
         # 按可抓宽度优先，依次尝试不同姿态，不以不合法的零IK作为fallback。
         order = torch.argsort(torch.where(feasible, widths, torch.inf), dim=-1)
-        choice = order[:, attempt % 8]
+        choice = order[:, attempt % targets.shape[1]]
         rows = torch.arange(n, device=env.device)
         q = robot.data.default_joint_pos[pending].clone()
         q[:, list(data['joint_ids'][:6])] = solutions[rows, choice]
