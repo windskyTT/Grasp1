@@ -1,0 +1,131 @@
+{
+  "status": "incomplete",
+  "blocking_gate": "C",
+  "blocker": "sampled policy arm contact 81.81192779541016 N exceeds unchanged 5 N safety limit",
+  "reference_missing_block_cleared": true,
+  "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+  "curriculum": "C1",
+  "dataset": "new_training_set",
+  "object": "wood_block_oriented",
+  "target_PPO_updates": 100,
+  "longest_executed_lineage_updates": 24,
+  "max_retained_checkpoint_updates": 12,
+  "actual_optimizer_updates_across_separate_runs": 31,
+  "completed_update_transitions": 126976,
+  "updates_not_additive_across_replay_branches": true,
+  "policy_fixed_protocol": {
+    "status": "pass",
+    "policy_goal_status": "incomplete",
+    "controller": "policy",
+    "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+    "curriculum": "C1",
+    "reset_seed": 21,
+    "initial_state_protocol": "shared_actual_reset_tensors",
+    "initial_states": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/initial_states.pt",
+    "results": [
+      {
+        "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_0.pt",
+        "completed_updates": 1,
+        "status": "complete",
+        "successes": 0,
+        "attempts": 20,
+        "success_rate": 0.0,
+        "unsafe": 0,
+        "dropped": 0,
+        "timeouts": 20,
+        "mean_lift_m": 0.0,
+        "mean_hold_s": 0.0,
+        "mean_phase": 1.0,
+        "mean_min_tip_distance_m": 0.0520416596904397,
+        "opposing_grasp_trials": 0,
+        "mean_elapsed_s": 10.0
+      },
+      {
+        "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_4.pt",
+        "completed_updates": 5,
+        "status": "complete",
+        "successes": 0,
+        "attempts": 20,
+        "success_rate": 0.0,
+        "unsafe": 0,
+        "dropped": 0,
+        "timeouts": 20,
+        "mean_lift_m": 0.0,
+        "mean_hold_s": 0.0,
+        "mean_phase": 1.0,
+        "mean_min_tip_distance_m": 0.051793038845062256,
+        "opposing_grasp_trials": 0,
+        "mean_elapsed_s": 10.0
+      },
+      {
+        "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-46-52_opt12_C1_first_unsafe/model_11.pt",
+        "completed_updates": 12,
+        "status": "complete",
+        "successes": 0,
+        "attempts": 20,
+        "success_rate": 0.0,
+        "unsafe": 0,
+        "dropped": 0,
+        "timeouts": 20,
+        "mean_lift_m": 0.0,
+        "mean_hold_s": 0.0,
+        "mean_phase": 1.0,
+        "mean_min_tip_distance_m": 0.05125406738370657,
+        "opposing_grasp_trials": 0,
+        "mean_elapsed_s": 10.0
+      }
+    ],
+    "rejected": [],
+    "best_progress": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
+    "best_checkpoint": null,
+    "policy_attempts": 60,
+    "reason": "no_compatible_successful_policy_in_fixed_protocol"
+  },
+  "GUI": {
+    "attempts": 5,
+    "successes": 0,
+    "success_rate": 0.0,
+    "checkpoint": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
+    "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+    "controller": "policy"
+  },
+  "GUI_capture_regression": {
+    "attempts": 1,
+    "successes": 0,
+    "success_rate": 0.0,
+    "checkpoint": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
+    "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
+    "controller": "policy"
+  },
+  "earlier_repeated_fixed_protocol": {
+    "attempts": 60,
+    "successes": 0,
+    "not_independent_of_final_protocol": true
+  },
+  "scripted_C1": {
+    "attempts": 10,
+    "successes": 10
+  },
+  "bounded_random_C1": {
+    "attempts": 128,
+    "unsafe": 0
+  },
+  "scripted_C3_T10": {
+    "attempts": 1,
+    "successes": 0
+  },
+  "scripted_C3_T14": {
+    "attempts": 3,
+    "successes": 3
+  },
+  "policy_success_rate": 0.0,
+  "C2_policy_success_rate": null,
+  "C3_policy_success_rate": null,
+  "warm_start_actual_used": false,
+  "long_training": "not_run",
+  "best_success": null,
+  "best_progress": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
+  "physical_asset_changed": false,
+  "action_observation_reward_semantics_changed": false,
+  "report": "docs/优化12_执行报告.md"
+}

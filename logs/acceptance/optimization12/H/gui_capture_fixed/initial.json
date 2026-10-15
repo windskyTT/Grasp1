@@ -1,0 +1,17 @@
+{
+  "controller": "policy",
+  "checkpoint": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
+  "label": "initial",
+  "control_step": 0,
+  "top_lift_m": 0.0,
+  "hold_s": 0.0,
+  "palm_pose_wxyz": [
+    0.44127142429351807,
+    -0.7274386882781982,
+    0.9583727717399597,
+    1.940568381542107e-07,
+    -0.7071065306663513,
+    7.3446784654152e-08,
+    0.7071070075035095
+  ]
+}

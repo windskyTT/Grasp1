@@ -1,0 +1,28 @@
+{
+  "status": "unsafe_policy_trajectory",
+  "controller": "policy_sampled",
+  "checkpoint": "logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-46-52_opt12_C1_first_unsafe/model_11.pt",
+  "snapshot": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-46-52_opt12_C1_first_unsafe/policy_safety_failure.pt",
+  "engine_crash": false,
+  "rows": [
+    {
+      "env": 88,
+      "completed_updates": 12,
+      "episode_step": 267,
+      "q_limit_max_rad": 0.0,
+      "hand_qd_max": 0.3004186749458313,
+      "hand_table_clearance_m": 0.02796781063079834,
+      "tip_table_force_max_N": 0.0,
+      "arm_force_N": 81.81192779541016,
+      "lift_m": 0.00478285551071167,
+      "top_speed": 0.05591188371181488,
+      "hold_s": 0.0,
+      "tip_contact_N": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

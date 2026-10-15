@@ -30,22 +30,22 @@ for index, checkpoint in enumerate(args.checkpoints):
         continue
     trial_rows = []
     complete = True
-    for seed in range(args.seed, args.seed+args.trials):
-        run_out = out/f'checkpoint_{index}'/f'seed_{seed}'
-        run_out.mkdir(parents=True, exist_ok=True)
-        command = ['/home/windsky/IsaacLab/isaaclab.sh', '-p', 'scripts/rsl_rl/play.py',
-            '--task', args.task, '--checkpoint', str(checkpoint), '--curriculum', args.curriculum,
-            '--dataset', 'new_training_set', '--object', 'wood_block_oriented', '--num_envs', '1',
-            '--episodes', '1', '--seed', str(seed), '--headless', '--output_dir', str(run_out)]
-        with (run_out/'play.log').open('w') as log:
-            result = subprocess.run(command, cwd=root, env=dict(os.environ, TERM='xterm'),
-                                    stdout=log, stderr=subprocess.STDOUT)
-        (run_out/'command.json').write_text(json.dumps(command, indent=2))
-        if result.returncode:
-            rejected.append(dict(checkpoint=str(checkpoint), reason='play_failed', seed=seed,
-                                 returncode=result.returncode, log=str(run_out/'play.log')))
-            complete = False
-            break
+    run_out = out/f'checkpoint_{index}'
+    run_out.mkdir(parents=True, exist_ok=True)
+    command = ['/home/windsky/IsaacLab/isaaclab.sh', '-p', 'scripts/rsl_rl/play.py',
+        '--task', args.task, '--checkpoint', str(checkpoint), '--curriculum', args.curriculum,
+        '--dataset', 'new_training_set', '--object', 'wood_block_oriented', '--num_envs', str(args.trials),
+        '--episodes', '1', '--seed', str(args.seed), '--headless', '--output_dir', str(run_out),
+        '--initial_states', str(out/'initial_states.pt')]
+    with (run_out/'play.log').open('w') as log:
+        result = subprocess.run(command, cwd=root, env=dict(os.environ, TERM='xterm'),
+                                stdout=log, stderr=subprocess.STDOUT)
+    (run_out/'command.json').write_text(json.dumps(command, indent=2))
+    if result.returncode:
+        rejected.append(dict(checkpoint=str(checkpoint), reason='play_failed',
+                             returncode=result.returncode, log=str(run_out/'play.log')))
+        complete = False
+    elif (run_out/'full_grasp_trials.csv').exists():
         with (run_out/'full_grasp_trials.csv').open() as handle:
             trial_rows.extend(csv.DictReader(handle))
     successes = sum(row['success']=='True' for row in trial_rows)
@@ -55,23 +55,36 @@ for index, checkpoint in enumerate(args.checkpoints):
         successes=successes, attempts=len(trial_rows), success_rate=successes/len(trial_rows) if trial_rows else None,
         unsafe=unsafe, dropped=sum(bool(int(row['failure_bits']) & 4) for row in trial_rows),
         timeouts=sum(bool(int(row['failure_bits']) & 8) for row in trial_rows),
-        mean_lift_m=sum(float(row['lift_m']) for row in trial_rows)/len(trial_rows) if trial_rows else None,
-        mean_hold_s=sum(float(row['hold_s']) for row in trial_rows)/len(trial_rows) if trial_rows else None,
+        mean_lift_m=sum(float(row['max_lift_m']) for row in trial_rows)/len(trial_rows) if trial_rows else None,
+        mean_hold_s=sum(float(row['max_hold_s']) for row in trial_rows)/len(trial_rows) if trial_rows else None,
+        mean_phase=sum(float(row['max_phase']) for row in trial_rows)/len(trial_rows) if trial_rows else None,
+        mean_min_tip_distance_m=sum(float(row['min_tip_distance_m']) for row in trial_rows)/len(trial_rows) if trial_rows else None,
+        opposing_grasp_trials=sum(row['opposing_grasp']=='True' for row in trial_rows),
         mean_elapsed_s=sum(float(row['elapsed_s']) for row in trial_rows)/len(trial_rows) if trial_rows else None))
 with (out/'checkpoints.csv').open('w', newline='') as handle:
     writer = csv.DictWriter(handle, fieldnames=['checkpoint', 'completed_updates', 'status', 'successes', 'attempts',
-        'success_rate', 'unsafe', 'dropped', 'timeouts', 'mean_lift_m', 'mean_hold_s', 'mean_elapsed_s'])
+        'success_rate', 'unsafe', 'dropped', 'timeouts', 'mean_lift_m', 'mean_hold_s', 'mean_phase',
+        'mean_min_tip_distance_m','opposing_grasp_trials','mean_elapsed_s'])
     writer.writeheader()
     writer.writerows(rows)
 eligible = [row for row in rows if row['status']=='complete' and row['unsafe']==0 and row['successes']>0]
 best = max(eligible, key=lambda row:(row['success_rate'], row['mean_hold_s'])) if eligible else None
 if best:
     checkpoint = Path(best['checkpoint'])
-    shutil.copy2(checkpoint, out/'best.pt')
-    shutil.copy2(checkpoint.with_name('env_contract_'+checkpoint.name+'.json'), out/'env_contract_best.pt.json')
-summary = dict(status='pass' if best else 'blocked', controller='policy', task=args.task,
-    curriculum=args.curriculum, seed_range=[args.seed, args.seed+args.trials-1],
-    results=rows, rejected=rejected, best_checkpoint=str(out/'best.pt') if best else None,
+    for name in ('best_success.pt','best.pt'):
+        shutil.copy2(checkpoint, out/name)
+        shutil.copy2(checkpoint.with_name('env_contract_'+checkpoint.name+'.json'), out/('env_contract_'+name+'.json'))
+progress_candidates = [row for row in rows if row['status']=='complete' and row['unsafe']==0]
+progress = max(progress_candidates, key=lambda row:(row['mean_hold_s'],row['mean_lift_m'],
+    row['opposing_grasp_trials'],row['mean_phase'],-row['mean_min_tip_distance_m'])) if progress_candidates else None
+if progress:
+    checkpoint = Path(progress['checkpoint'])
+    shutil.copy2(checkpoint,out/'best_progress.pt')
+    shutil.copy2(checkpoint.with_name('env_contract_'+checkpoint.name+'.json'),out/'env_contract_best_progress.pt.json')
+summary = dict(status='pass' if sum(row['status']=='complete' for row in rows)>=2 else 'fail',
+    policy_goal_status='success' if best else 'incomplete', controller='policy', task=args.task,
+    curriculum=args.curriculum, reset_seed=args.seed, initial_state_protocol='shared_actual_reset_tensors', initial_states=str(out/'initial_states.pt'),
+    results=rows, rejected=rejected, best_progress=str(out/'best_progress.pt') if progress else None, best_checkpoint=str(out/'best.pt') if best else None,
     policy_attempts=sum(row['attempts'] for row in rows),
     reason=None if best else 'no_compatible_successful_policy_in_fixed_protocol')
 (out/'comparison.json').write_text(json.dumps(summary, indent=2))

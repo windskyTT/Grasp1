@@ -1,0 +1,112 @@
+[3gH    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H    H   [INFO] Using python from: /home/windsky/miniconda3/envs/grasp/bin/python
+usage: play.py [-h] [--video] [--video_length VIDEO_LENGTH] [--disable_fabric]
+               [--num_envs NUM_ENVS] [--task TASK] [--dataset DATASET]
+               [--object OBJECT_NAME] [--episodes EPISODES] [--agent AGENT]
+               [--seed SEED] [--real-time] [--allow_mismatched_checkpoint]
+               [--curriculum {C1,C2,C3}] [--output_dir OUTPUT_DIR]
+               [--show_frames] [--capture_frames]
+               [--experiment_name EXPERIMENT_NAME] [--run_name RUN_NAME]
+               [--resume] [--load_run LOAD_RUN] [--checkpoint CHECKPOINT]
+               [--logger {neptune,wandb,tensorboard}]
+               [--log_project_name LOG_PROJECT_NAME] [--decimation {2,4}]
+               [--episode_length_s EPISODE_LENGTH_S] [--headless]
+               [--livestream {0,1,2}] [--enable_cameras] [--xr]
+               [--device DEVICE] [--verbose] [--info]
+               [--experience EXPERIENCE]
+               [--rendering_mode {quality,balanced,performance}]
+               [--kit_args KIT_ARGS] [--anim_recording_enabled]
+               [--anim_recording_start_time ANIM_RECORDING_START_TIME]
+               [--anim_recording_stop_time ANIM_RECORDING_STOP_TIME]
+
+Play a UR5-Allegro Teacher checkpoint with RSL-RL.
+
+options:
+  -h, --help            show this help message and exit
+  --video               Record a video during playback.
+  --video_length VIDEO_LENGTH
+                        Length of the recorded video in control steps.
+  --disable_fabric      Disable Fabric and use USD I/O operations.
+  --num_envs NUM_ENVS   Number of parallel environments using the selected
+                        object.
+  --task TASK           Registered Gymnasium task id.
+  --dataset DATASET     Object dataset under assets/objects.
+  --object OBJECT_NAME  Object name. Randomly select one from --dataset when
+                        omitted.
+  --episodes EPISODES   Stop after this many episodes per environment. By
+                        default playback continues until Isaac Sim is closed.
+  --agent AGENT         Name of the RSL-RL agent configuration entry point.
+  --seed SEED           Seed used for environment reset and random object
+                        selection.
+  --real-time           Run in real time, if possible.
+  --allow_mismatched_checkpoint
+                        Diagnostic inference only; print semantic differences.
+  --curriculum {C1,C2,C3}
+                        v3 fixed-palm TCP curriculum.
+  --output_dir OUTPUT_DIR
+                        Write policy trials and compatibility audit here.
+  --show_frames         Read-only flange, palm, TCP and tip axes.
+  --capture_frames      GUI screenshots of initial, grasp, lift and hold
+                        policy states.
+  --decimation {2,4}    Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.
+  --episode_length_s EPISODE_LENGTH_S
+                        Training/play episode duration in seconds (4 or 10 for
+                        the A/B).
+
+rsl_rl:
+  Arguments for RSL-RL agent.
+
+  --experiment_name EXPERIMENT_NAME
+                        Name of the experiment folder where logs will be
+                        stored.
+  --run_name RUN_NAME   Run name suffix to the log directory.
+  --resume              Whether to resume from a checkpoint.
+  --load_run LOAD_RUN   Name of the run folder to resume from.
+  --checkpoint CHECKPOINT
+                        Checkpoint file to resume from.
+  --logger {neptune,wandb,tensorboard}
+                        Logger module to use.
+  --log_project_name LOG_PROJECT_NAME
+                        Name of the logging project when using wandb or
+                        neptune.
+
+app_launcher arguments:
+  Arguments for the AppLauncher. For more details, please check the
+  documentation.
+
+  --headless            Force display off at all times.
+  --livestream {0,1,2}  Force enable livestreaming. Mapping corresponds to
+                        that for the `LIVESTREAM` environment variable.
+  --enable_cameras      Enable camera sensors and relevant extension
+                        dependencies.
+  --xr                  Enable XR mode for VR/AR applications.
+  --device DEVICE       The device to run the simulation on. Can be "cpu",
+                        "cuda", "cuda:N", where N is the device ID
+  --verbose             Enable verbose-level log output from the
+                        SimulationApp.
+  --info                Enable info-level log output from the SimulationApp.
+  --experience EXPERIENCE
+                        The experience file to load when launching the
+                        SimulationApp. If an empty string is provided, the
+                        experience file is determined based on the headless
+                        flag. If a relative path is provided, it is resolved
+                        relative to the `apps` folder in Isaac Sim and Isaac
+                        Lab (in that order).
+  --rendering_mode {quality,balanced,performance}
+                        Sets the rendering mode. Preset settings files can be
+                        found in apps/rendering_modes. Can be "performance",
+                        "balanced", or "quality". Individual settings can be
+                        overwritten by using the RenderCfg class.
+  --kit_args KIT_ARGS   Command line arguments for Omniverse Kit as a string
+                        separated by a space delimiter. Example usage:
+                        --kit_args "--ext-folder=/path/to/ext1 --ext-
+                        folder=/path/to/ext2"
+  --anim_recording_enabled
+                        Enable recording time-sampled USD animations from
+                        IsaacLab PhysX simulations.
+  --anim_recording_start_time ANIM_RECORDING_START_TIME
+                        Set time that animation recording begins playing. If
+                        not set, the recording will start from the beginning.
+  --anim_recording_stop_time ANIM_RECORDING_STOP_TIME
+                        Set time that animation recording stops playing. If
+                        the process is shutdown before the stop time is
+                        exceeded, then the animation is not recorded.

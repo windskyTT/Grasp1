@@ -1,0 +1,173 @@
+[
+  {
+    "run": "2026-10-15_12-40-26_opt12_C1_smoke",
+    "reward_and_std": {
+      "Episode_Reward/approach": {
+        "first": 0.0613362193107605,
+        "last": 0.6013376712799072
+      },
+      "Episode_Reward/alignment": {
+        "first": 0.005077179986983538,
+        "last": 0.048033926635980606
+      },
+      "Episode_Reward/grasp": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/lift": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/hold": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/success": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/failure": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/table_contact": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/speed": {
+        "first": -9.160274203168228e-06,
+        "last": -7.471512071788311e-05
+      },
+      "Episode_Reward/action_rate": {
+        "first": -0.0004892540164291859,
+        "last": -0.004844697192311287
+      },
+      "Episode_Reward/joint_limit": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Policy/mean_noise_std": {
+        "first": 0.9990105628967285,
+        "last": 0.9986839294433594
+      },
+      "Train/mean_reward": {
+        "first": 0.7260919809341431,
+        "last": 3.757249593734741
+      }
+    }
+  },
+  {
+    "run": "2026-10-15_12-43-59_opt12_C1_to100",
+    "reward_and_std": {
+      "Episode_Reward/approach": {
+        "first": 0.062235116958618164,
+        "last": 1.0199081897735596
+      },
+      "Episode_Reward/alignment": {
+        "first": 0.0051687415689229965,
+        "last": 0.08520030230283737
+      },
+      "Episode_Reward/grasp": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/lift": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/hold": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/success": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/failure": {
+        "first": 0.0,
+        "last": -0.1874999850988388
+      },
+      "Episode_Reward/table_contact": {
+        "first": 0.0,
+        "last": -0.005697323475033045
+      },
+      "Episode_Reward/speed": {
+        "first": -9.305745152232703e-06,
+        "last": -0.0007277268450707197
+      },
+      "Episode_Reward/action_rate": {
+        "first": -0.0005178103456273675,
+        "last": -0.009255653247237206
+      },
+      "Episode_Reward/joint_limit": {
+        "first": 0.0,
+        "last": -1.0071711585624143e-05
+      },
+      "Policy/mean_noise_std": {
+        "first": 0.9984533190727234,
+        "last": 0.9978361129760742
+      },
+      "Train/mean_reward": {
+        "first": 0.7360420227050781,
+        "last": 9.184545516967773
+      }
+    }
+  },
+  {
+    "run": "2026-10-15_12-46-52_opt12_C1_first_unsafe",
+    "reward_and_std": {
+      "Episode_Reward/approach": {
+        "first": 0.062235116958618164,
+        "last": 0.8431888818740845
+      },
+      "Episode_Reward/alignment": {
+        "first": 0.0051687415689229965,
+        "last": 0.07289308309555054
+      },
+      "Episode_Reward/grasp": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/lift": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/hold": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/success": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/failure": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/table_contact": {
+        "first": 0.0,
+        "last": 0.0
+      },
+      "Episode_Reward/speed": {
+        "first": -9.305745152232703e-06,
+        "last": -9.889864304568619e-05
+      },
+      "Episode_Reward/action_rate": {
+        "first": -0.0005178103456273675,
+        "last": -0.0070060305297374725
+      },
+      "Episode_Reward/joint_limit": {
+        "first": 0.0,
+        "last": -5.615875693365524e-07
+      },
+      "Policy/mean_noise_std": {
+        "first": 0.9984533190727234,
+        "last": 0.9981797933578491
+      },
+      "Train/mean_reward": {
+        "first": 0.7360420227050781,
+        "last": 4.978809356689453
+      }
+    }
+  }
+]

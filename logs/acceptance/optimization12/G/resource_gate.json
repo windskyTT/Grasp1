@@ -1,0 +1,17 @@
+{
+  "status": "blocked",
+  "reason": "unsafe sampled policy trajectory and no opposing grasp/lift/hold progress in deterministic playback",
+  "num_envs_tested": 128,
+  "num_envs_256": "not_run",
+  "long_training_8_to_10h": "not_run",
+  "memory_sampling": "once per completed PPO update; sampled maximum, not continuous peak",
+  "driver_memory_MiB": 2569,
+  "device_total_MiB": 8192,
+  "training_segments": "C/training_segments.json",
+  "asset_fingerprints": {
+    "shared_dependencies": 17,
+    "object_dependencies": 5,
+    "where": "schema4 checkpoint env_contract metadata"
+  },
+  "best_success": null
+}

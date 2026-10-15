@@ -23,7 +23,8 @@ GRASP_TRAIN_RESUME_FIELDS = ('curriculum_stage', 'reset_distribution', 'object_a
 FULL_GRASP_FIELDS = ('episode_length_s', 'full_grasp_parameters', 'tip_sensor_configuration',
                      'reward_terms', 'termination_terms', 'reset_distribution', 'curriculum_stage',
                      'normalizer_configuration', 'policy_architecture')
-MOUNT_GRASP_FIELDS = ('mount_semantics_version', 'tcp_semantics_version', 'mount_tcp_parameters', 'scene_parameters')
+MOUNT_GRASP_FIELDS = ('mount_semantics_version', 'tcp_semantics_version', 'mount_tcp_parameters', 'scene_parameters',
+                     'asset_contents', 'object_asset_contents', 'action_joint_names', 'observation_dim', 'action_dim')
 
 
 def asset_contents(env_cfg, *, include_objects=True):
@@ -133,7 +134,12 @@ def build_contract(task_id, env_cfg, agent_cfg):
             policy_architecture=dict(actor_hidden_dims=agent_cfg.policy.actor_hidden_dims,
                 critic_hidden_dims=agent_cfg.policy.critic_hidden_dims, activation=agent_cfg.policy.activation))
     if task_id == 'Grasp1-UR5-Allegro-GraspTrain-v3':
+        shared_assets = asset_contents(env_cfg, include_objects=False)
+        all_assets = asset_contents(env_cfg)
         contract.update(schema_version=4,
+            asset_contents=shared_assets,
+            object_asset_contents={path:sha for path,sha in all_assets.items() if path not in shared_assets},
+            action_joint_names=list(env_cfg.actions.teacher.joint_names), observation_dim=211, action_dim=22,
             action_semantics_version='previous_target_delta_COM_vertex_increment_projection_preserve_preload_v3',
             observation_semantics_version='teacher153_geometric_TCP93_96_plus_full_grasp58_corotating_velocity_v5',
             mount_semantics_version=env_cfg.mount_semantics_version, tcp_semantics_version=env_cfg.tcp_semantics_version,
@@ -142,7 +148,17 @@ def build_contract(task_id, env_cfg, agent_cfg):
                 palm_quaternion_w=env_cfg.palm_quaternion_w, tcp_offset_h=env_cfg.tcp_offset_h,
                 tcp_initial_height=env_cfg.tcp_initial_height, action_table_clearance_m=env_cfg.action_table_clearance_m),
             scene_parameters=dict(robot_initial_state=robot.init_state.to_dict(), table=env_cfg.scene.table.to_dict()))
-    return contract
+    # InteractiveScene实例化会原地展开配置路径；构建前后应记录同一真实prim/filter。
+    # 避免同一MDP的训练后保存与创建前Resume/play校验出现占位符误差。
+    def resolved_paths(value):
+        if isinstance(value, str):
+            return value.replace('{ENV_REGEX_NS}', '/World/envs/env_.*')
+        if isinstance(value, dict):
+            return {key:resolved_paths(item) for key,item in value.items()}
+        if isinstance(value, (tuple,list)):
+            return [resolved_paths(item) for item in value]
+        return value
+    return resolved_paths(contract)
 
 
 def metadata_path(checkpoint):
@@ -152,6 +168,13 @@ def metadata_path(checkpoint):
 
 
 def compare_contract(saved, current, *, resume):
+    if not resume and current.get('schema_version') == 4 and saved.get('schema_version') == 4:
+        # 推理的20/1环境与训练128环境使用同一木块Reset分布；重复分配数量不改变语义。
+        saved, current = dict(saved), dict(current)
+        for contract in (saved,current):
+            reset = json.loads(json.dumps(contract['reset_distribution']))
+            reset['params']['object_names'] = sorted(set(reset['params']['object_names']))
+            contract['reset_distribution'] = reset
     fields = RESUME_FIELDS if resume else SEMANTIC_FIELDS
     if saved.get('schema_version') == 2 or current.get('schema_version') == 2:
         fields += GRASP_TRAIN_FIELDS
@@ -205,6 +228,32 @@ def validate_checkpoint(checkpoint, current, *, resume=False, allow_mismatch=Fal
     if differences:
         print('[WARNING] '+warning+' '+json.dumps(differences,sort_keys=True), flush=True)
     return audit, saved
+
+
+def validate_warm_start(checkpoint, current):
+    """v3仅放行课程Reset/TCP起点变化；网络、归一化、物理及动作含义仍严格一致。"""
+    saved = json.loads(metadata_path(checkpoint).read_text())
+    current = json.loads(json.dumps(current))
+    if saved.get('schema_version') != 4 or current.get('schema_version') != 4:
+        raise ValueError('Warm Start only supports audited v3/schema4 policies.')
+    comparable = dict(current)
+    allowed = ('curriculum_stage', 'reset_distribution')
+    comparable['curriculum_stage'] = saved['curriculum_stage']
+    comparable['reset_distribution'] = json.loads(json.dumps(current['reset_distribution']))
+    comparable['reset_distribution']['params']['tcp_height'] = saved['reset_distribution']['params']['tcp_height']
+    comparable['mount_tcp_parameters'] = dict(current['mount_tcp_parameters'])
+    comparable['mount_tcp_parameters']['tcp_initial_height'] = saved['mount_tcp_parameters']['tcp_initial_height']
+    comparable['full_grasp_parameters'] = dict(current['full_grasp_parameters'])
+    comparable['full_grasp_parameters']['reset_xy_center'] = saved['full_grasp_parameters']['reset_xy_center']
+    differences = compare_contract(saved, comparable, resume=True)
+    if differences:
+        raise ValueError('Warm Start semantic mismatch: '+json.dumps(differences, sort_keys=True))
+    return dict(source_checkpoint=str(Path(checkpoint).resolve()), source_curriculum=saved['curriculum_stage'],
+        target_curriculum=current['curriculum_stage'], source_completed_updates=saved['completed_updates'],
+        source_cumulative_updates=saved.get('cumulative_lineage_updates', saved['completed_updates']),
+        target_completed_updates=0, optimizer='fresh', normalizers='included_in_model_state_dict',
+        curriculum_changes={key:dict(source=saved[key], target=current[key]) for key in
+            (*allowed, 'mount_tcp_parameters', 'full_grasp_parameters') if saved[key] != current[key]})
 
 
 def save_metadata(checkpoint, contract, iteration):

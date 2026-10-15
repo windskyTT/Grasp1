@@ -1,0 +1,10 @@
+ M scripts/diagnostics/audit_ur5_allegro_mount.py
+ M scripts/rsl_rl/checkpoint_contract.py
+ M scripts/rsl_rl/compare_training_checkpoints.py
+ M scripts/rsl_rl/play.py
+ M scripts/rsl_rl/train.py
+ M source/Grasp1/Grasp1/tasks/manager_based/grasp1/config/ur5_allegro/mount_grasp_env_cfg.py
+?? "docs/references/\344\274\230\345\214\22611_\345\216\237\344\273\243\347\240\201\346\240\207\345\207\206\345\247\277\346\200\201.png"
+?? "docs/\344\274\230\345\214\22612.md"
+?? logs/acceptance/optimization12/
+?? scripts/rsl_rl/training_diagnostics.py

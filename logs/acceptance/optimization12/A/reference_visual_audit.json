@@ -1,0 +1,38 @@
+{
+  "status": "mount_verified",
+  "reference_images": "0/reference_images.json",
+  "references_actually_viewed": true,
+  "original_visual": "源图侧视，拇指与其余三指相对，四指向桌面围住粉色长物体；手掌从水平末端法兰伸出。",
+  "current_visual": "原GUI面板遮挡手掌与部分UR5；黄色木块与源图物体形状不同，无法用两图像素求6D安装。",
+  "current_multiview": "本轮同一C1预抓取状态前/侧/俯视，红X绿Y蓝Z；掌+X向下、+Y向-Y、+Z向-X。四指向下并围绕木块，拇指位于相对侧。",
+  "mount": {
+    "source_matches": true,
+    "translation_error_m": 0.0,
+    "angle_error_rad": 7.123173286490243e-15,
+    "flange_to_hand_xyz": [
+      0,
+      0,
+      0
+    ],
+    "quaternion_wxyz": [
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  "classification": {
+    "assembly": "源/当前URDF、USD和3组运行时姿态一致，无旋转装配证据",
+    "reset_IK": "原图关节角和抓取时刻未提供，UR5肘/腕全局姿态不同；本轮C1固定掌方向仍满足向下围抓并有真实脚本正例",
+    "camera": "源图侧视与原GUI斜视不同且后者被遮挡；本轮侧视可见相同向下围抓关系"
+  },
+  "limits": "单张原图不能恢复其精确q、相机内参或TCP；本结论确认安装一致及C1可放行，不声称像素姿态相同或策略成功。",
+  "screenshots": [
+    "A/mount/front.png",
+    "A/mount/side.png",
+    "A/mount/top.png"
+  ],
+  "annotations": "A/mount/frame_annotations.json",
+  "asset_changed": false,
+  "training_release": "C1脚本回归与128环境受限随机复验通过后，128环境PPO 5更新烟雾，再严格Resume累计100更新；子步真实q/qd监控，异常停训"
+}

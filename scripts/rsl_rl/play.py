@@ -58,6 +58,7 @@ cli_args.add_rsl_rl_args(parser)
 # 加入 Isaac Sim 启动参数，例如 headless、设备和相机选项。
 parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
 parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
+parser.add_argument('--initial_states', type=str, help='Read/save actual initial reset tensors for fixed checkpoint comparison.')
 AppLauncher.add_app_launcher_args(parser)
 
 args_cli, hydra_args = parser.parse_known_args()
@@ -261,6 +262,10 @@ def main(
         clip_actions=agent_cfg.clip_actions,
     )
 
+    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
+        from training_diagnostics import install_physics_monitor
+        install_physics_monitor(env.unwrapped, audit_dir)
+
     # 检查 runner 类型，创建 OnPolicyRunner 并从检查点恢复策略参数。
 
     if agent_cfg.class_name != "OnPolicyRunner":
@@ -289,12 +294,54 @@ def main(
 
     # 向量包装器已执行 reset；读取策略推理的初始观测。
     obs = env.get_observations()
+    if args_cli.initial_states:
+        # 仅在播放初态恢复；物体在之后的策略回合完全由真实物理运动。
+        real = env.unwrapped
+        robot, obj, memory = real.scene['robot'], real.scene['object'], real._full_grasp_state
+        fixture_path = Path(args_cli.initial_states)
+        if fixture_path.exists():
+            fixture = torch.load(fixture_path, map_location=real.device, weights_only=False)
+            assert torch.equal(fixture['origins'], real.scene.env_origins)
+            robot.write_joint_state_to_sim(fixture['robot_q'], fixture['robot_qd'])
+            obj.write_root_pose_to_sim(fixture['object_root'][:,:7])
+            obj.write_root_velocity_to_sim(fixture['object_root'][:,7:])
+            obj.write_joint_state_to_sim(fixture['object_q'], fixture['object_qd'])
+            real.action_manager.reset()
+            real.sim.forward()
+            real.scene.update(0.)
+            memory.initial_z[:] = fixture['initial_z']
+            memory.valid_reset[:] = fixture['valid_reset']
+            memory.snapshot = None
+            real._teacher_runtime_features.invalidate()
+            obs = real.observation_manager.compute()
+            from tensordict import TensorDict
+            obs = TensorDict(obs, batch_size=[real.num_envs])
+        else:
+            fixture = dict(origins=real.scene.env_origins,robot_q=robot.data.joint_pos,
+                robot_qd=robot.data.joint_vel,object_root=obj.data.root_state_w,
+                object_q=obj.data.joint_pos,object_qd=obj.data.joint_vel,
+                initial_z=memory.initial_z,valid_reset=memory.valid_reset,
+                robot_body_pose=robot.data.body_link_pose_w, object_body_pose=obj.data.body_link_pose_w)
+            fixture_path.parent.mkdir(parents=True,exist_ok=True)
+            torch.save({key:value.cpu().clone() for key,value in fixture.items()},fixture_path)
+        assert torch.allclose(robot.data.joint_pos,fixture['robot_q'].to(real.device),atol=1e-6)
+        assert torch.allclose(obj.data.body_link_pose_w,fixture['object_body_pose'].to(real.device),atol=1e-5)
+        (audit_dir/'initial_state_verification.json').write_text(json.dumps(dict(status='pass',
+            fixture=str(fixture_path.resolve()), actual_initial_states_matched=True, envs=real.num_envs),indent=2))
 
     # 记录总控制步数及各并行环境完成的回合数。
     timestep = 0
     episode_counts = torch.zeros(args_cli.num_envs, dtype=torch.long, device=env.unwrapped.device)
     episode_steps = torch.zeros_like(episode_counts)
     full_grasp_trials = []
+    max_lift = torch.zeros(args_cli.num_envs, device=env.unwrapped.device)
+    max_hold = torch.zeros_like(max_lift)
+    max_phase = torch.zeros_like(episode_counts)
+    min_tip_distance = torch.full_like(max_lift, float('inf'))
+    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
+        from Grasp1.tasks.manager_based.grasp1.mdp.observations import nearest_affordance_vectors_w
+        min_tip_distance = nearest_affordance_vectors_w(env.unwrapped)[:,(4,8,12,16)].norm(dim=-1).mean(1)
+    opposing_grasp = torch.zeros(args_cli.num_envs,dtype=torch.bool,device=env.unwrapped.device)
     frame_rows = []
     if args_cli.show_frames:
         from Grasp1.tasks.manager_based.grasp1.mdp.mount_frames import MountFrames
@@ -309,6 +356,9 @@ def main(
             top_lift_m=float(state['lift'][0]), hold_s=float(memory.hold[0]),
             palm_pose_wxyz=state['palm'][0].cpu().tolist())
         (audit_dir/(label+'.json')).write_text(json.dumps(data, indent=2))
+        # reset经Fabric更新物理状态后，先刷新渲染再截图，避免首图仍显示USD默认姿态。
+        for _ in range(15):
+            env.unwrapped.sim.render()
         capture_viewport_to_file(get_active_viewport(), str(audit_dir/(label+'.png')))
         for _ in range(10):
             simulation_app.update()
@@ -337,20 +387,38 @@ def main(
         episode_counts += dones
         if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
             memory = env.unwrapped._full_grasp_state
+            state = memory.read()
+            terminal = dones.bool()
+            max_lift = torch.maximum(max_lift,torch.where(terminal,memory.last_lift,state['lift']))
+            max_hold = torch.maximum(max_hold,torch.where(terminal,memory.last_hold,memory.hold))
+            max_phase = torch.maximum(max_phase,torch.where(terminal,memory.last_phase,memory.phase))
+            from Grasp1.tasks.manager_based.grasp1.mdp.observations import nearest_affordance_vectors_w
+            distance = nearest_affordance_vectors_w(env.unwrapped)[:,(4,8,12,16)].norm(dim=-1).mean(1)
+            min_tip_distance = torch.minimum(min_tip_distance, torch.where(terminal,min_tip_distance,distance))
+            opposing_grasp |= (state['grasp'] & state['opposing'] & ~terminal) | (terminal & memory.last_success)
             for index in dones.nonzero(as_tuple=True)[0].tolist():
+                if args_cli.episodes is not None and episode_counts[index] > args_cli.episodes:
+                    continue
                 trial = dict(env=index, episode=int(episode_counts[index]), seed=agent_cfg.seed,
                     object=object_name, success=bool(memory.last_success[index]),
                     failure_bits=int(memory.last_failure[index]), lift_m=float(memory.last_lift[index]),
-                    hold_s=float(memory.last_hold[index]), elapsed_s=float(episode_steps[index])*dt, controller='policy')
+                    hold_s=float(memory.last_hold[index]), elapsed_s=float(episode_steps[index])*dt, controller='policy',
+                    max_lift_m=float(max_lift[index]),max_hold_s=float(max_hold[index]),max_phase=int(max_phase[index]),
+                    min_tip_distance_m=float(min_tip_distance[index]),opposing_grasp=bool(opposing_grasp[index]),
+                    curriculum=env_cfg.curriculum_stage,checkpoint=resume_path)
                 full_grasp_trials.append(trial)
                 print('[FULL_GRASP] '+json.dumps(trial), flush=True)
             if args_cli.capture_frames and not bool(dones[0]):
                 s = memory.read()
+                if timestep == 150:
+                    capture_policy_frame('policy_at_5s')
                 for label, condition in (('grasp', memory.phase[0] >= 2), ('lift', s['lift'][0] >= env_cfg.lift_height),
                                          ('hold', memory.hold[0] >= .5)):
                     if label not in captured and bool(condition):
                         capture_policy_frame(label)
-        episode_steps[dones] = 0
+        episode_steps[dones.bool()] = 0
+        max_lift[dones.bool()] = 0; max_hold[dones.bool()] = 0; max_phase[dones.bool()] = 0
+        min_tip_distance[dones.bool()] = float('inf'); opposing_grasp[dones.bool()] = False
 
         # 达到视频长度，或所有环境均达到指定回合数时退出播放循环。
         if args_cli.video and timestep >= args_cli.video_length:
@@ -376,7 +444,8 @@ def main(
             (audit_dir/'mount_frames.json').write_text(json.dumps(frame_rows, indent=2))
         import csv
         with (audit_dir/'full_grasp_trials.csv').open('w', newline='') as handle:
-            writer = csv.DictWriter(handle, fieldnames=('env','episode','seed','object','success','failure_bits','lift_m','hold_s','elapsed_s','controller'))
+            writer = csv.DictWriter(handle, fieldnames=('env','episode','seed','object','success','failure_bits','lift_m','hold_s','elapsed_s','controller',
+                'max_lift_m','max_hold_s','max_phase','min_tip_distance_m','opposing_grasp','curriculum','checkpoint'))
             writer.writeheader()
             writer.writerows(full_grasp_trials)
         (audit_dir/'full_grasp_result.json').write_text(json.dumps(dict(attempts=len(full_grasp_trials),

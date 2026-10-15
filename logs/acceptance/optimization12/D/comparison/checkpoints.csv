@@ -1,0 +1,4 @@
+checkpoint,completed_updates,status,successes,attempts,success_rate,unsafe,dropped,timeouts,mean_lift_m,mean_hold_s,mean_phase,mean_min_tip_distance_m,opposing_grasp_trials,mean_elapsed_s
+/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_0.pt,1,failed,0,0,,0,0,0,,,,,0,
+/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_4.pt,5,failed,0,0,,0,0,0,,,,,0,
+/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-46-52_opt12_C1_first_unsafe/model_11.pt,12,failed,0,0,,0,0,0,,,,,0,

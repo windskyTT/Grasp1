@@ -25,6 +25,7 @@ parser.add_argument('--episode_length_s', type=float)
 parser.add_argument('--arm_action_speed', type=float)
 parser.add_argument('--decimation', type=int, choices=[2,4], default=4)
 parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
+parser.add_argument('--full_curriculum_approach', action='store_true', help='C2/C3 full scripted approach then existing Close/Lift/Hold, diagnostic only.')
 AppLauncher.add_app_launcher_args(parser)
 parser.add_argument('--output_dir', type=Path, required=True)
 args = parser.parse_args()
@@ -334,7 +335,26 @@ def main():
                 memory.snapshot = None
                 initial_z = memory.initial_z.clone()
                 initial_palm = robot.data.body_link_pos_w[:, memory.palm_id].clone()
+                reset_palm = initial_palm.clone()
                 open_hand = robot.data.joint_pos[:, term._joint_ids[6:]].clone()
+                script_start = 0.
+                if args.full_curriculum_approach:
+                    assert args.curriculum in ('C2','C3') and args.mode == 'scripted'
+                    from isaaclab.utils.math import quat_apply, matrix_from_quat, quat_error_magnitude
+                    from Grasp1.tasks.manager_based.grasp1.mdp import events, geometry
+                    from Grasp1.tasks.manager_based.grasp1.grasp1_env_cfg import SUPPORT_HEIGHT
+                    ids = torch.arange(env.num_envs,device=env.device)
+                    base_pos, base_rotation = events._solver_base_pose(robot,ids)
+                    palm = robot.data.body_link_pose_w[:,memory.palm_id]
+                    offset = palm.new_tensor(cfg.tcp_offset_h).expand(env.num_envs,-1)
+                    near_tcp = palm[:,:3]+quat_apply(palm[:,3:7],offset)
+                    near_tcp[:,2] = env.scene.env_origins[:,2]+SUPPORT_HEIGHT+.18
+                    rotation = matrix_from_quat(palm.new_tensor(cfg.palm_quaternion_w).expand(env.num_envs,-1))
+                    near_pose = geometry.tcp_pose_for_ur5_ik(near_tcp,rotation,offset,base_pos,base_rotation)
+                    near_q, feasible = geometry.ur5_inverse_kinematics(near_pose,reference_joints=term.target[:,:6])
+                    assert bool(feasible.all())
+                    approach_q = torch.cat((near_q,open_hand),-1)
+                    script_start = None
                 valid = memory.valid_reset.clone()
                 attempts = memory.reset_attempts.clone()
                 if args.mode == 'replay':
@@ -360,7 +380,17 @@ def main():
                 steps = round(cfg.episode_length_s/env.step_dt) if args.mode != 'replay' else len(replay['target'])//cfg.decimation
                 for step in range(steps):
                     if args.mode in ('scripted', 'grasp_only'):
-                        actions = scripted_actions(env, initial_palm, open_hand, step*env.step_dt)
+                        if script_start is None:
+                            palm = robot.data.body_link_pose_w[:,memory.palm_id]
+                            tcp = palm[:,:3]+quat_apply(palm[:,3:7],offset)
+                            orientation = palm.new_tensor(cfg.palm_quaternion_w).expand(env.num_envs,-1)
+                            if bool(((tcp-near_tcp).norm(dim=-1)<.005).all() and
+                                    (quat_error_magnitude(palm[:,3:7],orientation)<.05).all()):
+                                script_start = step*env.step_dt
+                                initial_palm = palm[:,:3].clone()
+                            actions = ((approach_q-term.target)/term._scale).clamp(-1,1)
+                        else:
+                            actions = scripted_actions(env, initial_palm, open_hand, step*env.step_dt-script_start)
                     elif args.mode == 'random':
                         actions = torch.rand((env.num_envs, 22), device=env.device)*2-1
                     elif args.mode == 'replay':
@@ -391,6 +421,7 @@ def main():
                             if done[index]:
                                 continue
                             controls.append(dict(trial=trial, env=index, time_s=(step+1)*env.step_dt,
+                                scripted_approach_finished_s=script_start,
                                 phase=int(memory.last_phase[index] if just_done[index] else memory.phase[index]),
                                 top_lift_m=float(memory.last_lift[index] if just_done[index] else s['lift'][index]),
                                 hold_s=float(memory.last_hold[index] if just_done[index] else memory.hold[index]),
@@ -419,7 +450,7 @@ def main():
                         success=bool(succeeded[index]), max_lift_m=float(max_lift[index]), max_hold_s=float(max_hold[index]),
                         failure=('physical_violation' if unsafe_step[0] else str(int(failure[index]))),
                         simulated_s=float(elapsed[index]) if done[index] else (step+1)*env.step_dt, initial_top_z=float(initial_z[index]),
-                        initial_palm=json.dumps(initial_palm[index].tolist()))
+                        initial_palm=json.dumps(reset_palm[index].tolist()), scripted_approach_finished_s=script_start)
                     rows.append(row)
                     print('FULL_GRASP_TRIAL '+json.dumps(row), flush=True)
         finally:

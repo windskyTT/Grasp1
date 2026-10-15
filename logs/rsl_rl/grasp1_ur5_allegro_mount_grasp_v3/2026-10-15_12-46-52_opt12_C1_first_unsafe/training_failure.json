@@ -1,0 +1,5 @@
+{
+  "error": "Policy unsafe termination; captured before automatic reset, PPO stopped.",
+  "completed_updates": 12,
+  "controller": "policy_sampled"
+}

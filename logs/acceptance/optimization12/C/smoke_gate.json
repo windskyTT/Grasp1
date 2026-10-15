@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "completed_updates": 5,
+  "transitions": 20480,
+  "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_4.pt",
+  "diagnostics": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/learning_diagnostics.jsonl",
+  "nonzero_parameter_updates": true,
+  "unsafe": 0
+}

@@ -1,0 +1,1188 @@
+{
+  "scene_parameters": {
+    "checkpoint": {
+      "robot_initial_state": {
+        "ang_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "joint_pos": {
+          "elbow_joint": 0.0,
+          "joint_0_0": 0.2,
+          "joint_10_0": 0.2,
+          "joint_11_0": 0.5,
+          "joint_12_0": 1.3,
+          "joint_13_0": 0.0,
+          "joint_14_0": -0.1,
+          "joint_15_0": 0.2,
+          "joint_1_0": 0.6,
+          "joint_2_0": 0.2,
+          "joint_3_0": 0.5,
+          "joint_4_0": 0.2,
+          "joint_5_0": 0.6,
+          "joint_6_0": 0.2,
+          "joint_7_0": 0.5,
+          "joint_8_0": 0.2,
+          "joint_9_0": 0.6,
+          "shoulder_lift_joint": 0.0,
+          "shoulder_pan_joint": 0.0,
+          "wrist_1_joint": 0.0,
+          "wrist_2_joint": 0.0,
+          "wrist_3_joint": 0.0
+        },
+        "joint_vel": {
+          ".*": 0.0
+        },
+        "lin_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pos": [
+          -0.19390000000000002,
+          -0.75152,
+          0.77100239932001
+        ],
+        "rot": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "table": {
+        "class_type": null,
+        "collision_group": 0,
+        "debug_vis": false,
+        "init_state": {
+          "pos": [
+            0.35609999999999997,
+            -0.75152,
+            0.773313
+          ],
+          "rot": [
+            0.70710678,
+            0.0,
+            0.0,
+            0.70710678
+          ]
+        },
+        "prim_path": "/World/envs/env_.*/Table",
+        "spawn": {
+          "activate_contact_sensors": false,
+          "articulation_props": null,
+          "collision_props": null,
+          "copy_from_source": true,
+          "deformable_props": null,
+          "fixed_tendons_props": null,
+          "func": "isaaclab.sim.spawners.from_files.from_files:spawn_from_usd",
+          "joint_drive_props": null,
+          "mass_props": null,
+          "rigid_props": null,
+          "scale": [
+            1.0,
+            1.0,
+            0.771
+          ],
+          "semantic_tags": null,
+          "spatial_tendons_props": null,
+          "usd_path": "/home/windsky/project/Grasp1/assets/table/table.usda",
+          "variants": null,
+          "visible": true,
+          "visual_material": null,
+          "visual_material_path": "material"
+        }
+      }
+    },
+    "requested": {
+      "robot_initial_state": {
+        "ang_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "joint_pos": {
+          "elbow_joint": 0.0,
+          "joint_0_0": 0.2,
+          "joint_10_0": 0.2,
+          "joint_11_0": 0.5,
+          "joint_12_0": 1.3,
+          "joint_13_0": 0.0,
+          "joint_14_0": -0.1,
+          "joint_15_0": 0.2,
+          "joint_1_0": 0.6,
+          "joint_2_0": 0.2,
+          "joint_3_0": 0.5,
+          "joint_4_0": 0.2,
+          "joint_5_0": 0.6,
+          "joint_6_0": 0.2,
+          "joint_7_0": 0.5,
+          "joint_8_0": 0.2,
+          "joint_9_0": 0.6,
+          "shoulder_lift_joint": 0.0,
+          "shoulder_pan_joint": 0.0,
+          "wrist_1_joint": 0.0,
+          "wrist_2_joint": 0.0,
+          "wrist_3_joint": 0.0
+        },
+        "joint_vel": {
+          ".*": 0.0
+        },
+        "lin_vel": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pos": [
+          -0.19390000000000002,
+          -0.75152,
+          0.77100239932001
+        ],
+        "rot": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "table": {
+        "class_type": null,
+        "collision_group": 0,
+        "debug_vis": false,
+        "init_state": {
+          "pos": [
+            0.35609999999999997,
+            -0.75152,
+            0.773313
+          ],
+          "rot": [
+            0.70710678,
+            0.0,
+            0.0,
+            0.70710678
+          ]
+        },
+        "prim_path": "{ENV_REGEX_NS}/Table",
+        "spawn": {
+          "activate_contact_sensors": false,
+          "articulation_props": null,
+          "collision_props": null,
+          "copy_from_source": true,
+          "deformable_props": null,
+          "fixed_tendons_props": null,
+          "func": "isaaclab.sim.spawners.from_files.from_files:spawn_from_usd",
+          "joint_drive_props": null,
+          "mass_props": null,
+          "rigid_props": null,
+          "scale": [
+            1.0,
+            1.0,
+            0.771
+          ],
+          "semantic_tags": null,
+          "spatial_tendons_props": null,
+          "usd_path": "/home/windsky/project/Grasp1/assets/table/table.usda",
+          "variants": null,
+          "visible": true,
+          "visual_material": null,
+          "visual_material_path": "material"
+        }
+      }
+    }
+  },
+  "tip_sensor_configuration": {
+    "checkpoint": {
+      "full_support_bottom": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "/World/envs/env_.*/Object/bottom",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": false,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_support_top": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "/World/envs/env_.*/Object/top",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": false,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_0": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "/World/envs/env_.*/Robot/link_3_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_1": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "/World/envs/env_.*/Robot/link_7_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_2": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "/World/envs/env_.*/Robot/link_11_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_3": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "/World/envs/env_.*/Object/top",
+          "/World/envs/env_.*/Object/bottom",
+          "/World/envs/env_.*/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "/World/envs/env_.*/Robot/link_15_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      }
+    },
+    "requested": {
+      "full_support_bottom": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "{ENV_REGEX_NS}/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "{ENV_REGEX_NS}/Object/bottom",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": false,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_support_top": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "{ENV_REGEX_NS}/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "{ENV_REGEX_NS}/Object/top",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": false,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_0": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "{ENV_REGEX_NS}/Object/top",
+          "{ENV_REGEX_NS}/Object/bottom",
+          "{ENV_REGEX_NS}/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "{ENV_REGEX_NS}/Robot/link_3_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_1": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "{ENV_REGEX_NS}/Object/top",
+          "{ENV_REGEX_NS}/Object/bottom",
+          "{ENV_REGEX_NS}/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "{ENV_REGEX_NS}/Robot/link_7_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_2": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "{ENV_REGEX_NS}/Object/top",
+          "{ENV_REGEX_NS}/Object/bottom",
+          "{ENV_REGEX_NS}/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "{ENV_REGEX_NS}/Robot/link_11_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      },
+      "full_tip_3": {
+        "class_type": "isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor",
+        "debug_vis": false,
+        "filter_prim_paths_expr": [
+          "{ENV_REGEX_NS}/Object/top",
+          "{ENV_REGEX_NS}/Object/bottom",
+          "{ENV_REGEX_NS}/Table"
+        ],
+        "force_threshold": 1.0,
+        "history_length": 0,
+        "max_contact_data_count_per_prim": 32,
+        "prim_path": "{ENV_REGEX_NS}/Robot/link_15_0_tip",
+        "track_air_time": false,
+        "track_contact_points": false,
+        "track_friction_forces": true,
+        "track_pose": false,
+        "update_period": 0,
+        "visualizer_cfg": {
+          "markers": {
+            "contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": true,
+              "visual_material": {
+                "diffuse_color": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            },
+            "no_contact": {
+              "activate_contact_sensors": false,
+              "collision_props": null,
+              "copy_from_source": true,
+              "func": "isaaclab.sim.spawners.shapes.shapes:spawn_sphere",
+              "mass_props": null,
+              "physics_material": null,
+              "physics_material_path": "material",
+              "radius": 0.02,
+              "rigid_props": null,
+              "semantic_tags": null,
+              "visible": false,
+              "visual_material": {
+                "diffuse_color": [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                "emissive_color": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "func": "isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface",
+                "metallic": 0.0,
+                "opacity": 1.0,
+                "roughness": 0.5
+              },
+              "visual_material_path": "material"
+            }
+          },
+          "prim_path": "/Visuals/ContactSensor"
+        }
+      }
+    }
+  }
+}

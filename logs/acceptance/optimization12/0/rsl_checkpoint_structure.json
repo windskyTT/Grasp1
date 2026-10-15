@@ -1,0 +1,87 @@
+{
+  "path": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_0.pt",
+  "keys": [
+    "model_state_dict",
+    "optimizer_state_dict",
+    "iter",
+    "infos"
+  ],
+  "iteration": 0,
+  "completed_updates": 1,
+  "model_tensors": {
+    "std": [
+      22
+    ],
+    "actor.0.weight": [
+      128,
+      211
+    ],
+    "actor.0.bias": [
+      128
+    ],
+    "actor.2.weight": [
+      128,
+      128
+    ],
+    "actor.2.bias": [
+      128
+    ],
+    "actor.4.weight": [
+      22,
+      128
+    ],
+    "actor.4.bias": [
+      22
+    ],
+    "actor_obs_normalizer._mean": [
+      1,
+      211
+    ],
+    "actor_obs_normalizer._var": [
+      1,
+      211
+    ],
+    "actor_obs_normalizer._std": [
+      1,
+      211
+    ],
+    "actor_obs_normalizer.count": [],
+    "critic.0.weight": [
+      128,
+      211
+    ],
+    "critic.0.bias": [
+      128
+    ],
+    "critic.2.weight": [
+      128,
+      128
+    ],
+    "critic.2.bias": [
+      128
+    ],
+    "critic.4.weight": [
+      1,
+      128
+    ],
+    "critic.4.bias": [
+      1
+    ],
+    "critic_obs_normalizer._mean": [
+      1,
+      211
+    ],
+    "critic_obs_normalizer._var": [
+      1,
+      211
+    ],
+    "critic_obs_normalizer._std": [
+      1,
+      211
+    ],
+    "critic_obs_normalizer.count": []
+  },
+  "optimizer_state_entries": 13,
+  "asset_dependencies": 17,
+  "object_dependencies": 5
+}

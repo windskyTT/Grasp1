@@ -1,0 +1,53 @@
+seed: 21
+device: cuda:0
+num_steps_per_env: 32
+max_iterations: 95
+empirical_normalization: null
+obs_groups:
+  policy:
+  - policy
+  critic:
+  - policy
+clip_actions: 1.0
+save_interval: 50
+experiment_name: grasp1_ur5_allegro_mount_grasp_v3
+run_name: opt12_C1_to100
+logger: tensorboard
+neptune_project: isaaclab
+wandb_project: isaaclab
+resume: true
+load_run: .*
+load_checkpoint: /home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_4.pt
+class_name: OnPolicyRunner
+policy:
+  class_name: ActorCritic
+  init_noise_std: 1.0
+  noise_std_type: scalar
+  state_dependent_std: false
+  actor_obs_normalization: true
+  critic_obs_normalization: true
+  actor_hidden_dims:
+  - 128
+  - 128
+  critic_hidden_dims:
+  - 128
+  - 128
+  activation: lrelu
+algorithm:
+  class_name: PPO
+  num_learning_epochs: 4
+  num_mini_batches: 4
+  learning_rate: 0.0003
+  schedule: fixed
+  gamma: 0.9993322194984537
+  lam: 0.9914875553891529
+  entropy_coef: 0.0
+  desired_kl: 0.01
+  max_grad_norm: 0.5
+  value_loss_coef: 0.5
+  use_clipped_value_loss: true
+  clip_param: 0.2
+  normalize_advantage_per_mini_batch: false
+  rnd_cfg: null
+  symmetry_cfg: null
+minimum_action_std: 0.2

@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "fixture": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_batch/initial_states.pt",
+  "actual_initial_states_matched": true,
+  "envs": 20
+}

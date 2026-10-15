@@ -11,7 +11,7 @@ class UR5AllegroMountGraspEnvCfg(UR5AllegroFullGraspEnvCfg):
     mount_semantics_version: str = 'source_urdf_identity_flange_hand_v1'
     tcp_semantics_version: str = 'geometric_center_negative_legacy_reset_offset_v1'
     # 数值来自源候选和优化10 seed21真实掌轴：+X朝下、+Y朝-Y、+Z朝-X。
-    # 右图缺失，不能将该可复现方向称为用户已确认的标准方向。
+    # 优化12两张参考图及源URDF/USD/运行时对照支持保留该方向，详见本轮视觉审计。
     palm_quaternion_w: tuple[float, ...] = (0., -math.sqrt(.5), 0., math.sqrt(.5))
     tcp_offset_h: tuple[float, ...] = GRASP_TCP_OFFSET
     tcp_initial_height: float | None = None

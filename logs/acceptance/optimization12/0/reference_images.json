@@ -1,0 +1,24 @@
+[
+  {
+    "path": "/home/windsky/project/Grasp1/docs/references/\u4f18\u531611_\u539f\u4ee3\u7801\u6807\u51c6\u59ff\u6001.png",
+    "format": "PNG",
+    "size": [
+      698,
+      470
+    ],
+    "mode": "RGBA",
+    "decoded": true,
+    "actual_visual_read": true
+  },
+  {
+    "path": "/home/windsky/project/Grasp1/docs/references/\u4f18\u531611_\u4f18\u531610\u5f53\u524dGUI.png",
+    "format": "PNG",
+    "size": [
+      1232,
+      818
+    ],
+    "mode": "RGB",
+    "decoded": true,
+    "actual_visual_read": true
+  }
+]

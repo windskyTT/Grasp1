@@ -65,6 +65,13 @@ def relative_record(robot, parent, child):
 def main():
     out = args.output_dir
     out.mkdir(parents=True, exist_ok=True)
+    from PIL import Image
+    references = []
+    for name in ('优化11_原代码标准姿态.png','优化11_优化10当前GUI.png'):
+        path = Path('docs/references')/name
+        with Image.open(path) as picture:
+            picture.load()
+            references.append(dict(path=str(path.resolve()), size=picture.size, decoded=True))
     cfg = parse_env_cfg(args.task, device=args.device or 'cuda:0', num_envs=1)
     cfg.seed = args.seed
     cfg.set_num_envs(1)
@@ -133,7 +140,8 @@ def main():
             usd_fixed_joints=usd_joints, palm_mesh_transforms=meshes, runtime=samples,
             flange_hand_identity_position_error_m=float(max_position), flange_hand_identity_angle_error_rad=float(max_angle),
             numerical_mount_status='pass' if max_position < .001 and max_angle < np.deg2rad(1) else 'fail',
-            visual_reference_status='needs_reference_images',
+            visual_reference_status='reference_images_decoded_visual_conclusion_in_reference_visual_audit',
+            reference_images=references,
             asset_changed=False, position_tolerance_m=.001, angle_tolerance_deg=1,
             tolerance_basis='float32 PhysX body transforms; gate is 1mm/1deg',
             robot_joint_names=robot.joint_names, masses=robot.root_physx_view.get_masses().tolist(),
@@ -154,7 +162,8 @@ def main():
             from Grasp1.tasks.manager_based.grasp1.mdp.mount_frames import MountFrames
             from omni.kit.viewport.utility import get_active_viewport, capture_viewport_to_file
             frames = MountFrames(env)
-            frames.update()
+            (out/'frame_annotations.json').write_text(json.dumps(dict(controller='pose_audit_no_policy',
+                axis_colors=dict(x='red', y='green', z='blue'), **frames.update()), indent=2))
             for label, eye in (('front', (1.35, -1.5, 1.45)), ('side', (.3, .5, 1.3)), ('top', (.3, -.7, 2.5))):
                 env.sim.set_camera_view(eye, (.25, -.75, .98))
                 for _ in range(15):

@@ -40,6 +40,9 @@ cli_args.add_rsl_rl_args(parser)
 parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
 parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
 parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
+parser.add_argument('--warm_start', type=str, help='v3 compatible weights and normalizers, fresh optimizer/update count.')
+parser.add_argument('--dataset', choices=('new_training_set',), default='new_training_set')
+parser.add_argument('--object', dest='object_name', default=None)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
 
@@ -108,7 +111,7 @@ logger = logging.getLogger(__name__)
 
 import Grasp1.tasks  # noqa: F401
 from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
-from checkpoint_contract import build_contract, save_metadata, validate_checkpoint
+from checkpoint_contract import build_contract, save_metadata, validate_checkpoint, validate_warm_start
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -123,6 +126,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
     if args_cli.curriculum is not None:
         env_cfg.set_curriculum(args_cli.curriculum)
+    if args_cli.object_name is not None:
+        env_cfg.object_dataset = args_cli.dataset
+        env_cfg.training_objects = (args_cli.object_name,)
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         env_cfg.set_num_envs(env_cfg.scene.num_envs)
@@ -185,13 +191,21 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # set the log directory for the environment (works for all environment types)
     env_cfg.log_dir = log_dir
 
+    if args_cli.warm_start and agent_cfg.resume:
+        raise ValueError('Choose strict Resume or Warm Start.')
+    warm_audit = None
+    if args_cli.warm_start:
+        warm_audit = validate_warm_start(args_cli.warm_start, build_contract(args_cli.task, env_cfg, agent_cfg))
+
     # 校验只需要最终配置；在创建/reset物理环境之前拒绝不兼容续训。
     if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
-        resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
+        resume_path = (os.path.abspath(agent_cfg.load_checkpoint) if os.path.isfile(agent_cfg.load_checkpoint)
+                       else get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint))
         if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
             _, resume_metadata = validate_checkpoint(
                 resume_path, build_contract(args_cli.task, env_cfg, agent_cfg), resume=True,
             )
+            warm_audit = resume_metadata.get('warm_start')
 
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
@@ -220,25 +234,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
         assert env.unwrapped.step_dt == env_cfg.control_dt()
     if args_cli.task in ('Grasp1-UR5-Allegro-GraspTrain-v2', 'Grasp1-UR5-Allegro-GraspTrain-v3'):
-        # 每物理子步读取真实q/qd；自动reset不能抹掉训练中的物理异常。
-        from pathlib import Path
-        real_env = env.unwrapped
-        original_scene_update = real_env.scene.update
-        def full_grasp_physics_check(dt):
-            original_scene_update(dt)
-            if dt != real_env.physics_dt:
-                return
-            robot = real_env.scene['robot']
-            term = real_env.action_manager.get_term('teacher')
-            q, qd = robot.data.joint_pos[:, term._joint_ids], robot.data.joint_vel[:, term._joint_ids]
-            limits = robot.data.joint_pos_limits[:, term._joint_ids]
-            outside = torch.maximum(limits[..., 0]-q, q-limits[..., 1]).clamp_min(0)
-            if bool((outside > 0.005).any() or (qd[:, 6:].abs() > 14).any() or not torch.isfinite(q).all() or not torch.isfinite(qd).all()):
-                torch.save(dict(q=q.cpu(), qd=qd.cpu(), target=term.target.cpu(), violation=outside.cpu(),
-                    physics_step=real_env._sim_step_counter, object_pose=real_env.scene['object'].data.body_link_pose_w.cpu()),
-                    Path(log_dir)/'physics_failure.pt')
-                raise RuntimeError('FullGrasp真实物理越限/速度异常；现场已保存，停止PPO。')
-        real_env.scene.update = full_grasp_physics_check
+        from training_diagnostics import install_physics_monitor
+        install_physics_monitor(env.unwrapped, log_dir)
 
     # create runner from rsl-rl
     if agent_cfg.class_name == "OnPolicyRunner":
@@ -272,6 +269,35 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             assert runner.current_learning_iteration == resume_metadata['checkpoint_iteration']
             runner.current_learning_iteration = resume_metadata['next_update_index']
 
+    if args_cli.warm_start:
+        import json
+        from pathlib import Path
+        # RSL-RL 3.1.2把actor/critic归一化buffer保存在model_state_dict里；严格全量加载。
+        source = torch.load(args_cli.warm_start, map_location=agent_cfg.device, weights_only=False)
+        runner.alg.policy.load_state_dict(source['model_state_dict'], strict=True)
+        policy = runner.get_inference_policy()
+        smoke = []
+        obs = env.get_observations()
+        with torch.inference_mode():
+            for _ in range(30):
+                actions = policy(obs)
+                if not bool(torch.isfinite(actions).all()):
+                    raise RuntimeError('Warm Start produced nonfinite actions')
+                obs, _, done, _ = env.step(actions)
+                if bool((env.unwrapped._full_grasp_state.last_failure[done.bool()] & 3).any()):
+                    raise RuntimeError('Warm Start pre-update smoke unsafe/reset failure')
+                smoke.append(dict(action_min=float(actions.min()),action_max=float(actions.max())))
+        env.reset()
+        warm_audit.update(pre_update_smoke=smoke, controller='policy', normalization_keys=[
+            key for key in source['model_state_dict'] if 'obs_normalizer' in key])
+        Path(log_dir).mkdir(parents=True, exist_ok=True)
+        (Path(log_dir)/'warm_start.json').write_text(json.dumps(warm_audit,indent=2))
+
+    diagnostics = None
+    if args_cli.task == 'Grasp1-UR5-Allegro-GraspTrain-v3':
+        from training_diagnostics import TrainingDiagnostics
+        diagnostics = TrainingDiagnostics(env, runner, log_dir)
+
     # dump the configuration into log-directory
     dump_yaml(os.path.join(log_dir, "params", "env.yaml"), env_cfg)
     dump_yaml(os.path.join(log_dir, "params", "agent.yaml"), agent_cfg)
@@ -283,9 +309,27 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         def save_with_contract(path, infos=None):
             original_save(path, infos)
             save_metadata(path, contract, runner.current_learning_iteration)
+            if warm_audit is not None:
+                from checkpoint_contract import metadata_path
+                import json
+                metadata = json.loads(metadata_path(path).read_text())
+                metadata['warm_start'] = warm_audit
+                metadata['cumulative_lineage_updates'] = warm_audit['source_cumulative_updates']+metadata['completed_updates']
+                metadata_path(path).write_text(json.dumps(metadata,indent=2))
         runner.save = save_with_contract
     try:
         runner.learn(num_learning_iterations=agent_cfg.max_iterations, init_at_random_ep_len=True)
+    except Exception as error:
+        import json
+        from pathlib import Path
+        completed = diagnostics.completed if diagnostics else None
+        Path(log_dir).mkdir(parents=True, exist_ok=True)
+        (Path(log_dir)/'training_failure.json').write_text(json.dumps(dict(error=str(error),
+            completed_updates=completed, controller='policy_sampled'), indent=2))
+        if completed:
+            runner.current_learning_iteration = completed-1
+            runner.save(os.path.join(log_dir, f'model_{completed-1}.pt'))
+        raise
     finally:
         runner.save = original_save
         env.close()

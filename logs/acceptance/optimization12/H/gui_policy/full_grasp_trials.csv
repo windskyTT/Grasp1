@@ -1,0 +1,6 @@
+env,episode,seed,object,success,failure_bits,lift_m,hold_s,elapsed_s,controller,max_lift_m,max_hold_s,max_phase,min_tip_distance_m,opposing_grasp,curriculum,checkpoint
+0,1,21,wood_block_oriented,False,8,-0.002260446548461914,0.0,10.0,policy,0.0,0.0,1,0.051473092287778854,False,C1_fixed_palm_wood_v3,/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt
+0,2,21,wood_block_oriented,False,8,-0.002260446548461914,0.0,10.0,policy,0.0,0.0,1,0.05254342779517174,False,C1_fixed_palm_wood_v3,/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt
+0,3,21,wood_block_oriented,False,8,-0.0022603273391723633,0.0,10.0,policy,0.0,0.0,1,0.05166490375995636,False,C1_fixed_palm_wood_v3,/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt
+0,4,21,wood_block_oriented,False,8,-0.00225985050201416,0.0,10.0,policy,0.0,0.0,1,0.05168979987502098,False,C1_fixed_palm_wood_v3,/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt
+0,5,21,wood_block_oriented,False,8,-0.002260446548461914,0.0,10.0,policy,0.0,0.0,1,0.05178852379322052,False,C1_fixed_palm_wood_v3,/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt
