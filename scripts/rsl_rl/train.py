@@ -1,344 +1,166 @@
-# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-"""Script to train RL agent with RSL-RL."""
-
-"""Launch Isaac Sim Simulator first."""
-
+"""在唯一Teacher-v0中训练完整自主抓取；checkpoint契约保存在infos中。"""
 import argparse
-import sys
-
+from datetime import datetime
+from pathlib import Path
+import cli_args
 from isaaclab.app import AppLauncher
 
-# local imports
-import cli_args  # isort: skip
 
-# add argparse arguments
-parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
-parser.add_argument("--video", action="store_true", default=False, help="Record videos during training.")
-parser.add_argument("--video_length", type=int, default=200, help="Length of the recorded video (in steps).")
-parser.add_argument("--video_interval", type=int, default=2000, help="Interval between video recordings (in steps).")
-parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default=None, help="Name of the task.")
-parser.add_argument(
-    "--agent", type=str, default="rsl_rl_cfg_entry_point", help="Name of the RL agent configuration entry point."
-)
-parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
-parser.add_argument("--max_iterations", type=int, default=None, help="RL Policy training iterations.")
-parser.add_argument(
-    "--distributed", action="store_true", default=False, help="Run training with multiple GPUs or nodes."
-)
-parser.add_argument("--export_io_descriptors", action="store_true", default=False, help="Export IO descriptors.")
-parser.add_argument(
-    "--ray-proc-id", "-rid", type=int, default=None, help="Automatically configured by Ray integration, otherwise None."
-)
-# append RSL-RL cli arguments
-cli_args.add_rsl_rl_args(parser)
-# append AppLauncher cli args
-parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
-parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
-parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
-parser.add_argument('--warm_start', type=str, help='v3 compatible weights and normalizers, fresh optimizer/update count.')
-parser.add_argument('--dataset', choices=('new_training_set',), default='new_training_set')
-parser.add_argument('--object', dest='object_name', default=None)
-AppLauncher.add_app_launcher_args(parser)
-args_cli, hydra_args = parser.parse_known_args()
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--task", choices=(cli_args.TASK,), default=cli_args.TASK)
+    parser.add_argument("--num_envs", type=int, default=None)
+    parser.add_argument("--max_iterations", type=int, default=None, help="Additional PPO updates in this invocation.")
+    parser.add_argument("--seed", type=int, default=42)
+    cli_args.add_rsl_rl_args(parser)
+    AppLauncher.add_app_launcher_args(parser)
+    args = parser.parse_args()
+    if args.num_envs is not None and args.num_envs < 1:
+        parser.error("--num_envs must be positive")
+    if args.max_iterations is not None and args.max_iterations < 1:
+        parser.error("--max_iterations must be positive")
+    if args.checkpoint and not args.resume:
+        parser.error("Use --resume with --checkpoint")
+    if args.no_log:
+        args.kit_args = (args.kit_args or "") + " --/log/file=/dev/null --/app/settings/persistent=false --/crashreporter/enabled=false"
+    app = AppLauncher(args).app
+    env = None
+    runner = None
+    exit_code = 0
+    try:
+        import math
+        import gymnasium as gym
+        import torch
+        from rsl_rl.runners import OnPolicyRunner
+        from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
+        import Grasp1.tasks  # noqa: F401
+        from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
+        from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.agents.rsl_rl_ppo_cfg import UR5AllegroTeacherPPORunnerCfg
 
-# always enable cameras to record video
-if args_cli.video:
-    args_cli.enable_cameras = True
+        cfg, agent = UR5AllegroTeacherEnvCfg(), UR5AllegroTeacherPPORunnerCfg()
+        cfg.set_num_envs(args.num_envs or cfg.scene.num_envs)
+        cfg.synchronize_control_timing()
+        agent.synchronize_control_timing(cfg.control_dt())
+        cfg.seed = agent.seed = args.seed
+        if args.device is not None:
+            cfg.sim.device = agent.device = args.device
+        iterations = args.max_iterations or agent.max_iterations
+        task, training = cli_args.teacher_contract(cfg, agent)
+        resume_path = cli_args.checkpoint_path(agent, args.checkpoint, args.load_run) if args.resume else None
+        resume_info = cli_args.validate_teacher_checkpoint(resume_path, task, training) if resume_path else None
+        suffix = f"_{args.run_name}" if args.run_name else ""
+        log_dir = None if args.no_log else Path("logs/rsl_rl", agent.experiment_name, datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")+suffix).resolve()
+        cfg.log_dir = None if log_dir is None else str(log_dir)
+        cfg.sim.save_logs_to_file = not args.no_log
+        print(f"[INFO] Training objects: {dict((n, cfg.object_names.count(n)) for n in dict.fromkeys(cfg.object_names))}", flush=True)
+        print(f"[INFO] physics_dt={cfg.sim.dt}, control_dt={cfg.control_dt()}, gamma={agent.algorithm.gamma}, lambda={agent.algorithm.lam}")
+        env = gym.make(cli_args.TASK, cfg=cfg)
+        env = RslRlVecEnvWrapper(env, clip_actions=agent.clip_actions)
+        raw = env.unwrapped
+        obs = env.get_observations()
+        if obs["policy"].shape != (cfg.scene.num_envs, 153) or env.num_actions != 22:
+            raise RuntimeError(f"Teacher dimensions: obs={obs['policy'].shape}, actions={env.num_actions}")
+        if not torch.isfinite(obs["policy"]).all():
+            raise RuntimeError("Nonfinite reset observation")
+        print(f"[PASS] Reset: observation={tuple(obs['policy'].shape)}, action=({env.num_envs}, {env.num_actions})", flush=True)
+        runner = OnPolicyRunner(env, agent.to_dict(), log_dir=cfg.log_dir, device=agent.device)
+        # 标准runner默认收集Git状态；空列表确保本任务完全不执行Git操作。
+        runner.git_status_repos = []
+        # RSL-RL 3.1.2 在无日志时仍会调用代码快照；此开关同时跳过该写盘路径。
+        runner.disable_logs = args.no_log
+        completed = resume_info["completed_updates"] if resume_info else 0
+        if resume_path:
+            runner.load(resume_path, map_location=agent.device)
+            runner.current_learning_iteration = completed
+        starting_updates = completed
+        original_step, original_update, original_save = env.step, runner.alg.update, runner.save
+        totals = dict(reward=0., opposing=0., lift=0., hold=0., success=0., unsafe=0., steps=0)
+        reward_totals = torch.zeros(len(raw.reward_manager.active_terms), device=env.device)
 
-# clear out sys.argv for Hydra
-sys.argv = [sys.argv[0]] + hydra_args
+        def step(actions):
+            result = original_step(actions)
+            observations, rewards, dones, extras = result
+            if raw._teacher_grasp.safety_failure is not None:
+                raise RuntimeError("Teacher unsafe physics; stopped PPO before the next optimizer update. See [UNSAFE] snapshot.")
+            if not torch.isfinite(observations["policy"]).all() or not torch.isfinite(rewards).all():
+                raise RuntimeError("Nonfinite Teacher observation or reward")
+            s = raw._teacher_grasp
+            reward_totals.add_(raw.reward_manager._step_reward.mean(0)*raw.step_dt)
+            totals["reward"] += rewards.mean().item()
+            totals["opposing"] += extras["teacher_grip_rate"].item()
+            totals["lift"] += extras["teacher_episode"]["lift_height"].mean().item()
+            totals["hold"] += extras["teacher_episode"]["hold_duration"].mean().item()
+            totals["success"] += extras["teacher_episode"]["success"].sum().item()
+            totals["unsafe"] += extras["teacher_episode"]["unsafe"].sum().item()
+            totals["steps"] += 1
+            return result
 
-# launch omniverse app
-app_launcher = AppLauncher(args_cli)
-simulation_app = app_launcher.app
-
-"""Check for minimum supported RSL-RL version."""
-
-import importlib.metadata as metadata
-import platform
-
-from packaging import version
-
-# check minimum supported rsl-rl version
-RSL_RL_VERSION = "3.0.1"
-installed_version = metadata.version("rsl-rl-lib")
-if version.parse(installed_version) < version.parse(RSL_RL_VERSION):
-    if platform.system() == "Windows":
-        cmd = [r".\isaaclab.bat", "-p", "-m", "pip", "install", f"rsl-rl-lib=={RSL_RL_VERSION}"]
-    else:
-        cmd = ["./isaaclab.sh", "-p", "-m", "pip", "install", f"rsl-rl-lib=={RSL_RL_VERSION}"]
-    print(
-        f"Please install the correct version of RSL-RL.\nExisting version is: '{installed_version}'"
-        f" and required version is: '{RSL_RL_VERSION}'.\nTo install the correct version, run:"
-        f"\n\n\t{' '.join(cmd)}\n"
-    )
-    exit(1)
-
-"""Rest everything follows."""
-
-import logging
-import os
-import time
-from datetime import datetime
-
-import gymnasium as gym
-import torch
-from rsl_rl.runners import DistillationRunner, OnPolicyRunner
-
-from isaaclab.envs import (
-    DirectMARLEnv,
-    DirectMARLEnvCfg,
-    DirectRLEnvCfg,
-    ManagerBasedRLEnvCfg,
-    multi_agent_to_single_agent,
-)
-from isaaclab.utils.dict import print_dict
-from isaaclab.utils.io import dump_yaml
-
-from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg, RslRlVecEnvWrapper
-
-import isaaclab_tasks  # noqa: F401
-from isaaclab_tasks.utils import get_checkpoint_path
-from isaaclab_tasks.utils.hydra import hydra_task_config
-
-# import logger
-logger = logging.getLogger(__name__)
-
-import Grasp1.tasks  # noqa: F401
-from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
-from checkpoint_contract import build_contract, save_metadata, validate_checkpoint, validate_warm_start
-
-torch.backends.cuda.matmul.allow_tf32 = True
-torch.backends.cudnn.allow_tf32 = True
-torch.backends.cudnn.deterministic = False
-torch.backends.cudnn.benchmark = False
-
-
-@hydra_task_config(args_cli.task, args_cli.agent)
-def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agent_cfg: RslRlBaseRunnerCfg):
-    """Train with RSL-RL agent."""
-    # override configurations with non-hydra CLI arguments
-    agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
-    if args_cli.curriculum is not None:
-        env_cfg.set_curriculum(args_cli.curriculum)
-    if args_cli.object_name is not None:
-        env_cfg.object_dataset = args_cli.dataset
-        env_cfg.training_objects = (args_cli.object_name,)
-    env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
-    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
-        env_cfg.set_num_envs(env_cfg.scene.num_envs)
-        if args_cli.decimation is not None:
-            env_cfg.decimation = args_cli.decimation
-        if args_cli.episode_length_s is not None:
-            env_cfg.episode_length_s = args_cli.episode_length_s
-        env_cfg.synchronize_control_timing()
-        agent_cfg.synchronize_control_timing(env_cfg.control_dt())
-        print(f"[INFO] Teacher timing: physics_dt={env_cfg.sim.dt}, decimation={env_cfg.decimation}, "
-              f"control_dt={env_cfg.control_dt()}, episode_s={env_cfg.episode_length_s}, "
-              f"gamma={agent_cfg.algorithm.gamma}, lambda={agent_cfg.algorithm.lam}, "
-              f"rollout_s={agent_cfg.num_steps_per_env * env_cfg.control_dt()}")
-    agent_cfg.max_iterations = (
-        args_cli.max_iterations if args_cli.max_iterations is not None else agent_cfg.max_iterations
-    )
-
-    # set the environment seed
-    # note: certain randomizations occur in the environment initialization so we set the seed here
-    env_cfg.seed = agent_cfg.seed
-    env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
-    # check for invalid combination of CPU device with distributed training
-    if args_cli.distributed and args_cli.device is not None and "cpu" in args_cli.device:
-        raise ValueError(
-            "Distributed training is not supported when using CPU device. "
-            "Please use GPU device (e.g., --device cuda) for distributed training."
-        )
-
-    # multi-gpu training configuration
-    if args_cli.distributed:
-        env_cfg.sim.device = f"cuda:{app_launcher.local_rank}"
-        agent_cfg.device = f"cuda:{app_launcher.local_rank}"
-
-        # set seed to have diversity in different threads
-        seed = agent_cfg.seed + app_launcher.local_rank
-        env_cfg.seed = seed
-        agent_cfg.seed = seed
-
-    # specify directory for logging experiments
-    log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)
-    log_root_path = os.path.abspath(log_root_path)
-    print(f"[INFO] Logging experiment in directory: {log_root_path}")
-    # specify directory for logging runs: {time-stamp}_{run_name}
-    log_dir = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    # The Ray Tune workflow extracts experiment name using the logging line below, hence, do not
-    # change it (see PR #2346, comment-2819298849)
-    print(f"Exact experiment name requested from command line: {log_dir}")
-    if agent_cfg.run_name:
-        log_dir += f"_{agent_cfg.run_name}"
-    log_dir = os.path.join(log_root_path, log_dir)
-
-    # set the IO descriptors export flag if requested
-    if isinstance(env_cfg, ManagerBasedRLEnvCfg):
-        env_cfg.export_io_descriptors = args_cli.export_io_descriptors
-    else:
-        logger.warning(
-            "IO descriptors are only supported for manager based RL environments. No IO descriptors will be exported."
-        )
-
-    # set the log directory for the environment (works for all environment types)
-    env_cfg.log_dir = log_dir
-
-    if args_cli.warm_start and agent_cfg.resume:
-        raise ValueError('Choose strict Resume or Warm Start.')
-    warm_audit = None
-    if args_cli.warm_start:
-        warm_audit = validate_warm_start(args_cli.warm_start, build_contract(args_cli.task, env_cfg, agent_cfg))
-
-    # 校验只需要最终配置；在创建/reset物理环境之前拒绝不兼容续训。
-    if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
-        resume_path = (os.path.abspath(agent_cfg.load_checkpoint) if os.path.isfile(agent_cfg.load_checkpoint)
-                       else get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint))
-        if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
-            _, resume_metadata = validate_checkpoint(
-                resume_path, build_contract(args_cli.task, env_cfg, agent_cfg), resume=True,
-            )
-            warm_audit = resume_metadata.get('warm_start')
-
-    # create isaac environment
-    env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
-
-    # convert to single-agent instance if required by the RL algorithm
-    if isinstance(env.unwrapped, DirectMARLEnv):
-        env = multi_agent_to_single_agent(env)
-
-    # wrap for video recording
-    if args_cli.video:
-        video_kwargs = {
-            "video_folder": os.path.join(log_dir, "videos", "train"),
-            "step_trigger": lambda step: step % args_cli.video_interval == 0,
-            "video_length": args_cli.video_length,
-            "disable_logger": True,
-        }
-        print("[INFO] Recording videos during training.")
-        print_dict(video_kwargs, nesting=4)
-        env = gym.wrappers.RecordVideo(env, **video_kwargs)
-
-    start_time = time.time()
-
-    # wrap around environment for rsl-rl
-    env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
-
-    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
-        assert env.unwrapped.step_dt == env_cfg.control_dt()
-    if args_cli.task in ('Grasp1-UR5-Allegro-GraspTrain-v2', 'Grasp1-UR5-Allegro-GraspTrain-v3'):
-        from training_diagnostics import install_physics_monitor
-        install_physics_monitor(env.unwrapped, log_dir)
-
-    # create runner from rsl-rl
-    if agent_cfg.class_name == "OnPolicyRunner":
-        runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
-    elif agent_cfg.class_name == "DistillationRunner":
-        runner = DistillationRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
-    else:
-        raise ValueError(f"Unsupported runner class: {agent_cfg.class_name}")
-
-    # 源Teacher在每次完整PPO更新后只投影std下界，保留原mean、损失和optimizer更新。
-    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg) and agent_cfg.minimum_action_std is not None:
-        original_update = runner.alg.update
-
-        def update_with_minimum_std():
+        def update():
+            nonlocal completed
             losses = original_update()
-            with torch.no_grad():
-                runner.alg.policy.std.clamp_(min=agent_cfg.minimum_action_std)
+            completed += 1
+            if not all(math.isfinite(float(v)) for v in losses.values()):
+                raise RuntimeError(f"Nonfinite PPO losses at update {completed}: {losses}")
+            if not all(torch.isfinite(p).all() for p in runner.alg.policy.parameters()):
+                raise RuntimeError(f"Nonfinite policy weights at update {completed}")
+            with torch.inference_mode():
+                storage = runner.alg.storage
+                means = runner.alg.policy.act_inference(storage.observations.flatten(0, 1))
+                std = runner.alg.policy.log_std.exp().expand_as(means)
+                old = torch.distributions.Normal(storage.mu.flatten(0, 1), storage.sigma.flatten(0, 1))
+                new = torch.distributions.Normal(means, std)
+                kl = torch.distributions.kl_divergence(old, new).sum(-1).mean().item()
+            metrics = {k: v/max(totals["steps"], 1) for k, v in totals.items() if k != "steps"}
+            metrics.update(completed_updates=completed, kl=kl, **losses)
+            reward_metrics = {name: value.item()/totals["steps"] for name, value in
+                              zip(raw.reward_manager.active_terms, reward_totals)}
+            for name, value in reward_metrics.items():
+                if runner.writer is not None:
+                    runner.writer.add_scalar(f"Teacher_Reward/{name}", value, completed)
+            print(f"[REWARDS per control step] {reward_metrics}", flush=True)
+            reward_totals.zero_()
+            print(f"[PPO] {metrics}", flush=True)
+            for key, value in metrics.items():
+                if runner.writer is not None:
+                    runner.writer.add_scalar(f"Teacher/{key}", value, completed)
+            for key in totals:
+                totals[key] = 0
             return losses
 
-        runner.alg.update = update_with_minimum_std
+        def save(path, infos=None):
+            payload = dict(infos or {}, task_contract=task, training_contract=training,
+                           completed_updates=completed, safety_failure=raw._teacher_grasp.safety_failure)
+            original_save(path, payload)
+            print(f"[CHECKPOINT] {path}; completed_updates={completed}", flush=True)
 
-    # write git state to logs
-    runner.add_git_repo_to_log(__file__)
-    # load the checkpoint
-    if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
-        print(f"[INFO]: Loading model checkpoint from: {resume_path}")
-        # load previously trained model
-        runner.load(resume_path)
-        if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
-            # RSL-RL 3.1.2保存刚完成的零基update编号；下一次从其后开始。
-            assert runner.current_learning_iteration == resume_metadata['checkpoint_iteration']
-            runner.current_learning_iteration = resume_metadata['next_update_index']
-
-    if args_cli.warm_start:
-        import json
-        from pathlib import Path
-        # RSL-RL 3.1.2把actor/critic归一化buffer保存在model_state_dict里；严格全量加载。
-        source = torch.load(args_cli.warm_start, map_location=agent_cfg.device, weights_only=False)
-        runner.alg.policy.load_state_dict(source['model_state_dict'], strict=True)
-        policy = runner.get_inference_policy()
-        smoke = []
-        obs = env.get_observations()
-        with torch.inference_mode():
-            for _ in range(30):
-                actions = policy(obs)
-                if not bool(torch.isfinite(actions).all()):
-                    raise RuntimeError('Warm Start produced nonfinite actions')
-                obs, _, done, _ = env.step(actions)
-                if bool((env.unwrapped._full_grasp_state.last_failure[done.bool()] & 3).any()):
-                    raise RuntimeError('Warm Start pre-update smoke unsafe/reset failure')
-                smoke.append(dict(action_min=float(actions.min()),action_max=float(actions.max())))
-        env.reset()
-        warm_audit.update(pre_update_smoke=smoke, controller='policy', normalization_keys=[
-            key for key in source['model_state_dict'] if 'obs_normalizer' in key])
-        Path(log_dir).mkdir(parents=True, exist_ok=True)
-        (Path(log_dir)/'warm_start.json').write_text(json.dumps(warm_audit,indent=2))
-
-    diagnostics = None
-    if args_cli.task == 'Grasp1-UR5-Allegro-GraspTrain-v3':
-        from training_diagnostics import TrainingDiagnostics
-        diagnostics = TrainingDiagnostics(env, runner, log_dir)
-
-    # dump the configuration into log-directory
-    dump_yaml(os.path.join(log_dir, "params", "env.yaml"), env_cfg)
-    dump_yaml(os.path.join(log_dir, "params", "agent.yaml"), agent_cfg)
-
-    # run training
-    original_save = runner.save
-    if isinstance(env_cfg, UR5AllegroTeacherEnvCfg):
-        contract = build_contract(args_cli.task, env_cfg, agent_cfg)
-        def save_with_contract(path, infos=None):
-            original_save(path, infos)
-            save_metadata(path, contract, runner.current_learning_iteration)
-            if warm_audit is not None:
-                from checkpoint_contract import metadata_path
-                import json
-                metadata = json.loads(metadata_path(path).read_text())
-                metadata['warm_start'] = warm_audit
-                metadata['cumulative_lineage_updates'] = warm_audit['source_cumulative_updates']+metadata['completed_updates']
-                metadata_path(path).write_text(json.dumps(metadata,indent=2))
-        runner.save = save_with_contract
-    try:
-        runner.learn(num_learning_iterations=agent_cfg.max_iterations, init_at_random_ep_len=True)
-    except Exception as error:
-        import json
-        from pathlib import Path
-        completed = diagnostics.completed if diagnostics else None
-        Path(log_dir).mkdir(parents=True, exist_ok=True)
-        (Path(log_dir)/'training_failure.json').write_text(json.dumps(dict(error=str(error),
-            completed_updates=completed, controller='policy_sampled'), indent=2))
-        if completed:
-            runner.current_learning_iteration = completed-1
-            runner.save(os.path.join(log_dir, f'model_{completed-1}.pt'))
+        env.step, runner.alg.update, runner.save = step, update, save
+        try:
+            runner.learn(num_learning_iterations=iterations, init_at_random_ep_len=False)
+        except BaseException:
+            if log_dir is not None and completed > starting_updates:
+                runner.current_learning_iteration = completed-1
+                runner.save(str(log_dir/f"model_{completed-1}.pt"))
+            print(f"[STOP] completed_updates_this_run={completed-starting_updates}, total={completed}", flush=True)
+            raise
+        print(f"[DONE] completed_updates_this_run={completed-starting_updates}, total={completed}; log_dir={log_dir}", flush=True)
+    except BaseException:
+        import traceback
+        exit_code = 1
+        traceback.print_exc()
         raise
     finally:
-        runner.save = original_save
-        env.close()
+        try:
+            if runner is not None and runner.writer is not None:
+                runner.writer.close()
+        finally:
+            try:
+                if env is not None:
+                    env.close()
+            finally:
+                if exit_code:
+                    app.app.post_quit(exit_code)
+                app.close()
 
-    print(f"Training time: {round(time.time() - start_time, 2)} seconds")
 
 if __name__ == "__main__":
-    # run the main function
-    try:
-        main()
-    finally:
-        simulation_app.close()
+    main()

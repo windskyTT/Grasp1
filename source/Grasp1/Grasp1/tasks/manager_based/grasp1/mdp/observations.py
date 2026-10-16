@@ -1,4 +1,4 @@
-"""构造 RobustDexGrasp Teacher 的 153 维策略观测。
+"""构造 Teacher 的153维策略观测：保持源状态与 affordance 字段顺序。
 
 前 102 维严格保持 ``Environment.hpp::updateObservation`` 的连续字段顺序；
 末尾 51 维对应 ``RaisimGymVecEnvOther.observe_vision_new`` 的
@@ -38,6 +38,7 @@ from isaaclab.sensors import ContactSensor
 from isaaclab.utils.math import (
     matrix_from_quat,
     quat_apply,
+    quat_apply_inverse,
     quat_from_euler_xyz,
     quat_inv,
     quat_mul,
@@ -61,7 +62,7 @@ from .keypoints import (
     _object_top_pose_w,
 )
 
-from .runtime import TeacherRuntimeFeatures, filtered_contact_impulses
+
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -75,8 +76,7 @@ if TYPE_CHECKING:
 TEACHER_BASE_OBSERVATION_DIM: Final[int] = 102
 TEACHER_AFFORDANCE_OBSERVATION_DIM: Final[int] = HAND_KEYPOINT_COUNT * 3
 TEACHER_OBSERVATION_DIM: Final[int] = (
-    TEACHER_BASE_OBSERVATION_DIM
-    + TEACHER_AFFORDANCE_OBSERVATION_DIM
+    TEACHER_BASE_OBSERVATION_DIM + TEACHER_AFFORDANCE_OBSERVATION_DIM
 )
 
 AFFORDANCE_POINT_COUNT: Final[int] = POINTS_PER_MESH
@@ -239,7 +239,7 @@ def nearest_affordance_vectors_w(env: ManagerBasedRLEnv) -> torch.Tensor:
         quaternions = object_quat_w[ids, None, :].expand(-1, HAND_KEYPOINT_COUNT, -1)
         return quat_apply(quaternions.reshape(-1,4), vectors_o.reshape(-1,3)).reshape_as(vectors_o)
 
-    return env._teacher_runtime_features.get("affordance_vectors_w", compute)
+    return compute(slice(None))
 
 
 # -----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ def nearest_affordance_vectors_w(env: ManagerBasedRLEnv) -> torch.Tensor:
 # -----------------------------------------------------------------------------
 
 class TeacherObservation(ManagerTermBase):
-    """按旧 Teacher 字段顺序生成 ``[N,153]`` policy observation。"""
+    """保持原153维字段顺序，与奖励共享接触采样。"""
 
     def __init__(
         self,
@@ -259,7 +259,7 @@ class TeacherObservation(ManagerTermBase):
         self._robot = env.scene["robot"]
         self._object = env.scene["object"]
         initialize_teacher_body_indices(env)
-        env._teacher_runtime_features = TeacherRuntimeFeatures(env)
+
 
         if not isinstance(self._robot, Articulation):
             raise TypeError(
@@ -364,6 +364,7 @@ class TeacherObservation(ManagerTermBase):
         # Geometry has to be available for ObservationManager's initial
         # dimension probe, which occurs before startup events.
         _load_affordance_points(env)
+        env._teacher_grasp = TeacherGraspState(env)
 
         # Source reset_state():
         #   wrist_mat_r_init = current wrist matrix
@@ -392,7 +393,6 @@ class TeacherObservation(ManagerTermBase):
         if env_ids is None:
             env_ids = slice(None)
 
-        self._env._teacher_runtime_features.invalidate(env_ids)
         self._needs_wrist_init[env_ids] = True
         self._previous_wrist_euler[env_ids] = 0.0
 
@@ -424,18 +424,10 @@ class TeacherObservation(ManagerTermBase):
         self,
         env: ManagerBasedRLEnv,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Return 13 top-contact flags and approximate contact impulses.
-
-        RaiSim exposed per-step contact impulses directly. IsaacLab's
-        ContactSensor exposes normal/friction forces, so the migrated quantity
-        is ``||F_normal + F_friction|| * physics_dt``.
-
-        Filtered friction/contact buffers may contain non-finite values for
-        inactive pairs depending on the PhysX contact backend.  Those represent
-        "no contact", not an invalid robot state, so both force components are
-        sanitized before they enter the policy observation.
-        """
-        impulses = filtered_contact_impulses(env, "teacher_af_contact_")[3]
+        """13个槽的完整接触冲量：同一物理步的（法向力 + 摩擦力）× dt。"""
+        state = env._teacher_grasp
+        state.sample(env._sim_step_counter)
+        impulses = (state.hand_normal + state.hand_friction).norm(dim=-1) * env.physics_dt
         contacts = (
             impulses > CONTACT_IMPULSE_THRESHOLD
         ).to(impulses.dtype)
@@ -546,7 +538,7 @@ class TeacherObservation(ManagerTermBase):
         env: ManagerBasedRLEnv,
         support_height: float,
     ) -> torch.Tensor:
-        """Return the exact-layout ``[num_envs,153]`` Teacher observation."""
+        """返回训练和播放共享的固定153维观测。"""
         joint_pos, target_error = (
             self._joint_observation(env)
         )
@@ -626,6 +618,238 @@ class TeacherObservation(ManagerTermBase):
 
         return observation
 
+
+def contact_force(env, name):
+    """单刚体、单过滤对的法向接触力；空接触不是虚构接触。"""
+    return env.scene[name].data.force_matrix_w[:, 0].sum(dim=1)
+
+
+def contact_friction_force(env, name):
+    """PhysX 实际切向摩擦力（N）；世界 XY 分量不等于接触切向分量。"""
+    return env.scene[name].data.friction_forces_w[:, 0].sum(dim=1)
+
+
+class TeacherGraspState:
+    """物理步采样的抓取/安全状态；同一物理步重复读取不累计时间。"""
+
+    def __init__(self, env):
+        self.env = env
+        self.robot, self.obj = env.scene["robot"], env.scene["object"]
+        self.joints = env.action_manager.get_term("teacher")._joint_ids
+        self.palm = self.robot.find_bodies("Allegro_base_link")[0][0]
+        self.top = self.obj.find_bodies("top")[0][0]
+        self.bottom = self.obj.find_bodies("bottom")[0][0]
+        self.tips = self.robot.find_bodies(
+            [f"link_{i}_0_tip" for i in (3, 7, 11, 15)], preserve_order=True
+        )[0]
+        n, device = env.num_envs, env.device
+        self.initial_height = torch.zeros(n, device=device)
+        self.hold = torch.zeros(n, device=device)
+        self.max_hold = torch.zeros(n, device=device)
+        self.lift = torch.zeros(n, device=device)
+        self.max_lift = torch.zeros(n, device=device)
+        self.active = torch.zeros(n, dtype=torch.bool, device=device)
+        self.unsafe = self.active.clone()
+        self.invalid = self.active.clone()
+        self.success = self.active.clone()
+        self.dropped = self.active.clone()
+        self.grip = self.active.clone()
+        self.good_contact = self.active.clone()
+        self.stable = self.active.clone()
+        self.supported = self.active.clone()
+        self.last_frame = torch.full((n,), -1, dtype=torch.long, device=device)
+        self.previous_q = self.robot.data.joint_pos.clone()
+        self.grip_pos = torch.zeros(n, 3, device=device)
+        self.grip_quat = torch.zeros(n, 4, device=device)
+        self.grip_quat[:, 0] = 1
+        self.was_gripping = self.active.clone()
+        self.relative_pos = torch.zeros(n, 3, device=device)
+        self.relative_quat = self.grip_quat.clone()
+        self.relative_vel = self.relative_pos.clone()
+        self.relative_omega = self.relative_pos.clone()
+        self.tip_forces = torch.zeros(n, 4, 3, device=device)
+        self.hand_normal = torch.zeros(n, 13, 3, device=device)
+        self.hand_friction = torch.zeros_like(self.hand_normal)
+        self.safety_failure = None
+        # 两个实际物体刚体的碰撞网格包围高度，不能只用根高度判离桌。
+        from pxr import Usd, UsdPhysics
+        import omni.usd
+        stage = omni.usd.get_context().get_stage()
+        self.collision_parts = []
+        for part in ("top", "bottom"):
+            enabled = []
+            for index in range(n):
+                prim = stage.GetPrimAtPath(f"/World/envs/env_{index}/Object/{part}")
+                enabled.append(any(p.HasAPI(UsdPhysics.CollisionAPI) for p in Usd.PrimRange(prim, Usd.TraverseInstanceProxies())))
+            self.collision_parts.append(torch.tensor(enabled, device=device))
+        self.vertices = []
+        for field in ("affordance_mesh", "non_affordance_mesh"):
+            arrays = [getattr(env._teacher_object_metadata[name], field).vertices
+                      for name in env.cfg.object_names]
+            count = max(len(a) for a in arrays)
+            points = np.stack([np.concatenate((a, np.repeat(a[:1], count-len(a), axis=0))) for a in arrays])
+            self.vertices.append(torch.as_tensor(points, dtype=torch.float32, device=device))
+
+    def reset(self, ids):
+        self.initial_height[ids] = self.obj.data.body_link_pos_w[ids, self.top, 2]
+        for value in (self.hold, self.max_hold, self.lift, self.max_lift,
+                      self.unsafe, self.invalid, self.success, self.dropped, self.grip,
+                      self.good_contact, self.stable, self.supported, self.was_gripping):
+            value[ids] = 0
+        palm = self.robot.data.body_link_pose_w[ids, self.palm]
+        top = self.obj.data.body_link_pose_w[ids, self.top]
+        self.relative_pos[ids] = quat_apply_inverse(palm[:, 3:7], top[:, :3]-palm[:, :3])
+        relative_quat = quat_mul(quat_inv(palm[:, 3:7]), top[:, 3:7])
+        self.relative_quat[ids] = torch.where(relative_quat[:, :1] < 0, -relative_quat, relative_quat)
+        self.relative_vel[ids] = 0
+        self.relative_omega[ids] = 0
+        self.tip_forces[ids] = 0
+        self.hand_normal[ids] = 0
+        self.hand_friction[ids] = 0
+        self.previous_q[ids] = self.robot.data.joint_pos[ids]
+        self.last_frame[ids] = self.env._sim_step_counter
+        self.active[ids] = True
+
+    def sample(self, frame):
+        env, robot, obj = self.env, self.robot, self.obj
+        fresh = self.active & (self.last_frame < frame)
+        if not bool(fresh.any()):
+            return
+        q, qd = robot.data.joint_pos, robot.data.joint_vel
+        limits = robot.data.joint_pos_limits
+        violation = torch.maximum(limits[..., 0]-q, q-limits[..., 1]).clamp_min(0)
+        diff_speed = (q-self.previous_q).abs()/env.physics_dt
+        speed_limit = robot.data.joint_vel_limits
+        finite = torch.ones(env.num_envs, dtype=torch.bool, device=env.device)
+        for value in (robot.data.body_state_w, q, qd, obj.data.body_state_w,
+                      obj.data.joint_pos, obj.data.joint_vel):
+            finite &= torch.isfinite(value).flatten(1).all(1)
+        arm_vectors = torch.stack([env.scene[f"teacher_arm_contact_{i}"].data.net_forces_w[:, 0]
+                                   for i in range(6)], dim=1)
+        arm_pairs = torch.stack([env.scene[f"teacher_arm_contact_{i}"].data.force_matrix_w[:, 0]
+                                 for i in range(6)], dim=1)
+        arm_friction = torch.stack([env.scene[f"teacher_arm_contact_{i}"].data.friction_forces_w[:, 0]
+                                    for i in range(6)], dim=1)
+        table_names = ([f"teacher_table_contact_{i}" for i in range(13)]
+                       + [f"teacher_tip_table_{i}" for i in range(4)]
+                       + [f"teacher_hand_table_{i}" for i in range(5)])
+        table_normal = torch.stack([contact_force(env, name) for name in table_names], dim=1)
+        table_friction = torch.stack([contact_friction_force(env, name) for name in table_names], dim=1)
+        table_vectors = table_normal + table_friction
+        self.hand_normal[fresh] = torch.stack([contact_force(env, name)
+                                              for name in AFFORDANCE_CONTACT_SENSOR_NAMES], dim=1)[fresh]
+        self.hand_friction[fresh] = torch.stack([contact_friction_force(env, name)
+                                                for name in AFFORDANCE_CONTACT_SENSOR_NAMES], dim=1)[fresh]
+        self.tip_forces[:] = torch.stack([contact_force(env, f"teacher_tip_object_{i}") for i in range(4)], dim=1)
+        finite &= torch.isfinite(arm_vectors).flatten(1).all(1)
+        finite &= torch.isfinite(arm_pairs).flatten(1).all(1)
+        finite &= torch.isfinite(arm_friction).flatten(1).all(1)
+        finite &= torch.isfinite(table_vectors).flatten(1).all(1)
+        finite &= torch.isfinite(self.tip_forces).flatten(1).all(1)
+        finite &= torch.isfinite(self.hand_normal + self.hand_friction).flatten(1).all(1)
+        arm_force = torch.maximum(arm_vectors.norm(dim=-1).amax(1),
+                                  (arm_pairs + arm_friction).norm(dim=-1).flatten(1).amax(1))
+        table_force = table_vectors.norm(dim=-1).amax(1)
+        # Teacher物体参考为真实top碰撞体的link原点。某些bottom仅为远置的
+        # 无碰撞占位体，不能把其COM绕转速度误报成抓取物体的平移速度。
+        obj_lin = obj.data.body_link_lin_vel_w[:, self.top].norm(dim=-1)
+        obj_ang = obj.data.body_ang_vel_w[:, self.top].norm(dim=-1)
+        obj_limits = obj.data.joint_pos_limits
+        obj_violation = torch.maximum(obj_limits[..., 0]-obj.data.joint_pos,
+                                      obj.data.joint_pos-obj_limits[..., 1]).clamp_min(0).amax(1)
+        bad = (~finite | (violation.amax(1) > env.cfg.joint_limit_tolerance)
+               | (obj_violation > env.cfg.joint_limit_tolerance)
+               | (qd.abs() > speed_limit + 0.1).any(1)
+               | (diff_speed > speed_limit + 0.1).any(1)
+               | (arm_force > env.cfg.arm_contact_limit_N)
+               | (table_force > env.cfg.hand_table_contact_limit_N)
+               | (obj_lin > env.cfg.object_speed_limit)
+               | (obj_ang > env.cfg.object_angular_speed_limit)) & fresh
+        self.invalid |= ~finite & fresh
+        self.unsafe |= bad
+        # 首次异常现场保存在内存并输出终端；无日志训练不写 checkpoint。
+        if self.safety_failure is None and bool(bad.any()):
+            ids = bad.nonzero().flatten()
+            self.safety_failure = dict(
+                physics_frame=int(frame), env_ids=ids.cpu().tolist(),
+                object_names=[env.cfg.object_names[i] for i in ids.cpu().tolist()],
+                robot_joint_names=list(robot.joint_names), target_joint_names=list(env.action_manager.get_term("teacher")._joint_names),
+                robot_bodies=list(robot.body_names), arm_bodies=[env.scene[f"teacher_arm_contact_{i}"].body_names[0] for i in range(6)],
+                pair_order=["Object/top", "Object/bottom", "Table"],
+                q=q[ids].cpu().clone(), qd=qd[ids].cpu().clone(), difference_velocity=diff_speed[ids].cpu().clone(),
+                target=env.action_manager.get_term("teacher").target[ids].cpu().clone(),
+                arm_vectors=arm_vectors[ids].cpu().clone(), arm_pairs=arm_pairs[ids].cpu().clone(),
+                arm_friction=arm_friction[ids].cpu().clone(),
+                hand_object_forces=self.hand_normal[ids].cpu().clone(),
+                hand_object_friction_forces=self.hand_friction[ids].cpu().clone(),
+                tip_object_forces=self.tip_forces[ids].cpu().clone(),
+                table_forces=table_vectors[ids].cpu().clone(),
+                table_normal=table_normal[ids].cpu().clone(), table_friction=table_friction[ids].cpu().clone(),
+                joint_violation=violation[ids].cpu().clone(), object_joint_violation=obj_violation[ids].cpu().clone(),
+                object_state=obj.data.body_state_w[ids].cpu().clone(), finite=finite[ids].cpu().clone(),
+                object_linear_speed=obj_lin[ids].cpu().clone(), object_angular_speed=obj_ang[ids].cpu().clone(),
+                table_bodies=[env.scene[f"teacher_table_contact_{i}"].body_names[0] for i in range(13)]
+                    + [env.scene[f"teacher_tip_table_{i}"].body_names[0] for i in range(4)]
+                    + [env.scene[f"teacher_hand_table_{i}"].body_names[0] for i in range(5)],
+            )
+            print("[UNSAFE]", self.safety_failure, flush=True)
+        palm = robot.data.body_link_pose_w[:, self.palm]
+        top = obj.data.body_link_pose_w[:, self.top]
+        offset = top[:, :3]-palm[:, :3]
+        inv = quat_inv(palm[:, 3:7])
+        self.relative_pos[:] = quat_apply(inv, offset)
+        relq = quat_mul(inv, top[:, 3:7])
+        self.relative_quat[:] = torch.where(relq[:, :1] < 0, -relq, relq)
+        palm_v = robot.data.body_link_lin_vel_w[:, self.palm]
+        palm_w = robot.data.body_ang_vel_w[:, self.palm]
+        v = obj.data.body_link_lin_vel_w[:, self.top]-palm_v-torch.cross(palm_w, offset, dim=-1)
+        self.relative_vel[:] = quat_apply(inv, v)
+        self.relative_omega[:] = quat_apply(inv, obj.data.body_ang_vel_w[:, self.top]-palm_w)
+        force = self.tip_forces.norm(dim=-1)
+        contact = force > env.cfg.tip_contact_threshold_N
+        self.good_contact[fresh] = (contact[:, 3] & contact[:, :3].any(1))[fresh]
+        tip_pos = robot.data.body_link_pos_w[:, self.tips]-top[:, None, :3]
+        radial = torch.nn.functional.normalize(tip_pos, dim=-1)
+        normals = torch.nn.functional.normalize(self.tip_forces, dim=-1)
+        opposite = ((radial[:, :3]*radial[:, 3:4]).sum(-1) < -0.2)
+        opposite &= ((normals[:, :3]*normals[:, 3:4]).sum(-1) < -0.2)
+        grip = contact[:, 3] & (contact[:, :3] & opposite).any(1)
+        newly_gripped = grip & ~self.was_gripping & fresh
+        self.grip_pos[newly_gripped] = self.relative_pos[newly_gripped]
+        self.grip_quat[newly_gripped] = self.relative_quat[newly_gripped]
+        drift = (self.relative_pos-self.grip_pos).norm(dim=-1)
+        angle = 2*torch.acos((self.relative_quat*self.grip_quat).sum(-1).abs().clamp(0, 1))
+        self.grip[fresh] = grip[fresh]
+        self.was_gripping[fresh] = grip[fresh]
+        stable = (grip & (drift < 0.02) & (angle < 0.35)
+                  & (self.relative_vel.norm(dim=-1) < 0.10)
+                  & (self.relative_omega.norm(dim=-1) < 1.0)
+                  & (obj_lin < 0.15) & (obj_ang < 1.0))
+        self.stable[fresh] = stable[fresh]
+        minimum = torch.full_like(self.hold, float("inf"))
+        for points, body, collides in zip(self.vertices, (self.top, self.bottom), self.collision_parts):
+            pose = obj.data.body_link_pose_w[:, body]
+            world = quat_apply(pose[:, None, 3:7].expand(-1, points.shape[1], -1).reshape(-1, 4),
+                               points.reshape(-1, 3)).reshape_as(points) + pose[:, None, :3]
+            minimum = torch.minimum(minimum, torch.where(collides, world[..., 2].amin(1), float("inf")))
+        support_force = torch.stack([contact_force(env, f"teacher_support_{part}").norm(dim=-1)
+                                     for part in ("top", "bottom")], dim=1).sum(1)
+        self.supported[fresh] = (support_force > 0.1)[fresh]
+        self.lift[fresh] = (top[:, 2]-self.initial_height)[fresh]
+        self.max_lift[fresh] = torch.maximum(self.max_lift, self.lift)[fresh]
+        airborne = minimum-env.scene.env_origins[:, 2] > env.cfg.support_height + 0.01
+        holding = (stable & airborne & ~self.supported & (self.lift >= env.cfg.success_lift_m) & ~self.unsafe)
+        self.hold[fresh] = torch.where(holding, self.hold+env.physics_dt, 0.0)[fresh]
+        self.max_hold[fresh] = torch.maximum(self.max_hold, self.hold)[fresh]
+        self.success[fresh] = (holding & (self.hold+1e-6 >= env.cfg.success_hold_s))[fresh]
+        from ..grasp1_env_cfg import TABLE_XY_BOUNDS
+        local = obj.data.root_pos_w-env.scene.env_origins
+        out = ((local[:, 0] < TABLE_XY_BOUNDS[0]) | (local[:, 0] > TABLE_XY_BOUNDS[1])
+               | (local[:, 1] < TABLE_XY_BOUNDS[2]) | (local[:, 1] > TABLE_XY_BOUNDS[3]))
+        self.dropped[fresh] = (out | (top[:, 2]-env.scene.env_origins[:, 2] < env.cfg.support_height-0.05)
+                               | ((self.max_lift > 0.05) & (self.lift < 0.02) & ~grip))[fresh]
+        self.previous_q[fresh] = q[fresh]
+        self.last_frame[fresh] = frame
 
 # Keep the entry-point name already referenced by teacher_env_cfg.py.
 teacher_observation = TeacherObservation

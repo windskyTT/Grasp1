@@ -106,8 +106,8 @@ _ARM_VELOCITY_LIMIT: Final[tuple[float, ...]] = (
 )
 
 # Allegro 手部所有关节共用的隐式执行器刚度、阻尼、力矩上限和速度上限。
-_HAND_STIFFNESS: Final[float] = 600.0
-_HAND_DAMPING: Final[float] = 20.0
+_HAND_STIFFNESS: Final[float] = 3.0
+_HAND_DAMPING: Final[float] = 0.1
 _HAND_EFFORT_LIMIT: Final[float] = 0.7
 _HAND_VELOCITY_LIMIT: Final[float] = 7.0
 
@@ -120,6 +120,8 @@ UR5_ALLEGRO_CFG: Final[ArticulationCfg] = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         # 加载 UR5 + Allegro 组合机器人的 USD 资产。
         usd_path=str(robot_asset_dir("ur5_allegro") / "ur5_allegro.usd"),
+        # 与 v2.3.2 KUKA_ALLEGRO_CFG 一致；增益由下面的隐式执行器写入同一 Drive。
+        joint_drive_props=sim_utils.JointDrivePropertiesCfg(drive_type="force"),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
             # 原始 UR5 + Allegro 系统为固定底座 articulation。
             fix_root_link=True,
@@ -153,6 +155,9 @@ UR5_ALLEGRO_CFG: Final[ArticulationCfg] = ArticulationCfg(
             damping=_HAND_DAMPING,
             effort_limit_sim=_HAND_EFFORT_LIMIT,
             velocity_limit_sim=_HAND_VELOCITY_LIMIT,
+            # USD 的旧 jointFriction 为 5~12；通过运行时执行器覆盖，不修改资产。
+            # Isaac Sim 5.1 将此参数解释为静摩擦力矩（N·m）。
+            friction=0.01,
         ),
     },
 )

@@ -75,9 +75,7 @@ def hand_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
     ``N`` 是并行环境数。用初始化时缓存的 parent 索引按原 Teacher 顺序取位姿；
     wrist/tool 和指尖关键点的局部固定偏移经刚体朝向旋转后加到 parent 位置上。
     """
-    return env._teacher_runtime_features.get(
-        "hand_keypoints_w", lambda ids: _hand_keypoints_w(env, ids)
-    )
+    return _hand_keypoints_w(env, slice(None))
 
 
 def _hand_keypoints_w(env: ManagerBasedRLEnv, ids: slice | torch.Tensor) -> torch.Tensor:
@@ -102,10 +100,7 @@ def _hand_keypoints_w(env: ManagerBasedRLEnv, ids: slice | torch.Tensor) -> torc
 def arm_keypoints_w(env: ManagerBasedRLEnv) -> torch.Tensor:
     """按 robot_profile 顺序返回世界系下六个 UR5 关键点位置 ``[N, 6, 3]``。"""
     robot = env.scene["robot"]
-    return env._teacher_runtime_features.get(
-        "arm_keypoints_w",
-        lambda ids: robot.data.body_link_pose_w[ids][:, env._teacher_body_indices.arm, :3],
-    )
+    return robot.data.body_link_pose_w[:, env._teacher_body_indices.arm, :3]
 
 
 def keypoints_w_to_object(
@@ -125,22 +120,14 @@ def keypoints_w_to_object(
 def _object_top_pose_w(env: ManagerBasedRLEnv) -> tuple[torch.Tensor, torch.Tensor]:
     """取得原 Teacher 使用的 ``top`` 刚体世界位姿，返回位置和 wxyz 四元数。"""
     obj = env.scene["object"]
-    pose = env._teacher_runtime_features.get(
-        "object_top_pose_w",
-        lambda ids: obj.data.body_link_pose_w[ids, env._teacher_body_indices.object_top, :].clone(),
-    )
+    pose = obj.data.body_link_pose_w[:, env._teacher_body_indices.object_top]
     return pose[:, :3], pose[:, 3:7]
 
 
 def hand_keypoints_o(env: ManagerBasedRLEnv) -> torch.Tensor:
     """返回物体 ``top`` 坐标系下的 17 个手部关键点 ``[N, 17, 3]``。"""
-    # 取物体参考位姿，并将世界系手部关键点转换到物体系。
-    def compute(ids: slice | torch.Tensor) -> torch.Tensor:
-        """仅转换已失效环境的手部关键点。"""
-        object_pos_w, object_quat_w = _object_top_pose_w(env)
-        return keypoints_w_to_object(hand_keypoints_w(env)[ids], object_pos_w[ids], object_quat_w[ids])
-
-    return env._teacher_runtime_features.get("hand_keypoints_o", compute)
+    object_pos_w, object_quat_w = _object_top_pose_w(env)
+    return keypoints_w_to_object(hand_keypoints_w(env), object_pos_w, object_quat_w)
 
 
 def arm_keypoints_o(env: ManagerBasedRLEnv) -> torch.Tensor:

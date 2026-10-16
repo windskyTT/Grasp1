@@ -1,461 +1,91 @@
-# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-"""使用 RSL-RL 检查点在 Isaac Sim 中播放 UR5 + Allegro Teacher 策略。
-
-脚本可从指定数据集选择一个物体，并将该物体分配给一个或多个并行环境；
-也可录制视频，或在指定回合数后退出。
-"""
-
-"""先解析命令行参数并启动 Isaac Sim，再导入依赖仿真应用的运行模块。"""
-
+"""Teacher-v0纯Policy播放；固定训练集、153维观测和22维自主动作。"""
 import argparse
 import random
-import sys
-
+import time
+import cli_args
 from isaaclab.app import AppLauncher
 
-# RSL-RL 命令行参数解析与配置覆盖工具。
-import cli_args  # isort: skip
 
-
-# 命令行参数：指定任务、数据集/物体、检查点、环境数量和播放方式。
-# -----------------------------------------------------------------------------
-
-parser = argparse.ArgumentParser(
-    description="Play a UR5-Allegro Teacher checkpoint with RSL-RL."
-)
-parser.add_argument("--video",action="store_true",default=False,help="Record a video during playback.")
-parser.add_argument("--video_length",type=int,default=200,help="Length of the recorded video in control steps.")
-parser.add_argument("--disable_fabric",action="store_true",default=False,help="Disable Fabric and use USD I/O operations.")
-parser.add_argument("--num_envs",type=int,default=1,help="Number of parallel environments using the selected object.")
-parser.add_argument("--task",type=str,default="Grasp1-UR5-Allegro-Teacher-v0",help="Registered Gymnasium task id.")
-parser.add_argument("--dataset",type=str,default="new_training_set",help="Object dataset under assets/objects.")
-parser.add_argument("--object",dest="object_name",type=str,default=None,
-                    help="Object name. Randomly select one from --dataset when omitted.",
-                    )
-parser.add_argument("--episodes",type=int,default=None,
-                     help=("Stop after this many episodes per environment. "
-                           "By default playback continues until Isaac Sim is closed."
-                           ),
-                    )
-parser.add_argument("--agent",type=str,default="rsl_rl_cfg_entry_point",
-                    help="Name of the RSL-RL agent configuration entry point.",
-                    )
-parser.add_argument("--seed",type=int,default=None,help="Seed used for environment reset and random object selection.")
-parser.add_argument("--real-time",action="store_true",default=False,help="Run in real time, if possible.")
-parser.add_argument('--allow_mismatched_checkpoint', action='store_true', help='Diagnostic inference only; print semantic differences.')
-parser.add_argument('--curriculum', choices=('C1', 'C2', 'C3'), help='v3 fixed-palm TCP curriculum.')
-parser.add_argument('--output_dir', type=str, help='Write policy trials and compatibility audit here.')
-parser.add_argument('--show_frames', action='store_true', help='Read-only flange, palm, TCP and tip axes.')
-parser.add_argument('--capture_frames', action='store_true', help='GUI screenshots of initial, grasp, lift and hold policy states.')
-
-# 加入 RSL-RL 通用参数，例如检查点路径、训练运行目录和恢复选项。
-cli_args.add_rsl_rl_args(parser)
-
-# 加入 Isaac Sim 启动参数，例如 headless、设备和相机选项。
-parser.add_argument("--decimation", type=int, choices=(2, 4), default=None, help="Teacher policy: 2=60Hz, 4=30Hz; physics stays 120Hz.")
-parser.add_argument("--episode_length_s", type=float, default=None, help="Training/play episode duration in seconds (4 or 10 for the A/B).")
-parser.add_argument('--initial_states', type=str, help='Read/save actual initial reset tensors for fixed checkpoint comparison.')
-AppLauncher.add_app_launcher_args(parser)
-
-args_cli, hydra_args = parser.parse_known_args()
-
-if args_cli.video:
-    # 录制视频时启用相机传感器。
-    args_cli.enable_cameras = True
-
-# 启动仿真前检查环境数和回合数必须为正数。
-if args_cli.num_envs <= 0:
-    parser.error("--num_envs must be greater than zero.")
-
-if args_cli.episodes is not None and args_cli.episodes <= 0:
-    parser.error("--episodes must be greater than zero.")
-
-# 自定义参数已由 argparse 解析；只把剩余参数留给 Hydra。
-sys.argv = [sys.argv[0]] + hydra_args
-
-
-# -----------------------------------------------------------------------------
-# 先启动 Isaac Sim；依赖仿真应用的运行模块必须在启动后导入。
-# -----------------------------------------------------------------------------
-
-app_launcher = AppLauncher(args_cli)
-simulation_app = app_launcher.app
-
-
-"""仿真应用启动后，继续导入环境、RSL-RL 和任务运行依赖。"""
-
-import os
-import time
-
-import gymnasium as gym
-import torch
-from rsl_rl.runners import OnPolicyRunner
-
-from isaaclab.envs import ManagerBasedRLEnvCfg
-from isaaclab.utils.assets import retrieve_file_path
-from isaaclab.utils.dict import print_dict
-
-from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg, RslRlVecEnvWrapper
-
-import isaaclab_tasks  # noqa: F401
-from isaaclab_tasks.utils import get_checkpoint_path
-from isaaclab_tasks.utils.hydra import hydra_task_config
-
-# 导入 Grasp1 以执行 Gymnasium 任务注册。
-import Grasp1.tasks  # noqa: F401
-from Grasp1.data.object_set import object_names
-from Grasp1.utils.paths import object_asset_dir
-from checkpoint_contract import build_contract, validate_checkpoint
-from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.full_grasp_env_cfg import UR5AllegroFullGraspEnvCfg
-
-
-# 播放辅助函数。
-# -----------------------------------------------------------------------------
-
-
-def _configure_play_object(
-    env_cfg: ManagerBasedRLEnvCfg,
-    *,
-    dataset_name: str,
-    object_name: str,
-    num_envs: int,
-) -> tuple[str, ...]:
-    """将 Teacher 训练物体池替换为指定物体，并返回各环境对应的物体名。
-
-    将所选名称重复 ``num_envs`` 次，分配给各个并行环境；同时更新场景 USD 路径、
-    环境物体池，以及启动数据准备和 reset 事件读取的数据集与物体元数据，确保
-    场景生成的物体和 reset 加载的网格、最低点数据一致。
-
-    ``env_cfg`` 是待修改的环境配置；其余参数指定数据集、物体名和并行环境数。
-    返回值是按环境顺序重复的物体名称元组。
-    """
-    repeated_names = (object_name,) * num_envs
-    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
-        assert dataset_name == 'new_training_set'
-        env_cfg.training_objects = (object_name,)
-        env_cfg.set_num_envs(num_envs)
-        return repeated_names
-    env_cfg.scene.num_envs = num_envs
-    object_usd = object_asset_dir(dataset_name, object_name) / f"{object_name}.usd"
-    env_cfg.scene.object.spawn.usd_path = [str(object_usd)]
-    env_cfg.object_dataset = dataset_name
-    env_cfg.object_names = repeated_names
-    env_cfg.events.initialize_teacher_data.params["dataset_name"] = dataset_name
-    env_cfg.events.initialize_teacher_data.params["object_names"] = repeated_names
-    env_cfg.events.reset_teacher.params["dataset_name"] = dataset_name
-    env_cfg.events.reset_teacher.params["object_names"] = repeated_names
-
-    return repeated_names
-
-
-# -----------------------------------------------------------------------------
-# 播放主流程。
-# -----------------------------------------------------------------------------
-
-@hydra_task_config(args_cli.task, args_cli.agent)
-def main(
-    env_cfg: ManagerBasedRLEnvCfg,
-    agent_cfg: RslRlBaseRunnerCfg,
-) -> None:
-    """应用命令行设置、加载 Teacher 检查点，并在 Isaac Sim 中执行策略推理。"""
-
-    # 将 RSL-RL 命令行选项覆盖到 Hydra 提供的 agent 配置。
-    agent_cfg = cli_args.update_rsl_rl_cfg(agent_cfg, args_cli)
-    if args_cli.curriculum is not None:
-        env_cfg.set_curriculum(args_cli.curriculum)
-    if args_cli.decimation is not None:
-        env_cfg.decimation = args_cli.decimation
-    if args_cli.episode_length_s is not None:
-        env_cfg.episode_length_s = args_cli.episode_length_s
-    env_cfg.synchronize_control_timing()
-    agent_cfg.synchronize_control_timing(env_cfg.control_dt())
-
-    # 在场景和随机化初始化前设置环境随机种子与仿真设备。
-    env_cfg.seed = agent_cfg.seed
-    env_cfg.sim.device = (
-        args_cli.device
-        if args_cli.device is not None
-        else env_cfg.sim.device
-    )
-
-    # 读取数据集物体；若未指定名称，则用种子随机选择一个物体。
-    available_objects = (env_cfg.training_objects if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg)
-                         else object_names(args_cli.dataset))
-    if args_cli.object_name is not None and args_cli.object_name not in available_objects:
-        raise ValueError(f"Object {args_cli.object_name!r} is not in dataset {args_cli.dataset!r}.")
-    object_name = args_cli.object_name or random.Random(agent_cfg.seed).choice(available_objects)
-
-    # 用选中的物体替换训练物体池，并设置并行环境数量。
-    selected_names = _configure_play_object(
-        env_cfg,
-        dataset_name=args_cli.dataset,
-        object_name=object_name,
-        num_envs=args_cli.num_envs,
-    )
-
-    print(f"[INFO] Task: {args_cli.task}")
-    print(f"[INFO] Playing object: {args_cli.dataset}/{object_name}")
-    print(f"[INFO] Number of environments: {len(selected_names)}")
-
-    # 从显式路径或 RSL-RL 实验日志目录解析模型检查点。
-
-    log_root_path = os.path.abspath(
-        os.path.join(
-            "logs",
-            "rsl_rl",
-            agent_cfg.experiment_name,
-        )
-    )
-    print(f"[INFO] Loading experiment from directory: {log_root_path}")
-
-    if args_cli.checkpoint:
-        resume_path = retrieve_file_path(args_cli.checkpoint)
-    else:
-        resume_path = get_checkpoint_path(
-            log_root_path,
-            agent_cfg.load_run,
-            agent_cfg.load_checkpoint,
-        )
-
-    log_dir = os.path.dirname(resume_path)
-    env_cfg.log_dir = log_dir
-
-    print(f"[INFO] Loading model checkpoint from: {resume_path}")
-    checkpoint_audit, _ = validate_checkpoint(
-        resume_path, build_contract(args_cli.task, env_cfg, agent_cfg),
-        allow_mismatch=args_cli.allow_mismatched_checkpoint,
-    )
-    from pathlib import Path
-    import json
-    audit_dir = Path(args_cli.output_dir) if args_cli.output_dir else (Path(log_dir)/'videos'/'play' if args_cli.video else Path(log_dir)/'play')
-    audit_dir.mkdir(parents=True, exist_ok=True)
-    (audit_dir/'checkpoint_compatibility.json').write_text(json.dumps(checkpoint_audit, indent=2))
-
-    # 创建注册的 Gymnasium 环境。RslRlVecEnvWrapper 会在构造时 reset，触发 Teacher
-    # 的物体放置、预抓取姿态和 IK 初始化流程。
-
-    env = gym.make(
-        args_cli.task,
-        cfg=env_cfg,
-        render_mode="rgb_array" if args_cli.video else None,
-    )
-
-    if args_cli.video:
-        # 从播放起始步录制指定长度的视频，并保存到本次运行的 videos/play 目录。
-        video_kwargs = {
-            "video_folder": os.path.join(log_dir, "videos", "play"),
-            "step_trigger": lambda step: step == 0,
-            "video_length": args_cli.video_length,
-            "disable_logger": True,
-        }
-        print("[INFO] Recording playback video.")
-        print_dict(video_kwargs, nesting=4)
-        env = gym.wrappers.RecordVideo(env, **video_kwargs)
-
-    # RSL-RL 向量环境包装器负责接口适配和动作裁剪，需作为最后一层包装器。
-    env = RslRlVecEnvWrapper(
-        env,
-        clip_actions=agent_cfg.clip_actions,
-    )
-
-    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
-        from training_diagnostics import install_physics_monitor
-        install_physics_monitor(env.unwrapped, audit_dir)
-
-    # 检查 runner 类型，创建 OnPolicyRunner 并从检查点恢复策略参数。
-
-    if agent_cfg.class_name != "OnPolicyRunner":
-        raise ValueError(
-            "UR5-Allegro Teacher expects OnPolicyRunner, "
-            f"but received {agent_cfg.class_name!r}."
-        )
-
-    runner = OnPolicyRunner(
-        env,
-        agent_cfg.to_dict(),
-        log_dir=None,
-        device=agent_cfg.device,
-    )
-    runner.load(resume_path)
-
-    policy = runner.get_inference_policy(
-        device=env.unwrapped.device,
-    )
-
-    # 保留策略网络对象，以便在环境回合结束时重置策略内部状态。
-    policy_nn = runner.alg.policy
-
-    # 仿真控制步长，供实时播放时进行节奏控制。
-    dt = env.unwrapped.step_dt
-
-    # 向量包装器已执行 reset；读取策略推理的初始观测。
-    obs = env.get_observations()
-    if args_cli.initial_states:
-        # 仅在播放初态恢复；物体在之后的策略回合完全由真实物理运动。
-        real = env.unwrapped
-        robot, obj, memory = real.scene['robot'], real.scene['object'], real._full_grasp_state
-        fixture_path = Path(args_cli.initial_states)
-        if fixture_path.exists():
-            fixture = torch.load(fixture_path, map_location=real.device, weights_only=False)
-            assert torch.equal(fixture['origins'], real.scene.env_origins)
-            robot.write_joint_state_to_sim(fixture['robot_q'], fixture['robot_qd'])
-            obj.write_root_pose_to_sim(fixture['object_root'][:,:7])
-            obj.write_root_velocity_to_sim(fixture['object_root'][:,7:])
-            obj.write_joint_state_to_sim(fixture['object_q'], fixture['object_qd'])
-            real.action_manager.reset()
-            real.sim.forward()
-            real.scene.update(0.)
-            memory.initial_z[:] = fixture['initial_z']
-            memory.valid_reset[:] = fixture['valid_reset']
-            memory.snapshot = None
-            real._teacher_runtime_features.invalidate()
-            obs = real.observation_manager.compute()
-            from tensordict import TensorDict
-            obs = TensorDict(obs, batch_size=[real.num_envs])
-        else:
-            fixture = dict(origins=real.scene.env_origins,robot_q=robot.data.joint_pos,
-                robot_qd=robot.data.joint_vel,object_root=obj.data.root_state_w,
-                object_q=obj.data.joint_pos,object_qd=obj.data.joint_vel,
-                initial_z=memory.initial_z,valid_reset=memory.valid_reset,
-                robot_body_pose=robot.data.body_link_pose_w, object_body_pose=obj.data.body_link_pose_w)
-            fixture_path.parent.mkdir(parents=True,exist_ok=True)
-            torch.save({key:value.cpu().clone() for key,value in fixture.items()},fixture_path)
-        assert torch.allclose(robot.data.joint_pos,fixture['robot_q'].to(real.device),atol=1e-6)
-        assert torch.allclose(obj.data.body_link_pose_w,fixture['object_body_pose'].to(real.device),atol=1e-5)
-        (audit_dir/'initial_state_verification.json').write_text(json.dumps(dict(status='pass',
-            fixture=str(fixture_path.resolve()), actual_initial_states_matched=True, envs=real.num_envs),indent=2))
-
-    # 记录总控制步数及各并行环境完成的回合数。
-    timestep = 0
-    episode_counts = torch.zeros(args_cli.num_envs, dtype=torch.long, device=env.unwrapped.device)
-    episode_steps = torch.zeros_like(episode_counts)
-    full_grasp_trials = []
-    max_lift = torch.zeros(args_cli.num_envs, device=env.unwrapped.device)
-    max_hold = torch.zeros_like(max_lift)
-    max_phase = torch.zeros_like(episode_counts)
-    min_tip_distance = torch.full_like(max_lift, float('inf'))
-    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
-        from Grasp1.tasks.manager_based.grasp1.mdp.observations import nearest_affordance_vectors_w
-        min_tip_distance = nearest_affordance_vectors_w(env.unwrapped)[:,(4,8,12,16)].norm(dim=-1).mean(1)
-    opposing_grasp = torch.zeros(args_cli.num_envs,dtype=torch.bool,device=env.unwrapped.device)
-    frame_rows = []
-    if args_cli.show_frames:
-        from Grasp1.tasks.manager_based.grasp1.mdp.mount_frames import MountFrames
-        mount_frames = MountFrames(env.unwrapped)
-        frame_rows.append(dict(step=0, **mount_frames.update()))
-    captured = set()
-    def capture_policy_frame(label):
-        from omni.kit.viewport.utility import get_active_viewport, capture_viewport_to_file
-        memory = env.unwrapped._full_grasp_state
-        state = memory.read()
-        data = dict(controller='policy', checkpoint=resume_path, label=label, control_step=timestep,
-            top_lift_m=float(state['lift'][0]), hold_s=float(memory.hold[0]),
-            palm_pose_wxyz=state['palm'][0].cpu().tolist())
-        (audit_dir/(label+'.json')).write_text(json.dumps(data, indent=2))
-        # reset经Fabric更新物理状态后，先刷新渲染再截图，避免首图仍显示USD默认姿态。
-        for _ in range(15):
-            env.unwrapped.sim.render()
-        capture_viewport_to_file(get_active_viewport(), str(audit_dir/(label+'.png')))
-        for _ in range(10):
-            simulation_app.update()
-        captured.add(label)
-    if args_cli.capture_frames:
-        capture_policy_frame('initial')
-
-    # 推理循环：根据观测生成动作、推进环境并统计回合结束情况。
-
-    while simulation_app.is_running():
-        start_time = time.time()
-
-        # 推理阶段不计算梯度，减少播放时不需要的训练计算。
-        with torch.inference_mode():
-            # 使用推理策略生成动作，并让所有并行环境前进一步。
-            actions = policy(obs)
-            obs, _, dones, _ = env.step(actions)
-
-            # 清理结束回合环境对应的循环策略状态，避免状态延续到下一回合。
-            policy_nn.reset(dones)
-
-        timestep += 1
-        episode_steps += 1
-        if args_cli.show_frames:
-            frame_rows.append(dict(step=timestep, **mount_frames.update()))
-        episode_counts += dones
-        if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
-            memory = env.unwrapped._full_grasp_state
-            state = memory.read()
-            terminal = dones.bool()
-            max_lift = torch.maximum(max_lift,torch.where(terminal,memory.last_lift,state['lift']))
-            max_hold = torch.maximum(max_hold,torch.where(terminal,memory.last_hold,memory.hold))
-            max_phase = torch.maximum(max_phase,torch.where(terminal,memory.last_phase,memory.phase))
-            from Grasp1.tasks.manager_based.grasp1.mdp.observations import nearest_affordance_vectors_w
-            distance = nearest_affordance_vectors_w(env.unwrapped)[:,(4,8,12,16)].norm(dim=-1).mean(1)
-            min_tip_distance = torch.minimum(min_tip_distance, torch.where(terminal,min_tip_distance,distance))
-            opposing_grasp |= (state['grasp'] & state['opposing'] & ~terminal) | (terminal & memory.last_success)
-            for index in dones.nonzero(as_tuple=True)[0].tolist():
-                if args_cli.episodes is not None and episode_counts[index] > args_cli.episodes:
-                    continue
-                trial = dict(env=index, episode=int(episode_counts[index]), seed=agent_cfg.seed,
-                    object=object_name, success=bool(memory.last_success[index]),
-                    failure_bits=int(memory.last_failure[index]), lift_m=float(memory.last_lift[index]),
-                    hold_s=float(memory.last_hold[index]), elapsed_s=float(episode_steps[index])*dt, controller='policy',
-                    max_lift_m=float(max_lift[index]),max_hold_s=float(max_hold[index]),max_phase=int(max_phase[index]),
-                    min_tip_distance_m=float(min_tip_distance[index]),opposing_grasp=bool(opposing_grasp[index]),
-                    curriculum=env_cfg.curriculum_stage,checkpoint=resume_path)
-                full_grasp_trials.append(trial)
-                print('[FULL_GRASP] '+json.dumps(trial), flush=True)
-            if args_cli.capture_frames and not bool(dones[0]):
-                s = memory.read()
-                if timestep == 150:
-                    capture_policy_frame('policy_at_5s')
-                for label, condition in (('grasp', memory.phase[0] >= 2), ('lift', s['lift'][0] >= env_cfg.lift_height),
-                                         ('hold', memory.hold[0] >= .5)):
-                    if label not in captured and bool(condition):
-                        capture_policy_frame(label)
-        episode_steps[dones.bool()] = 0
-        max_lift[dones.bool()] = 0; max_hold[dones.bool()] = 0; max_phase[dones.bool()] = 0
-        min_tip_distance[dones.bool()] = float('inf'); opposing_grasp[dones.bool()] = False
-
-        # 达到视频长度，或所有环境均达到指定回合数时退出播放循环。
-        if args_cli.video and timestep >= args_cli.video_length:
-            break
-
-        if args_cli.episodes is not None and bool(torch.all(episode_counts >= args_cli.episodes)):
-            break
-
-        # 实时模式下补足当前控制步剩余时间，使播放速度接近仿真实时速度。
-        if args_cli.real_time:
-            sleep_time = dt - (time.time() - start_time)
-            if sleep_time > 0.0:
-                time.sleep(sleep_time)
-
-    # 汇总各环境完成的回合数，并关闭环境释放仿真资源。
-    print(
-        "[INFO] Playback finished. "
-        f"Completed environment episodes: {int(episode_counts.sum().item())}."
-    )
-
-    if isinstance(env_cfg, UR5AllegroFullGraspEnvCfg):
-        if args_cli.show_frames:
-            (audit_dir/'mount_frames.json').write_text(json.dumps(frame_rows, indent=2))
-        import csv
-        with (audit_dir/'full_grasp_trials.csv').open('w', newline='') as handle:
-            writer = csv.DictWriter(handle, fieldnames=('env','episode','seed','object','success','failure_bits','lift_m','hold_s','elapsed_s','controller',
-                'max_lift_m','max_hold_s','max_phase','min_tip_distance_m','opposing_grasp','curriculum','checkpoint'))
-            writer.writeheader()
-            writer.writerows(full_grasp_trials)
-        (audit_dir/'full_grasp_result.json').write_text(json.dumps(dict(attempts=len(full_grasp_trials),
-            successes=sum(row['success'] for row in full_grasp_trials),
-            success_rate=sum(row['success'] for row in full_grasp_trials)/len(full_grasp_trials) if full_grasp_trials else None,
-            checkpoint=resume_path, task=args_cli.task, controller='policy'), indent=2))
-    env.close()
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--task", choices=(cli_args.TASK,), default=cli_args.TASK)
+    parser.add_argument("--checkpoint", type=str)
+    parser.add_argument("--episodes", type=int, default=None, help="Episodes per environment; default runs until the window closes.")
+    parser.add_argument("--num_envs", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--real-time", action="store_true")
+    AppLauncher.add_app_launcher_args(parser)
+    args = parser.parse_args()
+    if not args.checkpoint:
+        parser.error("--checkpoint is required")
+    if args.num_envs < 1 or (args.episodes is not None and args.episodes < 1):
+        parser.error("--num_envs and --episodes must be positive")
+    app = AppLauncher(args).app
+    env = None
+    exit_code = 0
+    try:
+        import gymnasium as gym
+        import torch
+        from rsl_rl.runners import OnPolicyRunner
+        from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
+        import Grasp1.tasks  # noqa: F401
+        from Grasp1.data.object_set import training_object_names
+        from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
+        from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.agents.rsl_rl_ppo_cfg import UR5AllegroTeacherPPORunnerCfg
+
+        cfg, agent = UR5AllegroTeacherEnvCfg(), UR5AllegroTeacherPPORunnerCfg()
+        cfg.seed = agent.seed = args.seed
+        # 种子决定训练集中的物体；不固定为目录第一个，也不读取其他数据集。
+        selected = random.Random(args.seed).choice(tuple(dict.fromkeys(training_object_names())))
+        cfg.set_num_envs(args.num_envs, object_names=(selected,))
+        cfg.viewer.eye = (1.4, -2.0, 1.4)
+        cfg.viewer.lookat = (0.2, -0.75152, 0.95)
+        cfg.synchronize_control_timing()
+        agent.synchronize_control_timing(cfg.control_dt())
+        if args.device is not None:
+            cfg.sim.device = agent.device = args.device
+        contract, _ = cli_args.teacher_contract(cfg, agent)
+        path = cli_args.checkpoint_path(agent, args.checkpoint)
+        infos = cli_args.validate_teacher_checkpoint(path, contract)
+        print(f"[PLAY] new_training_set/{selected}, seed={args.seed}, completed_updates={infos['completed_updates']}", flush=True)
+        env = gym.make(cli_args.TASK, cfg=cfg)
+        env = RslRlVecEnvWrapper(env, clip_actions=agent.clip_actions)
+        obs = env.get_observations()
+        if obs["policy"].shape != (args.num_envs, 153) or env.num_actions != 22:
+            raise RuntimeError("Teacher playback observation/action dimensions differ")
+        runner = OnPolicyRunner(env, agent.to_dict(), log_dir=None, device=agent.device)
+        runner.git_status_repos = []
+        runner.load(path, load_optimizer=False, map_location=agent.device)
+        policy = runner.get_inference_policy(device=env.device)
+        episodes = torch.zeros(args.num_envs, dtype=torch.long, device=env.device)
+        while app.is_running() and (args.episodes is None or bool((episodes < args.episodes).any())):
+            started = time.perf_counter()
+            with torch.inference_mode():
+                actions = policy(obs)
+                obs, _, dones, extras = env.step(actions)
+            for index in dones.bool().nonzero().flatten().tolist():
+                if args.episodes is None or episodes[index] < args.episodes:
+                    episodes[index] += 1
+                    result = {key: value[index].item() for key, value in extras["teacher_episode"].items()}
+                    print(f"[EPISODE] env={index}, episode={episodes[index].item()}, {result}", flush=True)
+            if args.real_time:
+                delay = env.unwrapped.step_dt-(time.perf_counter()-started)
+                if delay > 0:
+                    time.sleep(delay)
+    except BaseException:
+        import traceback
+        exit_code = 1
+        traceback.print_exc()
+        raise
+    finally:
+        try:
+            if env is not None:
+                env.close()
+        finally:
+            if exit_code:
+                app.app.post_quit(exit_code)
+            app.close()
 
 
 if __name__ == "__main__":
-    # 运行播放流程，完成后关闭 Isaac Sim 应用。
     main()
-    simulation_app.close()
