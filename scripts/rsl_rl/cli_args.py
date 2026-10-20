@@ -44,16 +44,14 @@ def teacher_contract(env_cfg, agent_cfg):
     sim = env_cfg.sim.to_dict()
     for key in ("device", "render_interval", "render", "use_fabric", "enable_scene_query_support"):
         sim.pop(key, None)
-    task = dict(task=TASK, semantic_revision=5, dataset="new_training_set", objects=pool,
+    task = dict(task=TASK, semantic_revision=6, dataset="new_training_set", objects=pool,
                 observation_dim=153, action_dim=22,
                 timing=[env_cfg.sim.dt, env_cfg.decimation, env_cfg.episode_length_s],
                 actions=env_cfg.actions.to_dict(), observations=env_cfg.observations.to_dict(),
                 rewards=env_cfg.rewards.to_dict(), terminations=env_cfg.terminations.to_dict(),
                 events=events, scene=scene, sim=sim,
                 safety={key: getattr(env_cfg, key) for key in (
-                    "support_height", "success_lift_m", "success_hold_s", "tip_contact_threshold_N",
-                    "arm_contact_limit_N", "hand_table_contact_limit_N", "joint_limit_tolerance",
-                    "object_speed_limit", "object_angular_speed_limit")},
+                    "support_height", "success_lift_m", "tip_contact_threshold_N")},
                 obs_groups=agent_cfg.obs_groups, policy=agent_cfg.policy.to_dict(), clip_actions=agent_cfg.clip_actions)
     training = dict(algorithm=agent_cfg.algorithm.to_dict(), num_steps_per_env=agent_cfg.num_steps_per_env)
     return _plain(task), _plain(training)

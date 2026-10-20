@@ -25,6 +25,6 @@ class UR5AllegroTeacherPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     )
 
     def synchronize_control_timing(self, control_dt):
-        # 以30Hz的gamma=.99/lambda=.95为物理时间参考。
-        self.algorithm.gamma = 0.99 ** (control_dt/(1/30))
-        self.algorithm.lam = 0.95 ** (control_dt/(1/30))
+        # 以原始RobustDexGrasp的0.2s控制周期、gamma=.996/lambda=.95为参考。
+        self.algorithm.gamma = 0.996 ** (control_dt/0.2)
+        self.algorithm.lam = 0.95 ** (control_dt/0.2)

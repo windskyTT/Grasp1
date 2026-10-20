@@ -74,14 +74,12 @@ def main():
             runner.current_learning_iteration = completed
         starting_updates = completed
         original_step, original_update, original_save = env.step, runner.alg.update, runner.save
-        totals = dict(reward=0., opposing=0., lift=0., hold=0., success=0., unsafe=0., steps=0)
+        totals = dict(reward=0., opposing=0., lift=0., success=0., unsafe=0., steps=0)
         reward_totals = torch.zeros(len(raw.reward_manager.active_terms), device=env.device)
 
         def step(actions):
             result = original_step(actions)
             observations, rewards, dones, extras = result
-            if raw._teacher_grasp.safety_failure is not None:
-                raise RuntimeError("Teacher unsafe physics; stopped PPO before the next optimizer update. See [UNSAFE] snapshot.")
             if not torch.isfinite(observations["policy"]).all() or not torch.isfinite(rewards).all():
                 raise RuntimeError("Nonfinite Teacher observation or reward")
             s = raw._teacher_grasp
@@ -89,7 +87,6 @@ def main():
             totals["reward"] += rewards.mean().item()
             totals["opposing"] += extras["teacher_grip_rate"].item()
             totals["lift"] += extras["teacher_episode"]["lift_height"].mean().item()
-            totals["hold"] += extras["teacher_episode"]["hold_duration"].mean().item()
             totals["success"] += extras["teacher_episode"]["success"].sum().item()
             totals["unsafe"] += extras["teacher_episode"]["unsafe"].sum().item()
             totals["steps"] += 1
