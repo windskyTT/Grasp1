@@ -1,8 +1,0 @@
-{
-  "test_kind": "synthetic_cpu",
-  "samples": 64,
-  "actor_max_abs_error": 0.0,
-  "critic_max_abs_error": 0.0,
-  "strict_load": true,
-  "pass_": true
-}

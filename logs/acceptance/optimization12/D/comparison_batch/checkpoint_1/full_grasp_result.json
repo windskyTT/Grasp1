@@ -1,8 +1,0 @@
-{
-  "attempts": 20,
-  "successes": 0,
-  "success_rate": 0.0,
-  "checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_mount_grasp_v3/2026-10-15_12-40-26_opt12_C1_smoke/model_4.pt",
-  "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
-  "controller": "policy"
-}

@@ -82,9 +82,6 @@ def initialize_teacher_data(env, env_ids, dataset_name, object_names):
         joint_ids=_resolve_controlled_joint_ids(robot),
     )
     env._teacher_last_ik_feasible = torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
-    # RaiSim的contacts_arm_all来自step后的真实接触，forward或静态重叠不能等价替代。
-    print("BLOCKED: no source-equivalent non-stepping contact query", flush=True)
-    print("Teacher Reset保留IK和模型硬限位；源四项即时接触及其副本替换/固定回退未实现。", flush=True)
 
 
 def _source_workspace_quat_w(robot, ids: torch.Tensor) -> torch.Tensor:
@@ -374,7 +371,7 @@ def _write_reset_state(
 
 def reset_teacher(env, env_ids, dataset_name, object_names, top, non_uniform_sampling,
                   support_height, camera_position, sample_num, length_score_coeff, angle_score_coeff):
-    """只重置选定行；保留IK与硬限位检查，源即时接触筛选当前BLOCKED。"""
+    """只重置选定行；保留物体采样、IK、模型硬限位和失败重采样。"""
     ids = _env_ids(env, env_ids)
     data = env._teacher_reset_data
     robot = env.scene["robot"]

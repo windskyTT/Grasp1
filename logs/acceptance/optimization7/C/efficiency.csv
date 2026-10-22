@@ -1,5 +1,0 @@
-group,status,training_num_envs,planned_num_envs,gpu_hours,simulation_hours,gpu_hours_per_simulation_hour,successful_trials_per_gpu_hour,diagnostics_off_on_repeats,reason
-E1,blocked,,2048,,,,,not_run,Gate A failed
-E2,blocked,,2048,,,,,not_run,Gate A failed
-E3,blocked,,2048,,,,,not_run,Gate A failed
-E4,blocked,,2048,,,,,not_run,Gate A failed

@@ -1,9 +1,0 @@
-{
-  "checkpoint": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
-  "metadata": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/env_contract_best_progress.pt.json",
-  "metadata_present": true,
-  "differences": {},
-  "compatible": true,
-  "comparability_warning": null,
-  "training_episode_length_s": 10.0
-}

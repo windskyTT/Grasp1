@@ -138,6 +138,8 @@ class TeacherRewardsCfg:
     position_tracking = RewTerm(func=f"{_MDP}.rewards:position_tracking", weight=2.0, params={"std": 0.2})
     # 源抬升>0.10m判据；成功终止/奖金属于自主训练适配，不叠加DexSuite success_reward。
     success_bonus = RewTerm(func=f"{_MDP}.rewards:success_bonus", weight=10.0)
+    # 源VectorizedEnvironment在高度异常终止当步额外加-10，不按控制周期缩放。
+    terminal_reward = RewTerm(func=f"{_MDP}.rewards:terminal_reward", weight=-10.0)
 
 
 @configclass
@@ -145,7 +147,7 @@ class TeacherTerminationsCfg:
     timeout = DoneTerm(func=isaaclab_mdp.time_out, time_out=True)
     unsafe = DoneTerm(func=f"{_MDP}.terminations:unsafe")
     invalid_state = DoneTerm(func=f"{_MDP}.terminations:invalid_state")
-    dropped = DoneTerm(func=f"{_MDP}.terminations:dropped")
+    hand_height = DoneTerm(func=f"{_MDP}.terminations:hand_height")
     success = DoneTerm(func=f"{_MDP}.terminations:success")
 
 

@@ -1,6 +1,0 @@
-{
-  "path": "gui_policy/initial.png",
-  "status": "invalid_as_pose_evidence",
-  "reason": "capture requested before first Fabric/render synchronization; physics initial pose JSON and later 5s frame agree",
-  "replacement": "gui_capture_fixed/initial.png"
-}

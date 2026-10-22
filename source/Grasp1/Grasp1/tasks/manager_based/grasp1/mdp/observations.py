@@ -627,6 +627,17 @@ def contact_force(env, name):
     return env.scene[name].data.force_matrix_w[:, 0].sum(dim=1)
 
 
+def dexsuite_good_finger_contact(env, threshold=1.0):
+    """共享DexSuite双指接触：拇指及至少另一指的合成法向力严格超过阈值。"""
+    # distal link与独立fixed tip的法向力先作向量和，再取模；不混入摩擦力或冲量。
+    forces = torch.stack([
+        contact_force(env, f"teacher_af_contact_{slot}") + contact_force(env, f"teacher_tip_object_{finger}")
+        for finger, slot in enumerate((3, 6, 9, 12))
+    ], dim=1)
+    contact = forces.norm(dim=-1) > threshold
+    return contact[:, 3] & contact[:, :3].any(1)
+
+
 def contact_friction_force(env, name):
     """PhysX 实际切向摩擦力（N）；世界 XY 分量不等于接触切向分量。"""
     return env.scene[name].data.friction_forces_w[:, 0].sum(dim=1)
@@ -741,7 +752,6 @@ class TeacherGraspState:
         self.unsafe = self.active.clone()
         self.invalid = self.active.clone()
         self.success = self.active.clone()
-        self.dropped = self.active.clone()
         self.grip = self.active.clone()
         self.good_contact = self.active.clone()
         self.last_frame = torch.full((n,), -1, dtype=torch.long, device=device)
@@ -754,7 +764,7 @@ class TeacherGraspState:
     def reset(self, ids):
         self.env._teacher_reward_state.reset(ids)
         for value in (self.lift, self.max_lift, self.unsafe, self.invalid,
-                      self.success, self.dropped, self.grip, self.good_contact):
+                      self.success, self.grip, self.good_contact):
             value[ids] = 0
         self.tip_forces[ids] = 0
         self.hand_normal[ids] = 0
@@ -845,24 +855,18 @@ class TeacherGraspState:
         top = obj.data.body_link_pose_w[:, self.top]
         force = self.tip_forces.norm(dim=-1)
         contact = force > env.cfg.tip_contact_threshold_N
-        self.good_contact[fresh] = (contact[:, 3] & contact[:, :3].any(1))[fresh]
+        self.good_contact[fresh] = dexsuite_good_finger_contact(env, 1.0)[fresh]
         tip_pos = robot.data.body_link_pos_w[:, self.tips]-top[:, None, :3]
         radial = torch.nn.functional.normalize(tip_pos, dim=-1)
         normals = torch.nn.functional.normalize(self.tip_forces, dim=-1)
         opposite = ((radial[:, :3]*radial[:, 3:4]).sum(-1) < -0.2)
         opposite &= ((normals[:, :3]*normals[:, 3:4]).sum(-1) < -0.2)
         grip = contact[:, 3] & (contact[:, :3] & opposite).any(1)
-        # 对向接触仅供既有dropped终止与诊断使用，不参与成功判定。
+        # 对向接触仅供诊断使用，不参与成功判定。
         self.grip[fresh] = grip[fresh]
         # 源global_state[107]是top link世界Z；初始值来自Reset写入的root Z。
         self.lift[fresh] = (top[:, 2]-env._teacher_reward_state.initial_object_pos[:, 2])[fresh]
         self.max_lift[fresh] = torch.maximum(self.max_lift, self.lift)[fresh]
-        from ..grasp1_env_cfg import TABLE_XY_BOUNDS
-        local = obj.data.root_pos_w-env.scene.env_origins
-        out = ((local[:, 0] < TABLE_XY_BOUNDS[0]) | (local[:, 0] > TABLE_XY_BOUNDS[1])
-               | (local[:, 1] < TABLE_XY_BOUNDS[2]) | (local[:, 1] > TABLE_XY_BOUNDS[3]))
-        self.dropped[fresh] = (out | (top[:, 2]-env.scene.env_origins[:, 2] < env.cfg.support_height-0.05)
-                               | ((self.max_lift > 0.05) & (self.lift < 0.02) & ~grip))[fresh]
         self.previous_q[fresh] = q[fresh]
         self.last_frame[fresh] = frame
 
@@ -877,6 +881,7 @@ __all__ = [
     "AFFORDANCE_POINT_COUNT",
     "CONTACT_IMPULSE_THRESHOLD",
     "AFFORDANCE_CONTACT_SENSOR_NAMES",
+    "dexsuite_good_finger_contact",
     "TeacherObservation",
     "teacher_observation",
 ]

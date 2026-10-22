@@ -1,5 +1,0 @@
-{
-  "status": "not_run",
-  "reason": "Gate A failed; no PPO update performed even in interface diagnostics",
-  "updates": 0
-}

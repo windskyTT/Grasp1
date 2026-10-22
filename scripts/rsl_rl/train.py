@@ -74,7 +74,9 @@ def main():
             runner.current_learning_iteration = completed
         starting_updates = completed
         original_step, original_update, original_save = env.step, runner.alg.update, runner.save
-        totals = dict(reward=0., opposing=0., lift=0., success=0., unsafe=0., steps=0)
+        totals = dict(reward=0., opposing=0., lift=0., steps=0,
+                      successful_episodes=0, completed_episodes=0,
+                      unsafe_episodes=0, timeout_episodes=0)
         reward_totals = torch.zeros(len(raw.reward_manager.active_terms), device=env.device)
 
         def step(actions):
@@ -82,15 +84,21 @@ def main():
             observations, rewards, dones, extras = result
             if not torch.isfinite(observations["policy"]).all() or not torch.isfinite(rewards).all():
                 raise RuntimeError("Nonfinite Teacher observation or reward")
-            s = raw._teacher_grasp
+            done = dones.bool()
+            episode = extras["teacher_episode"]
             reward_totals.add_(raw.reward_manager._step_reward.mean(0)*raw.step_dt)
             totals["reward"] += rewards.mean().item()
             totals["opposing"] += extras["teacher_grip_rate"].item()
-            totals["lift"] += extras["teacher_episode"]["lift_height"].mean().item()
-            totals["success"] += extras["teacher_episode"]["success"].sum().item()
-            totals["unsafe"] += extras["teacher_episode"]["unsafe"].sum().item()
+            totals["lift"] += episode["lift_height"].mean().item()
+            totals["completed_episodes"] += done.sum().item()
+            totals["successful_episodes"] += (done & episode["success"].bool()).sum().item()
+            totals["unsafe_episodes"] += (done & episode["unsafe"].bool()).sum().item()
+            totals["timeout_episodes"] += (done & episode["timeout"].bool()).sum().item()
             totals["steps"] += 1
-            return result
+            # 不改环境内部log；Runner只接收日志副本，Episode比率由metrics统一记录。
+            runner_extras = dict(extras, log={key: value for key, value in extras["log"].items()
+                                             if key not in ("success_rate", "unsafe_rate")})
+            return observations, rewards, dones, runner_extras
 
         def update():
             nonlocal completed
@@ -107,7 +115,14 @@ def main():
                 old = torch.distributions.Normal(storage.mu.flatten(0, 1), storage.sigma.flatten(0, 1))
                 new = torch.distributions.Normal(means, std)
                 kl = torch.distributions.kl_divergence(old, new).sum(-1).mean().item()
-            metrics = {k: v/max(totals["steps"], 1) for k, v in totals.items() if k != "steps"}
+            metrics = {key: totals[key]/max(totals["steps"], 1) for key in ("reward", "opposing", "lift")}
+            metrics.update(successful_episodes=totals["successful_episodes"],
+                           completed_episodes=totals["completed_episodes"],
+                           unsafe_episodes=totals["unsafe_episodes"],
+                           timeout_episodes=totals["timeout_episodes"])
+            for rate, count in (("success_rate", "successful_episodes"),
+                                ("unsafe_rate", "unsafe_episodes"), ("timeout_rate", "timeout_episodes")):
+                metrics[rate] = totals[count]/totals["completed_episodes"] if totals["completed_episodes"] else None
             metrics.update(completed_updates=completed, kl=kl, **losses)
             reward_metrics = {name: value.item()/totals["steps"] for name, value in
                               zip(raw.reward_manager.active_terms, reward_totals)}
@@ -118,7 +133,7 @@ def main():
             reward_totals.zero_()
             print(f"[PPO] {metrics}", flush=True)
             for key, value in metrics.items():
-                if runner.writer is not None:
+                if runner.writer is not None and value is not None:
                     runner.writer.add_scalar(f"Teacher/{key}", value, completed)
             for key in totals:
                 totals[key] = 0

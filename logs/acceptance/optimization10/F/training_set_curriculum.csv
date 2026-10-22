@@ -1,5 +1,0 @@
-stage,objects,status,reason
-C1,wood_block_oriented,implemented,narrow_XY_yaw
-C2,2-3_training_objects,not_run,requires_policy_learning_and_GUI_gates
-C3,5-10_training_objects,not_run,requires_C2
-C4,new_training_set,not_run,requires_C3

@@ -1,27 +1,69 @@
-阅读最新的代码和上一轮对话的代码，对比两个版本代码，进行代码修改
+TensorBoard 可视化 Reward 曲线
 
-机器人模型：
-Grasp1 本地 assets
+机器人模型：Grasp1 本地 assets
+抓取物体：Grasp1 本地 assets
+桌子：NVIDIA Isaac Sim 远程服务器 → table_instanceable.usd
+地面：GroundPlaneCfg()
 
-抓取物体：
-Grasp1 本地 assets
+官方 Demo 核心参考内容 
+1、KUKA-Allegro DexSuite Lift、机械臂 + Allegro Hand 抓取和提升
+2、Allegro In-Hand、Allegro Hand 的多关节接触控制
+3、Franka Lift、Isaac Lab 标准强化学习抓取流程
 
-桌子：
-NVIDIA Isaac Sim 远程服务器
-→ table_instanceable.usd
+保持已确定的控制参数：
+PHYSICS_DT = 1.0 / 120.0
+decimation = 2
+UR5_ACTION_SCALE = 0.00125
+ALLEGRO_ACTION_SCALE = 0.1
+ALLEGRO_STIFFNESS = 3.0
+ALLEGRO_DAMPING = 0.1
+22维动作和153维观测。
 
-地面：
-GroundPlaneCfg()
+原始 RobustDexGrasp 主要通过物理约束和奖励函数约束运动；当前 Grasp1 除此之外，还会将严重关节超速判定为异常，并结束对应环境的回合。
 
-21
-在ur5_allegro_cfg.py
-有一个后续需要同步处理的点：既然 USD importer 会把 . 改成 _，
-那么目前 robot_profile.py 中类似 link_3.0、link_3.0_tip 的 
-IsaacLab runtime body names 也需要做 USD 名称适配。
-否则后续 keypoints.py 使用 find_bodies() 时会找不到这些 body。
-这个问题建议在生成任务 keypoints.py 之前统一解决
+## 终止条件
+| 终止条件 | 触发条件 | 来源 | 当前建议 |
+|---|---|---|---|
+| `timeout` | Episode 达到10秒 | Isaac Lab | **保留** |
+| `unsafe` | 机器人关节速度超过模型上限2倍，或检测到非有限物理状态 | DexSuite 式异常检测 + Grasp1 扩展 | **保留** |
+| `invalid_state` | 检测到 NaN/Inf 等非有限状态 | Grasp1 | 可保留，但需要检查重复 |
+| `dropped` | 物体越界、低于桌面一定距离，或抬升后掉落且失去指定抓取状态 | Grasp1 扩展 | **建议重点审查** |
+| `success` | 物体抬升严格大于0.10 m | RobustDexGrasp 成功判据的训练适配 | **必须保留** |
 
 
-22
-完整 Teacher rollout 未验证：物体槽位仍待具体任务填充；、
-远程桌面 USD 的材质也仍未覆盖旧任务的桌面摩擦值 0.2
+### 必须监测的指标
+| 指标 | 作用 |
+`Mean reward` | 判断整体奖励变化
+各奖励分项 | 判断策略学到了接近、接触还是抬升
+`Value loss` | 判断 Critic 是否稳定
+`Surrogate loss` | 观察策略更新
+`KL divergence` | 检查策略变化幅度
+`Action std / entropy` | 判断探索是否过早消失
+关节速度及目标饱和 | 判断动作是否导致不稳定
+`Unsafe / invalid` | 检查物理异常
+`Success / attempts` | **衡量实际任务成功率**
+
+长训不能代替验证
+虽然现在确实需要更长时间训练，但不建议直接运行2000次更新，然后只检查最终成功率。
+
+应该在每个阶段检查：
+| 观察指标 | 需要判断的问题 |
+|---|---|
+| Value Loss | 是否出现持续发散或严重波动 |
+| KL | 是否长期偏离目标且无法恢复 |
+| Learning Rate | 自适应学习率是否正常调整 |
+| Entropy | 探索能力是否过快下降 |
+| Action Std | 动作分布是否异常 |
+| 实际关节速度 | 是否持续发生异常高速运动 |
+| Arm Collision | 是否频繁撞击物体或桌面 |
+| Good Contact Rate | 是否逐渐形成有效双指接触 |
+| Opposing Grip Rate | 是否逐渐形成对向夹持 |
+| Max Lift Height | 物体最大抬升高度是否改善 |
+| Success Rate | 是否真正完成自主抬升 |
+| Timeout/Unsafe Rate | Episode主要因什么原因结束 |
+
+这里有两个原则：
+第一，奖励改善不等于抓取成功。
+即使平均奖励持续增加，也必须检查真实接触、抬升高度和成功率。
+第二，没有成功并不必然意味着PPO训练不稳定。
+如果1000次更新后，Loss、KL、Entropy都正常，但仍然不能抓取，问题可能出在物理控制、探索难度、Reset初始化或奖励设计，而不是PPO算法本身。

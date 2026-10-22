@@ -1,7 +1,0 @@
-{
-  "error_m": 5.057621592641226e-07,
-  "tolerance_m": 1e-05,
-  "perturbation_rad": 0.001,
-  "reference": "body_COM",
-  "status": "pass"
-}

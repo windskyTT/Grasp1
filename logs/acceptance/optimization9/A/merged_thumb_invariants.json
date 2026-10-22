@@ -1,9 +1,0 @@
-{
-  "total_mass_before_kg": 25.108122127014212,
-  "total_mass_after_kg": 25.108122127014212,
-  "merged_mass_error_kg": -1.862645149230957e-09,
-  "merged_inertia_max_error_kg_m2": 7.237387731760976e-12,
-  "all_joint_names_unchanged": true,
-  "limits_unchanged": true,
-  "candidate_accepted": false
-}

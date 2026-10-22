@@ -1,5 +1,7 @@
 """Teacher 终止项：先采样末物理子步，再读取同一状态。"""
 
+from .keypoints import hand_keypoints_w
+
 
 def unsafe(env):
     s = env._teacher_grasp
@@ -25,8 +27,10 @@ def invalid_state(env):
     return env._teacher_grasp.invalid
 
 
-def dropped(env):
-    return env._teacher_grasp.dropped
+def hand_height(env):
+    """源Teacher：17个手部关键点中任一点相对桌面高度严格小于0。"""
+    heights = hand_keypoints_w(env)[..., 2] - env.scene.env_origins[:, None, 2] - env.cfg.support_height
+    return (heights < 0.0).any(1)
 
 
 def success(env):

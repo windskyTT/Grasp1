@@ -1,8 +1,0 @@
-{
-  "attempts": 5,
-  "successes": 0,
-  "success_rate": 0.0,
-  "checkpoint": "/home/windsky/project/Grasp1/logs/acceptance/optimization12/D/comparison_final/best_progress.pt",
-  "task": "Grasp1-UR5-Allegro-GraspTrain-v3",
-  "controller": "policy"
-}

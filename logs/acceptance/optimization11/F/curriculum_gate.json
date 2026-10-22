@@ -1,6 +1,0 @@
-{
-  "status": "blocked",
-  "reason": "C3 reset reachable, autonomous C1/C2/C3 policy not trained",
-  "C3_required_height_m": 0.5,
-  "C3_policy_success_rate": null
-}

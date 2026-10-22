@@ -1,8 +1,0 @@
-{
-  "reason": "training sampled unsafe termination observed; stop per Phase C1",
-  "last_observed_update": 19,
-  "observed_attempts": 200,
-  "observed_unsafe": 19,
-  "action": "SIGINT",
-  "engine_crash": false
-}

@@ -1,6 +1,0 @@
-{
-  "clip_actions": 1.0,
-  "schedule": "adaptive",
-  "lam": 0.95,
-  "minimum_std": null
-}

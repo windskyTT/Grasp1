@@ -1,7 +1,0 @@
-{
-  "kind": "historical_teacher_checkpoint_copy_for_interface_only",
-  "original_checkpoint": "/home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-06_14-53-48_teacher_stability_action-clipping_none_stage1000/model_999.pt",
-  "training_in_this_run": false,
-  "full_grasp_evidence": false,
-  "reason": "play.py会在checkpoint目录写播放审计，使用副本避免覆盖历史日志"
-}

@@ -1,4 +1,4 @@
-"""Teacher的17项抓取奖励、DexSuite Lift两项扩展及Grasp1成功奖金。
+"""Teacher的17项抓取奖励及终止奖励、DexSuite Lift两项扩展与Grasp1成功奖金。
 
 公式：Environment.hpp:642–734，train.py:216–225/609–625。
 cfg_reg.yaml原系数由TeacherRewardsCfg配置；这里返回未加权项。
@@ -7,7 +7,7 @@ Lift扩展来自Isaac Lab 2.3.2 DexSuite，不属于原始Teacher奖励。
 import torch
 from isaaclab.utils.math import quat_apply
 from .keypoints import arm_keypoints_w, hand_keypoints_w
-from .observations import contact_force, nearest_affordance_vectors_w
+from .observations import dexsuite_good_finger_contact, nearest_affordance_vectors_w
 
 
 # 源train.py先用包含掌点的33归一化，再将掌点置零，最后乘16。
@@ -119,14 +119,7 @@ def arm_joint_vel_reward_(env):
 
 def good_finger_contact(env, threshold):
     """DexSuite contacts()：拇指与至少另一指的法向接触力均严格大于threshold。"""
-    # 官方传感器位于distal link；当前USD独立保留fixed tip，先合并两个刚体的
-    # 法向力向量，再取模。这里保持N，不混入摩擦力或Teacher冲量阈值。
-    forces = torch.stack([
-        contact_force(env, f"teacher_af_contact_{slot}") + contact_force(env, f"teacher_tip_object_{finger}")
-        for finger, slot in enumerate((3, 6, 9, 12))
-    ], dim=1)
-    contact = forces.norm(dim=-1) > threshold
-    return contact[:, 3] & contact[:, :3].any(1)
+    return dexsuite_good_finger_contact(env, threshold)
 
 
 def position_tracking(env, std):
@@ -140,3 +133,8 @@ def position_tracking(env, std):
 def success_bonus(env):
     """复用源高度>0.10m成功状态；成功终止为训练适配，抵消step_dt后发10分。"""
     return env._teacher_grasp.success.to(torch.float64)/env.step_dt
+
+
+def terminal_reward(env):
+    """源高度异常terminalReward=-10；由配置加权并抵消RewardManager的step_dt。"""
+    return env.termination_manager.get_term("hand_height").to(torch.float64)/env.step_dt

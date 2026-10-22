@@ -1,9 +1,0 @@
-{
-  "status": "blocked",
-  "reason": "Gate A复现同初态/同target异常；安装碰撞过滤、同摩擦Box、手部刚度150均未消除越限，没有通过物理Gate的正式配置。",
-  "formal_updates": 0,
-  "formal_wall_s": 0,
-  "attempts": 0,
-  "success_rate": null,
-  "checkpoint": null
-}

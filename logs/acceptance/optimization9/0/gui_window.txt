@@ -1,1 +1,0 @@
-     0x600010 "Isaac Sim 5.1.0": ("mutter-x11-frames" "mutter-x11-frames")  1232x818+52+20  +52+20

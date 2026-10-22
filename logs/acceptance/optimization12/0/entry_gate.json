@@ -1,9 +1,0 @@
-{
-  "status": "pass",
-  "python": "/home/windsky/miniconda3/envs/grasp/bin/python",
-  "rsl_rl": "3.1.2",
-  "launcher": "/home/windsky/IsaacLab/isaaclab.sh",
-  "reference_images_read": true,
-  "ppo_updates": 0,
-  "policy_success_rate": null
-}

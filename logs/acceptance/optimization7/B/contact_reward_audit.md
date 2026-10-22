@@ -1,9 +1,0 @@
-# 接触Reward实测审计
-
-源Environment.hpp 796–810：先过滤对象top、dynamic配对与小于0.001 N·s的单个接触；用接触坐标变换、Object A/B符号恢复世界总冲量，逐body累加后读取世界XY模与有符号Z。
-
-本机ContactSensor最新物理帧的force_matrix_w和friction_forces_w已在世界坐标，Tensor API用physics_dt将冲量换算为N。runtime.py对filter维求和后，摩擦模作为切向量、法向模作为法向量，再乘一次physics_dt；它们与世界XY/Z不同。单步缓存是在积分后common_step_counter递增时失效，消费控制周期末帧；没有按decimation重复累加冲量。
-
-真实斜向接触与轴向近似样本及当前/世界分量差异见contact_projection.csv；统计见contact_reward_audit.json。B/D2和B/D4_copies30另含轴向/45度合成力测试。形状来自A的sensor元数据，af是一body对一top，arm过滤top/bottom/table三个body。传感器聚合后不能精确重现源逐contact的小冲量过滤，因此重算值仅对齐世界方向和单位，不宣称完整源Reward等价。
-
-保持17项Reward与源时间换算不变。本轮没有证据证明方向近似是主要训练失败原因，没有引入world_xy_z_source_like正式候选。论文稳定指标要求抬升并至少5秒不落下；接触冲量阈值不是该指标的直接定义。2cm/0.2rad仍是工程代理标准。
