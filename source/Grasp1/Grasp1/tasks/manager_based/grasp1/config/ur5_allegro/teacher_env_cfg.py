@@ -1,4 +1,4 @@
-"""唯一Teacher-v0：Teacher抓取奖励与DexSuite Lift扩展，22维控制/153维观测。"""
+"""唯一Teacher-v0：原始Teacher抓取训练，22维控制/153维观测。"""
 
 from __future__ import annotations
 import isaaclab.sim as sim_utils
@@ -133,11 +133,6 @@ class TeacherRewardsCfg:
     obj_displacement_reward = RewTerm(func=f"{_MDP}.rewards:obj_displacement_reward", weight=-5.0/SOURCE_CONTROL_DT)
     arm_joint_vel_reward_ = RewTerm(func=f"{_MDP}.rewards:arm_joint_vel_reward_", weight=-1.0/SOURCE_CONTROL_DT)
 
-    # 官方DexSuite已有项：保持每秒权重，不再除源Teacher的控制周期。
-    good_finger_contact = RewTerm(func=f"{_MDP}.rewards:good_finger_contact", weight=0.5, params={"threshold": 1.0})
-    position_tracking = RewTerm(func=f"{_MDP}.rewards:position_tracking", weight=2.0, params={"std": 0.2})
-    # 源抬升>0.10m判据；成功终止/奖金属于自主训练适配，不叠加DexSuite success_reward。
-    success_bonus = RewTerm(func=f"{_MDP}.rewards:success_bonus", weight=10.0)
     # 源VectorizedEnvironment在高度异常终止当步额外加-10，不按控制周期缩放。
     terminal_reward = RewTerm(func=f"{_MDP}.rewards:terminal_reward", weight=-10.0)
 
@@ -145,10 +140,8 @@ class TeacherRewardsCfg:
 @configclass
 class TeacherTerminationsCfg:
     timeout = DoneTerm(func=isaaclab_mdp.time_out, time_out=True)
-    unsafe = DoneTerm(func=f"{_MDP}.terminations:unsafe")
-    invalid_state = DoneTerm(func=f"{_MDP}.terminations:invalid_state")
     hand_height = DoneTerm(func=f"{_MDP}.terminations:hand_height")
-    success = DoneTerm(func=f"{_MDP}.terminations:success")
+    invalid_state = DoneTerm(func=f"{_MDP}.terminations:invalid_state")
 
 
 @configclass
@@ -159,11 +152,11 @@ class UR5AllegroTeacherEnvCfg(Grasp1EnvCfg):
     rewards: TeacherRewardsCfg = TeacherRewardsCfg()
     terminations: TeacherTerminationsCfg = TeacherTerminationsCfg()
     decimation = 2
-    episode_length_s = 10.0
+    # 源70个0.2s抓取步 = 14s；当前60Hz下为840步，不含脚本抬升。
+    episode_length_s = 70 * SOURCE_CONTROL_DT
     object_dataset: str = TRAINING_DATASET
     object_names: tuple[str, ...] = ()
     support_height: float = SUPPORT_HEIGHT
-    success_lift_m: float = 0.10
     tip_contact_threshold_N: float = 1.0
 
     def __post_init__(self):

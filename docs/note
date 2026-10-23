@@ -1,16 +1,21 @@
 TensorBoard 可视化 Reward 曲线
 
+原始 RobustDexGrasp Teacher 的成功评估包含独立抬升过程
+如何判断抓取是否成功，重点阅读 quantitative_eval.py
+GUI 中抓取并抬升的过程，重点阅读 visual_eval.py 和 Environment.hpp
+
+# 模型使用情况
 机器人模型：Grasp1 本地 assets
 抓取物体：Grasp1 本地 assets
 桌子：NVIDIA Isaac Sim 远程服务器 → table_instanceable.usd
 地面：GroundPlaneCfg()
 
-官方 Demo 核心参考内容 
+# 官方 Demo 核心参考内容 
 1、KUKA-Allegro DexSuite Lift、机械臂 + Allegro Hand 抓取和提升
 2、Allegro In-Hand、Allegro Hand 的多关节接触控制
 3、Franka Lift、Isaac Lab 标准强化学习抓取流程
 
-保持已确定的控制参数：
+# 保持已确定的控制参数：
 PHYSICS_DT = 1.0 / 120.0
 decimation = 2
 UR5_ACTION_SCALE = 0.00125
@@ -19,16 +24,30 @@ ALLEGRO_STIFFNESS = 3.0
 ALLEGRO_DAMPING = 0.1
 22维动作和153维观测。
 
-原始 RobustDexGrasp 主要通过物理约束和奖励函数约束运动；当前 Grasp1 除此之外，还会将严重关节超速判定为异常，并结束对应环境的回合。
+# reward设定
+原始 RobustDexGrasp 主要通过物理约束和奖励函数约束运动；
+关节速度：URDF 定义+速度奖励惩罚 
+异常接触力终止：没有
 
-## 终止条件
-| 终止条件 | 触发条件 | 来源 | 当前建议 |
-|---|---|---|---|
-| `timeout` | Episode 达到10秒 | Isaac Lab | **保留** |
-| `unsafe` | 机器人关节速度超过模型上限2倍，或检测到非有限物理状态 | DexSuite 式异常检测 + Grasp1 扩展 | **保留** |
-| `invalid_state` | 检测到 NaN/Inf 等非有限状态 | Grasp1 | 可保留，但需要检查重复 |
-| `dropped` | 物体越界、低于桌面一定距离，或抬升后掉落且失去指定抓取状态 | Grasp1 扩展 | **建议重点审查** |
-| `success` | 物体抬升严格大于0.10 m | RobustDexGrasp 成功判据的训练适配 | **必须保留** |
+# franka+inspire
+官方 Lula IK 和投影宽度排序
+以下标记为 ADAPTED：
+- 按你授权使用官方 Lula IK，候选按投影宽度排序，移除 UR5 专属第五轴评分。
+- 五指结构使用13个真实手部 link 原点，并适配关键点、接触权重归一化；没有虚构指尖坐标。
+- fr3_link0、fr3_link8、wrist 缺少原始惯量，保留官方导入行为。
+- 沿用既有 RaiSim→PhysX 接触冲量适配。手部 PD 按你授权采用 3.0/0.1。
+
+
+# 接触冲量计算
+目前的处理方式是：
+1. 没有执行原始的逐接触点 < 0.001 N·s 过滤。
+2. 使用 PhysX 提供的真实法向力和摩擦力计算冲量。
+3. 按原始 Teacher 的接触槽进行向量聚合。
+4. 保留原始的聚合冲量 > 0.01 N·s 接触判据。
+5. 保留原始冲量奖励的裁剪规则和权重。
+因此，接触计算属于 ADAPTED（适配），不是与 RaiSim 完全一致。
+原始接触判定阈值没有被删除，但逐接触点的预过滤尚未复现
+
 
 
 ### 必须监测的指标
@@ -43,8 +62,6 @@ ALLEGRO_DAMPING = 0.1
 `Unsafe / invalid` | 检查物理异常
 `Success / attempts` | **衡量实际任务成功率**
 
-长训不能代替验证
-虽然现在确实需要更长时间训练，但不建议直接运行2000次更新，然后只检查最终成功率。
 
 应该在每个阶段检查：
 | 观察指标 | 需要判断的问题 |

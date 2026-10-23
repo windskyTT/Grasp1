@@ -3,10 +3,10 @@
 推荐使用完整的 88 个环境：
 
 ```bash
-cd /home/windsky/project/Grasp
+cd /home/windsky/project/Grasp1
 conda activate grasp
 
-python scripts/train.py \
+python scripts/rsl_rl/train.py 
   --task Grasp1-UR5-Allegro-Teacher-v0 \
   --num_envs 88 \
   --max_iterations 20001 \
@@ -32,7 +32,7 @@ python scripts/train.py \
 cd /home/windsky/project/Grasp
 conda activate grasp
 
-python scripts/train.py \
+python scripts/rsl_rl/train.py \
   --task Grasp1-UR5-Allegro-Teacher-v0 \
   --num_envs 44 \
   --max_iterations 20001 \
@@ -59,16 +59,16 @@ python scripts/train.py \
 
 play指令
 ```bash
-cd /home/windsky/project/Grasp
+cd /home/windsky/project/Grasp1
 conda activate grasp
 
-python scripts/play.py \
+python scripts/rsl_rl/visual_eval.py \
   --task Grasp1-UR5-Allegro-Teacher-v0 \
-  --checkpoint /home/windsky/project/Grasp/runs_teacher/Grasp-Teacher-Direct-v0_2026-09-07_23-22-23/full_6000_r.pt \
-  --mode visual \
+  --checkpoint /home/windsky/project/Grasp1/logs/rsl_rl/grasp1_ur5_allegro_teacher/2026-10-22_22-17-39_751671/model_11480.pt \
   --num_envs 1 \
   --episodes 150 \
-  --device cuda:0
+  --device cuda:0 \
+  --real-time
 ```
 
 

@@ -1,4 +1,6 @@
-"""构造 Teacher 的153维策略观测：保持源状态与 affordance 字段顺序。
+"""构造Teacher策略观测：UR5-Allegro为153维（下列布局），FR3-Inspire为132维。
+
+FR3使用19个受控关节、13个真实手部link点及7个臂部link点，字段顺序保持一致。
 
 前 102 维严格保持 ``Environment.hpp::updateObservation`` 的连续字段顺序；
 末尾 51 维对应 ``RaisimGymVecEnvOther.observe_vision_new`` 的
@@ -53,6 +55,8 @@ from Grasp1.robots.robot_profile import (
     HAND_KEYPOINT_COUNT,
     NUM_CONTROLLED_JOINTS,
     UR5_LINK_NAMES,
+    FR3_JOINT_NAMES, FR3_LINK_NAMES, INSPIRE_JOINT_NAMES,
+    INSPIRE_HAND_KEYPOINT_NAMES, INSPIRE_DISTAL_LINK_NAMES,
 )
 
 from .keypoints import (
@@ -226,7 +230,7 @@ def _resolve_exact_body_id(
 
 
 def nearest_affordance_vectors_w(env: ManagerBasedRLEnv) -> torch.Tensor:
-    """共享当前步世界系最近 affordance 向量 [N,17,3]，不计算完整观测。"""
+    """共享当前步世界系最近 affordance 向量 [N,H,3]，不计算完整观测。"""
     def compute(ids: slice | torch.Tensor) -> torch.Tensor:
         """只为本次失效行计算最近点；成对距离仅作为临时张量。"""
         _, object_quat_w = _object_top_pose_w(env)
@@ -237,7 +241,7 @@ def nearest_affordance_vectors_w(env: ManagerBasedRLEnv) -> torch.Tensor:
             points_o, dim=1, index=nearest_index.unsqueeze(-1).expand(-1, -1, 3)
         )
         vectors_o = nearest_points_o - hand_positions_o
-        quaternions = object_quat_w[ids, None, :].expand(-1, HAND_KEYPOINT_COUNT, -1)
+        quaternions = object_quat_w[ids, None, :].expand(-1, hand_positions_o.shape[1], -1)
         return quat_apply(quaternions.reshape(-1,4), vectors_o.reshape(-1,3)).reshape_as(vectors_o)
 
     return compute(slice(None))
@@ -256,6 +260,10 @@ class TeacherObservation(ManagerTermBase):
         env: ManagerBasedRLEnv,
     ) -> None:
         super().__init__(cfg, env)
+        self._base_dim, self._observation_dim = 102, 153
+        if getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire":
+            self._initialize_fr3(env)
+            return
 
         self._robot = env.scene["robot"]
         self._object = env.scene["object"]
@@ -386,6 +394,27 @@ class TeacherObservation(ManagerTermBase):
             device=env.device,
             dtype=torch.bool,
         )
+
+    def _initialize_fr3(self, env):
+        """沿用字段顺序；真实19轴、13手部link点、7臂部link点。"""
+        self._robot, self._object = env.scene["robot"], env.scene["object"]
+        initialize_teacher_body_indices(env)
+        names = FR3_JOINT_NAMES + INSPIRE_JOINT_NAMES
+        self._joint_ids, resolved = self._robot.find_joints(list(names), preserve_order=True)
+        if tuple(resolved) != names:
+            raise RuntimeError(f"FR3-Inspire runtime joints differ: {resolved}")
+        self._wrist_body_id = env._teacher_body_indices.wrist
+        self._object_top_body_id = env._teacher_body_indices.object_top
+        self._wrist_offset_quat = torch.zeros(env.num_envs, 4, device=env.device)
+        self._wrist_offset_quat[:, 0] = 1.
+        self._hand_center = torch.tensor(env.cfg.palm_center, device=env.device)
+        self._base_dim, self._observation_dim = 93, 132
+        _load_affordance_points(env)
+        env._teacher_reward_state = TeacherRewardState(env)
+        env._teacher_grasp = TeacherGraspState(env)
+        self._initial_wrist_quat_w = torch.zeros(env.num_envs, 4, device=env.device)
+        self._previous_wrist_euler = torch.zeros(env.num_envs, 3, device=env.device)
+        self._needs_wrist_init = torch.ones(env.num_envs, dtype=torch.bool, device=env.device)
 
     def reset(
         self,
@@ -531,9 +560,9 @@ class TeacherObservation(ManagerTermBase):
         self,
         env: ManagerBasedRLEnv,
     ) -> torch.Tensor:
-        """Return flattened 17x3 nearest-affordance vectors in world frame."""
+        """Return flattened Hx3 nearest-affordance vectors in world frame."""
         return nearest_affordance_vectors_w(env).reshape(
-            env.num_envs, TEACHER_AFFORDANCE_OBSERVATION_DIM
+            env.num_envs, -1
         )
 
     def __call__(
@@ -541,7 +570,7 @@ class TeacherObservation(ManagerTermBase):
         env: ManagerBasedRLEnv,
         support_height: float,
     ) -> torch.Tensor:
-        """返回训练和播放共享的固定153维观测。"""
+        """返回当前机器人训练和播放共享的观测。"""
         joint_pos, target_error = (
             self._joint_observation(env)
         )
@@ -571,9 +600,9 @@ class TeacherObservation(ManagerTermBase):
                 contacts,  # 44:57
                 impulses,  # 57:70
                 hand_positions_w[..., 2]
-                - support_height,  # 70:87
+                - env.scene.env_origins[:, None, 2] - support_height,  # 70:87
                 arm_positions_w[..., 2]
-                - support_height,  # 87:93
+                - env.scene.env_origins[:, None, 2] - support_height,  # 87:93
                 # XY 相对真实底座；Z 保留源 Teacher 相对地面的高度语义。
                 hand_center_w - self._robot.data.root_pos_w
                 + hand_center_w.new_tensor((0.0, 0.0, support_height)),  # 93:96
@@ -585,12 +614,12 @@ class TeacherObservation(ManagerTermBase):
 
         if base_observation.shape != (
             env.num_envs,
-            TEACHER_BASE_OBSERVATION_DIM,
+            self._base_dim,
         ):
             raise RuntimeError(
                 "Teacher base observation shape mismatch: "
                 f"expected=({env.num_envs},"
-                f"{TEACHER_BASE_OBSERVATION_DIM}), "
+                f"{self._base_dim}), "
                 f"got={tuple(base_observation.shape)}."
             )
 
@@ -610,12 +639,12 @@ class TeacherObservation(ManagerTermBase):
 
         if observation.shape != (
             env.num_envs,
-            TEACHER_OBSERVATION_DIM,
+            self._observation_dim,
         ):
             raise RuntimeError(
                 "Teacher observation shape mismatch: "
                 f"expected=({env.num_envs},"
-                f"{TEACHER_OBSERVATION_DIM}), "
+                f"{self._observation_dim}), "
                 f"got={tuple(observation.shape)}."
             )
 
@@ -629,6 +658,11 @@ def contact_force(env, name):
 
 def dexsuite_good_finger_contact(env, threshold=1.0):
     """共享DexSuite双指接触：拇指及至少另一指的合成法向力严格超过阈值。"""
+    if getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire":
+        forces = torch.stack([contact_force(env, f"teacher_af_contact_{slot}")
+                              for slot in (2, 4, 6, 8, 12)], dim=1)
+        contact = forces.norm(dim=-1) > threshold
+        return contact[:, -1] & contact[:, :-1].any(1)
     # distal link与独立fixed tip的法向力先作向量和，再取模；不混入摩擦力或冲量。
     forces = torch.stack([
         contact_force(env, f"teacher_af_contact_{slot}") + contact_force(env, f"teacher_tip_object_{finger}")
@@ -659,19 +693,25 @@ class TeacherRewardState:
         self.env = env
         robot = env.scene["robot"]
         self.body_names = robot.body_names
+        fr3 = getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire"
+        hand_names = INSPIRE_HAND_KEYPOINT_NAMES if fr3 else _RUNTIME_CONTACT_BODY_NAMES
+        arm_names = FR3_LINK_NAMES if fr3 else ARM_CONTACT_LINK_NAMES
+        self.arm_count = len(arm_names)
+        self.inner_arm_count = self.arm_count - 2
         n, device = env.num_envs, env.device
         self.initial_object_pos = env.scene["object"].data.root_pos_w.clone()
         self.last_frame = torch.full((n,), env._sim_step_counter, dtype=torch.long, device=device)
         self.affordance_impulses = torch.zeros(n, 13, 3, device=device)
         self.table_impulses = torch.zeros_like(self.affordance_impulses)
-        self.arm_impulses = torch.zeros(n, 6, 3, device=device)
-        self.arm_contacts_all = torch.zeros(n, 4, dtype=torch.bool, device=device)
+        self.arm_impulses = torch.zeros(n, self.arm_count, 3, device=device)
+        self.arm_contacts_all = torch.zeros(n, self.inner_arm_count, dtype=torch.bool, device=device)
 
         # 源RaiSim将固定tip碰撞体并入distal刚体；USD中的独立tip回归相同接触槽。
-        hand_slots = dict(zip(_RUNTIME_CONTACT_BODY_NAMES, range(13)))
-        hand_slots.update({f"link_{joint}_0_tip": slot for joint, slot in zip((3, 7, 11, 15), (3, 6, 9, 12))})
+        hand_slots = dict(zip(hand_names, range(13)))
+        if not fr3:
+            hand_slots.update({f"link_{joint}_0_tip": slot for joint, slot in zip((3, 7, 11, 15), (3, 6, 9, 12))})
         self.hand_slots = torch.tensor([hand_slots.get(name, 0) for name in self.body_names], device=device)
-        arm_slots = dict(zip(ARM_CONTACT_LINK_NAMES, range(6)))
+        arm_slots = dict(zip(arm_names, range(self.arm_count)))
         # 源std::map::operator[]把未映射的机器人接触刚体归到槽0，不能擅自丢弃。
         self.arm_slots = torch.tensor([arm_slots.get(name, 0) for name in self.body_names], device=device)
 
@@ -685,8 +725,8 @@ class TeacherRewardState:
             pairs = [f"{root}/Object/top", f"{root}/Object/bottom", f"{root}/Table"]
             patterns.extend(bodies)
             filters.extend([pairs]*len(bodies))
-            all_patterns.extend(f"{root}/Robot/{name}" for name in ARM_CONTACT_LINK_NAMES[1:5])
-            all_filters.extend([bodies+pairs+ground]*4)
+            all_patterns.extend(f"{root}/Robot/{name}" for name in arm_names[1:-1])
+            all_filters.extend([bodies+pairs+ground]*self.inner_arm_count)
         physics = SimulationManager.get_physics_sim_view()
         # 显式逐刚体/逐环境过滤，避免ContactSensor多刚体many-to-many的限制。
         self.contact_view = physics.create_rigid_contact_view(
@@ -729,42 +769,45 @@ class TeacherRewardState:
         self.arm_impulses[fresh] = arm[fresh]
         # 接触存在与否读取真实contact count，不能以合力非零代替（合力可能抵消）。
         count = self.arm_all_view.get_contact_data(dt=env.physics_dt)[4]
-        contact = count.view(env.num_envs, 4, -1).sum(dim=2) > 0
+        contact = count.view(env.num_envs, self.inner_arm_count, -1).sum(dim=2) > 0
         self.arm_contacts_all[fresh] = contact[fresh]
         self.last_frame[fresh] = env._sim_step_counter
 
 
 class TeacherGraspState:
-    """逐物理步采样异常/接触；成功仅在Env Step结束时按源高度判据更新。"""
+    """逐物理步采样非有限状态和接触；接触、速度和抬升均不触发终止。"""
 
     def __init__(self, env):
         self.env = env
         self.robot, self.obj = env.scene["robot"], env.scene["object"]
         self.joints = env.action_manager.get_term("teacher")._joint_ids
         self.top = self.obj.find_bodies("top")[0][0]
-        self.tips = self.robot.find_bodies(
-            [f"link_{i}_0_tip" for i in (3, 7, 11, 15)], preserve_order=True
-        )[0]
+        fr3 = getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire"
+        tip_names = list(INSPIRE_DISTAL_LINK_NAMES) if fr3 else [f"link_{i}_0_tip" for i in (3, 7, 11, 15)]
+        self.tips = self.robot.find_bodies(tip_names, preserve_order=True)[0]
+        self.arm_count = 7 if fr3 else 6
+        self.tip_count = len(tip_names)
+        self.table_names = ([f"teacher_table_contact_{i}" for i in range(13)]
+                            + [f"teacher_tip_table_{i}" for i in range(self.tip_count)])
+        if not fr3:
+            self.table_names += [f"teacher_hand_table_{i}" for i in range(5)]
         n, device = env.num_envs, env.device
         self.lift = torch.zeros(n, device=device)
         self.max_lift = torch.zeros(n, device=device)
         self.active = torch.zeros(n, dtype=torch.bool, device=device)
-        self.unsafe = self.active.clone()
         self.invalid = self.active.clone()
-        self.success = self.active.clone()
         self.grip = self.active.clone()
         self.good_contact = self.active.clone()
         self.last_frame = torch.full((n,), -1, dtype=torch.long, device=device)
         self.previous_q = self.robot.data.joint_pos.clone()
-        self.tip_forces = torch.zeros(n, 4, 3, device=device)
+        self.tip_forces = torch.zeros(n, self.tip_count, 3, device=device)
         self.hand_normal = torch.zeros(n, 13, 3, device=device)
         self.hand_friction = torch.zeros_like(self.hand_normal)
         self.safety_failure = None
 
     def reset(self, ids):
         self.env._teacher_reward_state.reset(ids)
-        for value in (self.lift, self.max_lift, self.unsafe, self.invalid,
-                      self.success, self.grip, self.good_contact):
+        for value in (self.lift, self.max_lift, self.invalid, self.grip, self.good_contact):
             value[ids] = 0
         self.tip_forces[ids] = 0
         self.hand_normal[ids] = 0
@@ -772,10 +815,6 @@ class TeacherGraspState:
         self.previous_q[ids] = self.robot.data.joint_pos[ids]
         self.last_frame[ids] = self.env._sim_step_counter
         self.active[ids] = True
-
-    def update_success(self):
-        """原train.py:642/quantitative_eval.py:529；只在Env Step末调用一次。"""
-        self.success[:] = self.lift > self.env.cfg.success_lift_m
 
     def sample(self, frame):
         env, robot, obj = self.env, self.robot, self.obj
@@ -786,20 +825,17 @@ class TeacherGraspState:
         limits = robot.data.joint_pos_limits
         violation = torch.maximum(limits[..., 0]-q, q-limits[..., 1]).clamp_min(0)
         diff_speed = (q-self.previous_q).abs()/env.physics_dt
-        speed_limit = robot.data.joint_vel_limits
         finite = torch.ones(env.num_envs, dtype=torch.bool, device=env.device)
         for value in (robot.data.body_state_w, q, qd, obj.data.body_state_w,
                       obj.data.joint_pos, obj.data.joint_vel):
             finite &= torch.isfinite(value).flatten(1).all(1)
         arm_vectors = torch.stack([env.scene[f"teacher_arm_contact_{i}"].data.net_forces_w[:, 0]
-                                   for i in range(6)], dim=1)
+                                   for i in range(self.arm_count)], dim=1)
         arm_pairs = torch.stack([env.scene[f"teacher_arm_contact_{i}"].data.force_matrix_w[:, 0]
-                                 for i in range(6)], dim=1)
+                                 for i in range(self.arm_count)], dim=1)
         arm_friction = torch.stack([env.scene[f"teacher_arm_contact_{i}"].data.friction_forces_w[:, 0]
-                                    for i in range(6)], dim=1)
-        table_names = ([f"teacher_table_contact_{i}" for i in range(13)]
-                       + [f"teacher_tip_table_{i}" for i in range(4)]
-                       + [f"teacher_hand_table_{i}" for i in range(5)])
+                                    for i in range(self.arm_count)], dim=1)
+        table_names = self.table_names
         table_normal = torch.stack([contact_force(env, name) for name in table_names], dim=1)
         table_friction = torch.stack([contact_friction_force(env, name) for name in table_names], dim=1)
         table_vectors = table_normal + table_friction
@@ -807,7 +843,7 @@ class TeacherGraspState:
                                               for name in AFFORDANCE_CONTACT_SENSOR_NAMES], dim=1)[fresh]
         self.hand_friction[fresh] = torch.stack([contact_friction_force(env, name)
                                                 for name in AFFORDANCE_CONTACT_SENSOR_NAMES], dim=1)[fresh]
-        self.tip_forces[:] = torch.stack([contact_force(env, f"teacher_tip_object_{i}") for i in range(4)], dim=1)
+        self.tip_forces[:] = torch.stack([contact_force(env, f"teacher_tip_object_{i}") for i in range(self.tip_count)], dim=1)
         finite &= torch.isfinite(arm_vectors).flatten(1).all(1)
         finite &= torch.isfinite(arm_pairs).flatten(1).all(1)
         finite &= torch.isfinite(arm_friction).flatten(1).all(1)
@@ -821,11 +857,9 @@ class TeacherGraspState:
         obj_limits = obj.data.joint_pos_limits
         obj_violation = torch.maximum(obj_limits[..., 0]-obj.data.joint_pos,
                                       obj.data.joint_pos-obj_limits[..., 1]).clamp_min(0).amax(1)
-        # 与 Isaac Lab 2.3.2 DexSuite 一致：仅真实关节速度超过模型限位2倍
-        # （或数据非有限）时将当前环境判为数值异常。越限量和接触力只记录，不用于终止。
-        bad = (~finite | (qd.abs() > speed_limit * 2.0).any(1)) & fresh
+        # 仅非有限数值可触发异常终止；不再使用DexSuite的两倍速度门槛。
+        bad = ~finite & fresh
         self.invalid |= ~finite & fresh
-        self.unsafe |= bad
         # 首次异常现场保存在内存并输出终端；无日志训练不写 checkpoint。
         if self.safety_failure is None and bool(bad.any()):
             ids = bad.nonzero().flatten()
@@ -833,7 +867,7 @@ class TeacherGraspState:
                 physics_frame=int(frame), env_ids=ids.cpu().tolist(),
                 object_names=[env.cfg.object_names[i] for i in ids.cpu().tolist()],
                 robot_joint_names=list(robot.joint_names), target_joint_names=list(env.action_manager.get_term("teacher")._joint_names),
-                robot_bodies=list(robot.body_names), arm_bodies=[env.scene[f"teacher_arm_contact_{i}"].body_names[0] for i in range(6)],
+                robot_bodies=list(robot.body_names), arm_bodies=[env.scene[f"teacher_arm_contact_{i}"].body_names[0] for i in range(self.arm_count)],
                 pair_order=["Object/top", "Object/bottom", "Table"],
                 q=q[ids].cpu().clone(), qd=qd[ids].cpu().clone(), difference_velocity=diff_speed[ids].cpu().clone(),
                 target=env.action_manager.get_term("teacher").target[ids].cpu().clone(),
@@ -847,9 +881,7 @@ class TeacherGraspState:
                 joint_violation=violation[ids].cpu().clone(), object_joint_violation=obj_violation[ids].cpu().clone(),
                 object_state=obj.data.body_state_w[ids].cpu().clone(), finite=finite[ids].cpu().clone(),
                 object_linear_speed=obj_lin[ids].cpu().clone(), object_angular_speed=obj_ang[ids].cpu().clone(),
-                table_bodies=[env.scene[f"teacher_table_contact_{i}"].body_names[0] for i in range(13)]
-                    + [env.scene[f"teacher_tip_table_{i}"].body_names[0] for i in range(4)]
-                    + [env.scene[f"teacher_hand_table_{i}"].body_names[0] for i in range(5)],
+                table_bodies=[env.scene[name].body_names[0] for name in self.table_names],
             )
             print("[UNSAFE]", self.safety_failure, flush=True)
         top = obj.data.body_link_pose_w[:, self.top]
@@ -859,9 +891,9 @@ class TeacherGraspState:
         tip_pos = robot.data.body_link_pos_w[:, self.tips]-top[:, None, :3]
         radial = torch.nn.functional.normalize(tip_pos, dim=-1)
         normals = torch.nn.functional.normalize(self.tip_forces, dim=-1)
-        opposite = ((radial[:, :3]*radial[:, 3:4]).sum(-1) < -0.2)
-        opposite &= ((normals[:, :3]*normals[:, 3:4]).sum(-1) < -0.2)
-        grip = contact[:, 3] & (contact[:, :3] & opposite).any(1)
+        opposite = ((radial[:, :-1]*radial[:, -1:]).sum(-1) < -0.2)
+        opposite &= ((normals[:, :-1]*normals[:, -1:]).sum(-1) < -0.2)
+        grip = contact[:, -1] & (contact[:, :-1] & opposite).any(1)
         # 对向接触仅供诊断使用，不参与成功判定。
         self.grip[fresh] = grip[fresh]
         # 源global_state[107]是top link世界Z；初始值来自Reset写入的root Z。

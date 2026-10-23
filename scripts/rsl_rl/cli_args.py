@@ -2,6 +2,8 @@
 from pathlib import Path
 
 TASK = "Grasp1-UR5-Allegro-Teacher-v0"
+FR3_TASK = "Grasp1-FR3-Inspire-Teacher-v0"
+TASKS = (TASK, FR3_TASK)
 
 
 def add_rsl_rl_args(parser):
@@ -44,16 +46,23 @@ def teacher_contract(env_cfg, agent_cfg):
     sim = env_cfg.sim.to_dict()
     for key in ("device", "render_interval", "render", "use_fabric", "enable_scene_query_support"):
         sim.pop(key, None)
-    task = dict(task=TASK, semantic_revision=6, dataset="new_training_set", objects=pool,
-                observation_dim=153, action_dim=22,
+    task = dict(task=getattr(env_cfg, "task_id", TASK), semantic_revision=getattr(env_cfg, "semantic_revision", 7),
+                dataset="new_training_set", objects=pool,
+                observation_dim=getattr(env_cfg, "observation_dim", 153), action_dim=getattr(env_cfg, "action_dim", 22),
                 timing=[env_cfg.sim.dt, env_cfg.decimation, env_cfg.episode_length_s],
                 actions=env_cfg.actions.to_dict(), observations=env_cfg.observations.to_dict(),
                 rewards=env_cfg.rewards.to_dict(), terminations=env_cfg.terminations.to_dict(),
                 events=events, scene=scene, sim=sim,
                 safety={key: getattr(env_cfg, key) for key in (
-                    "support_height", "success_lift_m", "tip_contact_threshold_N")},
+                    "support_height", "tip_contact_threshold_N")},
                 obs_groups=agent_cfg.obs_groups, policy=agent_cfg.policy.to_dict(), clip_actions=agent_cfg.clip_actions)
     training = dict(algorithm=agent_cfg.algorithm.to_dict(), num_steps_per_env=agent_cfg.num_steps_per_env)
+    if task["task"] == FR3_TASK:
+        task["robot_adaptation"] = dict(
+            point_weights=env_cfg.teacher_point_weights, contact_weights=env_cfg.teacher_contact_weights,
+            impulse_caps=env_cfg.teacher_impulse_caps, palm_center=env_cfg.palm_center,
+            reset_ik="official_lula_feasible_projection_width",
+        )
     return _plain(task), _plain(training)
 
 

@@ -6,7 +6,7 @@ from collections.abc import Sequence
 import numpy as np
 import torch
 from isaaclab.utils.math import matrix_from_quat, quat_apply, quat_mul
-from Grasp1.robots.robot_profile import CONTROLLED_JOINT_NAMES
+from Grasp1.robots.robot_profile import CONTROLLED_JOINT_NAMES, FR3_JOINT_NAMES, INSPIRE_JOINT_NAMES
 from Grasp1.utils.paths import object_asset_dir
 from . import geometry
 
@@ -41,8 +41,8 @@ def _runtime_controlled_joint_names() -> tuple[str, ...]:
     return tuple(name.replace(".", "_") for name in CONTROLLED_JOINT_NAMES)
 
 
-def _resolve_controlled_joint_ids(robot) -> tuple[int, ...]:
-    runtime_names = _runtime_controlled_joint_names()
+def _resolve_controlled_joint_ids(robot, fr3=False) -> tuple[int, ...]:
+    runtime_names = FR3_JOINT_NAMES + INSPIRE_JOINT_NAMES if fr3 else _runtime_controlled_joint_names()
     joint_ids, resolved = robot.find_joints(
         [re.escape(name) for name in runtime_names],
         preserve_order=True,
@@ -54,9 +54,9 @@ def _resolve_controlled_joint_ids(robot) -> tuple[int, ...]:
             f"expected={runtime_names}, resolved={tuple(resolved)}."
         )
 
-    if len(joint_ids) != 22:
+    if len(joint_ids) != len(runtime_names):
         raise RuntimeError(
-            f"Teacher requires 22 controlled joints, resolved {len(joint_ids)}."
+            f"Teacher requires {len(runtime_names)} controlled joints, resolved {len(joint_ids)}."
         )
 
     return tuple(int(index) for index in joint_ids)
@@ -79,9 +79,11 @@ def initialize_teacher_data(env, env_ids, dataset_name, object_names):
         object_ids=torch.tensor([indices[n] for n in object_names], device=env.device),
         lowest=torch.tensor([env._teacher_object_metadata[n].lowest_point for n in object_names], device=env.device),
         points=env._teacher_affordance_points_o, triangles=triangles,
-        joint_ids=_resolve_controlled_joint_ids(robot),
+        joint_ids=_resolve_controlled_joint_ids(robot, getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire"),
     )
     env._teacher_last_ik_feasible = torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+    if getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire":
+        _initialize_fr3_ik(env)
 
 
 def _source_workspace_quat_w(robot, ids: torch.Tensor) -> torch.Tensor:
@@ -382,11 +384,14 @@ def reset_teacher(env, env_ids, dataset_name, object_names, top, non_uniform_sam
         pose, _ = _sample_object_pose(env, pending, non_uniform_sampling=non_uniform_sampling,
                                       support_height=support_height)
         visible = _visible_points(env, pending, pose, camera_position)
-        arm, feasible = _solve_pregrasp(env, pending, visible, top=top, camera_position=camera_position,
-                                       sample_num=sample_num, length_score_coeff=length_score_coeff,
-                                       angle_score_coeff=angle_score_coeff)
+        if getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire":
+            arm, feasible = _solve_fr3_pregrasp(env, pending, visible, top, camera_position, sample_num)
+        else:
+            arm, feasible = _solve_pregrasp(env, pending, visible, top=top, camera_position=camera_position,
+                                           sample_num=sample_num, length_score_coeff=length_score_coeff,
+                                           angle_score_coeff=angle_score_coeff)
         q = robot.data.default_joint_pos[pending].clone()
-        q[:, list(data["joint_ids"][:6])] = arm
+        q[:, list(data["joint_ids"][:arm.shape[1]])] = arm
         limits = robot.data.joint_pos_limits[pending]
         valid = feasible & torch.isfinite(q).all(1) & ((q >= limits[..., 0]) & (q <= limits[..., 1])).all(1)
         accepted = pending[valid]
@@ -398,3 +403,50 @@ def reset_teacher(env, env_ids, dataset_name, object_names, top, non_uniform_sam
         raise RuntimeError(f"Teacher Reset has no valid IK: env_ids={pending.cpu().tolist()}")
     env.sim.forward()
     env._teacher_grasp.reset(ids)
+
+
+def _initialize_fr3_ik(env):
+    """官方Lula CCD/BFGS IK；描述从现有URDF/官方FR3 YAML在内存构建。"""
+    import lula
+    import yaml
+    from isaacsim.robot_motion.motion_generation import LulaKinematicsSolver
+    from Grasp1.robots.fr3_inspire_cfg import FR3_URDF_PATH, FR3_LULA_DESCRIPTION, FR3_DEFAULT_ARM
+    description = yaml.safe_load(FR3_LULA_DESCRIPTION.read_text())
+    description["default_q"] = list(FR3_DEFAULT_ARM)
+    # 官方夹爪的两个关节/碰撞球不存在于本URDF；IK仅求7臂轴，手部固定在reset实测模型零位。
+    description["cspace_to_urdf_rules"] = [dict(name=n, rule="fixed", value=0.) for n in INSPIRE_JOINT_NAMES]
+    description.pop("collision_spheres")
+    model = lula.load_robot_from_memory(yaml.safe_dump(description), FR3_URDF_PATH.read_text())
+    env._teacher_fr3_ik = LulaKinematicsSolver("", "", robot_description=model)
+    env._teacher_fr3_ik_seed = np.asarray(FR3_DEFAULT_ARM)
+    print("ADAPTED FR3: official Lula IK; feasible candidates ranked by original projection width; UR5 joint-5 angle score removed by user authorization.", flush=True)
+
+
+def _solve_fr3_pregrasp(env, ids, visible_w, top, camera_position, sample_num):
+    """保留原点云、方向采样和0.25m距离；适配Inspire掌轴及真实掌部惯性原点。"""
+    from isaaclab.utils.math import quat_from_matrix
+    robot = env.scene["robot"]
+    camera_w = quat_apply(_source_workspace_quat_w(robot, ids),
+                         visible_w.new_tensor(camera_position).expand(len(ids), -1)) + robot.data.root_pos_w[ids]
+    direction = geometry.approach_direction(visible_w, camera_w, top=top)
+    rotations, widths = geometry.sample_rot_mats(direction, sample_num, visible_w)
+    # URDF的手指正向弯曲进入掌部+Y，横向为X；源候选接近轴为X、宽度轴为Z。
+    palm_rotations = rotations[..., [2, 0, 1]]
+    palm_center_w = visible_w.mean(1) + geometry.PREGRASP_DISTANCE * direction
+    positions = palm_center_w[:, None, :] - palm_rotations @ visible_w.new_tensor(env.cfg.palm_center)
+    quats = quat_from_matrix(palm_rotations)
+    result = torch.zeros(len(ids), 7, device=env.device)
+    selected = torch.zeros(len(ids), dtype=torch.bool, device=env.device)
+    for row, env_id in enumerate(ids.tolist()):
+        env._teacher_fr3_ik.set_robot_base_pose(robot.data.root_pos_w[env_id].cpu().numpy(),
+                                               robot.data.root_quat_w[env_id].cpu().numpy())
+        # 用户批准仅按原投影宽度选择可行解；不把UR5第5轴角度强加到FR3。
+        for candidate in widths[row].argsort().tolist():
+            q, feasible = env._teacher_fr3_ik.compute_inverse_kinematics(
+                "base_link", positions[row, candidate].cpu().numpy(),
+                quats[row, candidate].cpu().numpy(), warm_start=env._teacher_fr3_ik_seed)
+            if feasible:
+                result[row] = torch.as_tensor(q, device=env.device, dtype=result.dtype)
+                selected[row] = True
+                break
+    return result, selected

@@ -1,4 +1,4 @@
-"""在唯一Teacher-v0中训练完整自主抓取；checkpoint契约保存在infos中。"""
+"""PPO仅学习原始Teacher抓取；脚本抬升由visual_eval.py独立评估。"""
 import argparse
 from datetime import datetime
 from pathlib import Path
@@ -8,7 +8,7 @@ from isaaclab.app import AppLauncher
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--task", choices=(cli_args.TASK,), default=cli_args.TASK)
+    parser.add_argument("--task", choices=cli_args.TASKS, default=cli_args.TASK)
     parser.add_argument("--num_envs", type=int, default=None)
     parser.add_argument("--max_iterations", type=int, default=None, help="Additional PPO updates in this invocation.")
     parser.add_argument("--seed", type=int, default=42)
@@ -37,7 +37,12 @@ def main():
         from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.teacher_env_cfg import UR5AllegroTeacherEnvCfg
         from Grasp1.tasks.manager_based.grasp1.config.ur5_allegro.agents.rsl_rl_ppo_cfg import UR5AllegroTeacherPPORunnerCfg
 
-        cfg, agent = UR5AllegroTeacherEnvCfg(), UR5AllegroTeacherPPORunnerCfg()
+        if args.task == cli_args.FR3_TASK:
+            from Grasp1.tasks.manager_based.grasp1.config.fr3_inspire.teacher_env_cfg import FR3InspireTeacherEnvCfg
+            from Grasp1.tasks.manager_based.grasp1.config.fr3_inspire.agents.rsl_rl_ppo_cfg import FR3InspireTeacherPPORunnerCfg
+            cfg, agent = FR3InspireTeacherEnvCfg(), FR3InspireTeacherPPORunnerCfg()
+        else:
+            cfg, agent = UR5AllegroTeacherEnvCfg(), UR5AllegroTeacherPPORunnerCfg()
         cfg.set_num_envs(args.num_envs or cfg.scene.num_envs)
         cfg.synchronize_control_timing()
         agent.synchronize_control_timing(cfg.control_dt())
@@ -54,11 +59,11 @@ def main():
         cfg.sim.save_logs_to_file = not args.no_log
         print(f"[INFO] Training objects: {dict((n, cfg.object_names.count(n)) for n in dict.fromkeys(cfg.object_names))}", flush=True)
         print(f"[INFO] physics_dt={cfg.sim.dt}, control_dt={cfg.control_dt()}, gamma={agent.algorithm.gamma}, lambda={agent.algorithm.lam}")
-        env = gym.make(cli_args.TASK, cfg=cfg)
+        env = gym.make(args.task, cfg=cfg)
         env = RslRlVecEnvWrapper(env, clip_actions=agent.clip_actions)
         raw = env.unwrapped
         obs = env.get_observations()
-        if obs["policy"].shape != (cfg.scene.num_envs, 153) or env.num_actions != 22:
+        if obs["policy"].shape != (cfg.scene.num_envs, task["observation_dim"]) or env.num_actions != task["action_dim"]:
             raise RuntimeError(f"Teacher dimensions: obs={obs['policy'].shape}, actions={env.num_actions}")
         if not torch.isfinite(obs["policy"]).all():
             raise RuntimeError("Nonfinite reset observation")
@@ -75,8 +80,8 @@ def main():
         starting_updates = completed
         original_step, original_update, original_save = env.step, runner.alg.update, runner.save
         totals = dict(reward=0., opposing=0., lift=0., steps=0,
-                      successful_episodes=0, completed_episodes=0,
-                      unsafe_episodes=0, timeout_episodes=0)
+                      completed_episodes=0, hand_height_episodes=0,
+                      invalid_episodes=0, timeout_episodes=0)
         reward_totals = torch.zeros(len(raw.reward_manager.active_terms), device=env.device)
 
         def step(actions):
@@ -91,14 +96,11 @@ def main():
             totals["opposing"] += extras["teacher_grip_rate"].item()
             totals["lift"] += episode["lift_height"].mean().item()
             totals["completed_episodes"] += done.sum().item()
-            totals["successful_episodes"] += (done & episode["success"].bool()).sum().item()
-            totals["unsafe_episodes"] += (done & episode["unsafe"].bool()).sum().item()
+            totals["hand_height_episodes"] += (done & episode["hand_height"].bool()).sum().item()
+            totals["invalid_episodes"] += (done & episode["invalid"].bool()).sum().item()
             totals["timeout_episodes"] += (done & episode["timeout"].bool()).sum().item()
             totals["steps"] += 1
-            # 不改环境内部log；Runner只接收日志副本，Episode比率由metrics统一记录。
-            runner_extras = dict(extras, log={key: value for key, value in extras["log"].items()
-                                             if key not in ("success_rate", "unsafe_rate")})
-            return observations, rewards, dones, runner_extras
+            return observations, rewards, dones, extras
 
         def update():
             nonlocal completed
@@ -116,12 +118,12 @@ def main():
                 new = torch.distributions.Normal(means, std)
                 kl = torch.distributions.kl_divergence(old, new).sum(-1).mean().item()
             metrics = {key: totals[key]/max(totals["steps"], 1) for key in ("reward", "opposing", "lift")}
-            metrics.update(successful_episodes=totals["successful_episodes"],
-                           completed_episodes=totals["completed_episodes"],
-                           unsafe_episodes=totals["unsafe_episodes"],
+            metrics.update(completed_episodes=totals["completed_episodes"],
+                           hand_height_episodes=totals["hand_height_episodes"],
+                           invalid_episodes=totals["invalid_episodes"],
                            timeout_episodes=totals["timeout_episodes"])
-            for rate, count in (("success_rate", "successful_episodes"),
-                                ("unsafe_rate", "unsafe_episodes"), ("timeout_rate", "timeout_episodes")):
+            for rate, count in (("hand_height_rate", "hand_height_episodes"),
+                                ("invalid_rate", "invalid_episodes"), ("timeout_rate", "timeout_episodes")):
                 metrics[rate] = totals[count]/totals["completed_episodes"] if totals["completed_episodes"] else None
             metrics.update(completed_updates=completed, kl=kl, **losses)
             reward_metrics = {name: value.item()/totals["steps"] for name, value in

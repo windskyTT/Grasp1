@@ -1,13 +1,12 @@
-"""Teacher的17项抓取奖励及终止奖励、DexSuite Lift两项扩展与Grasp1成功奖金。
+"""Teacher的17项抓取奖励及原始一次性终止奖励。
 
 公式：Environment.hpp:642–734，train.py:216–225/609–625。
 cfg_reg.yaml原系数由TeacherRewardsCfg配置；这里返回未加权项。
-Lift扩展来自Isaac Lab 2.3.2 DexSuite，不属于原始Teacher奖励。
 """
 import torch
 from isaaclab.utils.math import quat_apply
 from .keypoints import arm_keypoints_w, hand_keypoints_w
-from .observations import dexsuite_good_finger_contact, nearest_affordance_vectors_w
+from .observations import nearest_affordance_vectors_w
 
 
 # 源train.py先用包含掌点的33归一化，再将掌点置零，最后乘16。
@@ -22,44 +21,57 @@ def _contact_state(env):
     return state
 
 
-def _weighted_impulse(impulses):
-    high = impulses.new_tensor((0.1,)*10 + (0.2,)*3)
+def _point_weights(env):
+    return getattr(env.cfg, "teacher_point_weights", _POINT_WEIGHTS)
+
+
+def _contact_weights(env):
+    return getattr(env.cfg, "teacher_contact_weights", _CONTACT_WEIGHTS)
+
+
+def _weighted_impulse(impulses, env):
+    high = impulses.new_tensor(getattr(env.cfg, "teacher_impulse_caps", (0.1,)*10 + (0.2,)*3))
     clipped = torch.minimum(impulses.clamp_min(0), high)
-    return (clipped * impulses.new_tensor(_CONTACT_WEIGHTS) * (13./31.)).sum(1)
+    weights = _contact_weights(env)
+    return (clipped * impulses.new_tensor(weights) * (len(weights)/sum(weights))).sum(1)
 
 
 def affordance_reward(env):
     distances = nearest_affordance_vectors_w(env).norm(dim=-1)
-    return -(distances[:, 1:17] * distances.new_tensor(_POINT_WEIGHTS[1:]) * (16./33.)).sum(1)
+    weights = _point_weights(env)
+    return -(distances[:, 1:] * distances.new_tensor(weights[1:]) * ((len(weights)-1)/(sum(weights)+1))).sum(1)
 
 
 def affordance_contact_reward(env):
     impulse = _contact_state(env).affordance_impulses.norm(dim=-1)
-    return ((impulse > 0.01).to(impulse.dtype) * impulse.new_tensor(_CONTACT_WEIGHTS)).sum(1)/31.
+    weights = _contact_weights(env)
+    return ((impulse > 0.01).to(impulse.dtype) * impulse.new_tensor(weights)).sum(1)/sum(weights)
 
 
 def affordance_impulse_reward(env):
     # 世界XY的总冲量，不能改成摩擦冲量或三维模长。
-    return _weighted_impulse(_contact_state(env).affordance_impulses[..., :2].norm(dim=-1))
+    return _weighted_impulse(_contact_state(env).affordance_impulses[..., :2].norm(dim=-1), env)
 
 
 def table_reward(env):
     heights = hand_keypoints_w(env)[..., 2] - env.scene.env_origins[:, None, 2] - env.cfg.support_height
-    return -(torch.log(50*heights.clamp(0.002, 0.02)) * heights.new_tensor(_POINT_WEIGHTS) * (16./33.)).sum(1)
+    weights = _point_weights(env)
+    return -(torch.log(50*heights.clamp(0.002, 0.02)) * heights.new_tensor(weights) * ((len(weights)-1)/(sum(weights)+1))).sum(1)
 
 
 def table_contact_reward(env):
     impulse = _contact_state(env).table_impulses.norm(dim=-1)
-    return ((impulse > 0.01).to(impulse.dtype) * impulse.new_tensor(_CONTACT_WEIGHTS)).sum(1)/31.
+    weights = _contact_weights(env)
+    return ((impulse > 0.01).to(impulse.dtype) * impulse.new_tensor(weights)).sum(1)/sum(weights)
 
 
 def table_impulse_reward(env):
-    return _weighted_impulse(_contact_state(env).table_impulses.norm(dim=-1))
+    return _weighted_impulse(_contact_state(env).table_impulses.norm(dim=-1), env)
 
 
 def arm_height_reward(env):
     # 源obs[:,89:93]对应最后四个机械臂关键点。
-    heights = arm_keypoints_w(env)[:, 2:6, 2] - env.scene.env_origins[:, None, 2] - env.cfg.support_height
+    heights = arm_keypoints_w(env)[:, 2:, 2] - env.scene.env_origins[:, None, 2] - env.cfg.support_height
     return -torch.log(50*heights.clamp(0.002, 0.02)).sum(1)
 
 
@@ -86,7 +98,7 @@ def wrist_vel_reward_(env):
     robot = env.scene["robot"]
     wrist = env._teacher_body_indices.wrist
     offset = quat_apply(robot.data.body_link_quat_w[:, wrist],
-                        robot.data.joint_pos.new_tensor((0., 0.0823, 0.)).expand(env.num_envs, -1))
+                        robot.data.joint_pos.new_tensor(env._teacher_body_indices.wrist_offset).expand(env.num_envs, -1))
     velocity = robot.data.body_link_lin_vel_w[:, wrist] + torch.cross(
         robot.data.body_link_ang_vel_w[:, wrist], offset, dim=-1)
     # 世界系与腕系范数相同；固定关节frame速度需包含omega×offset。
@@ -115,24 +127,6 @@ def obj_displacement_reward(env):
 def arm_joint_vel_reward_(env):
     velocity = env.scene["robot"].data.joint_vel[:, env._teacher_body_indices.arm_joints]
     return torch.where(velocity.abs() > 0.5, velocity*4., velocity).square().sum(1)
-
-
-def good_finger_contact(env, threshold):
-    """DexSuite contacts()：拇指与至少另一指的法向接触力均严格大于threshold。"""
-    return dexsuite_good_finger_contact(env, threshold)
-
-
-def position_tracking(env, std):
-    """DexSuite原tanh及接触门控；命令位置适配为Reset位置正上方0.10m。"""
-    initial = env._teacher_reward_state.initial_object_pos
-    target = initial + initial.new_tensor((0., 0., env.cfg.success_lift_m))
-    distance = (env.scene["object"].data.root_pos_w-target).norm(dim=1)
-    return (1-torch.tanh(distance/std))*good_finger_contact(env, 1.0).float()
-
-
-def success_bonus(env):
-    """复用源高度>0.10m成功状态；成功终止为训练适配，抵消step_dt后发10分。"""
-    return env._teacher_grasp.success.to(torch.float64)/env.step_dt
 
 
 def terminal_reward(env):

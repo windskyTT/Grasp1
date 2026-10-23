@@ -19,6 +19,7 @@ from Grasp1.robots.robot_profile import (
     HAND_FINGERTIP_KEYPOINT_INDICES,
     HAND_KEYPOINT_LINK_NAMES,
     UR5_LINK_NAMES,
+    FR3_LINK_NAMES, INSPIRE_HAND_KEYPOINT_NAMES,
 )
 
 if TYPE_CHECKING:
@@ -48,11 +49,22 @@ class TeacherBodyIndices:
     wrist: int
     object_top: int
     arm_joints: list[int]
+    wrist_offset: tuple[float, float, float] = (0., 0.0823, 0.)
 
 
 def initialize_teacher_body_indices(env: ManagerBasedRLEnv) -> None:
     """在 observation term 初始化时解析名称，保持源关键点与动作关节顺序。"""
     robot = env.scene["robot"]
+    if getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire":
+        hand_ids, _ = robot.find_bodies(list(INSPIRE_HAND_KEYPOINT_NAMES), preserve_order=True)
+        arm_ids, _ = robot.find_bodies(list(FR3_LINK_NAMES), preserve_order=True)
+        top_ids, _ = env.scene["object"].find_bodies(["top"], preserve_order=True)
+        env._teacher_body_indices = TeacherBodyIndices(
+            hand=hand_ids, arm=arm_ids, wrist=hand_ids[0], object_top=top_ids[0],
+            arm_joints=list(env.action_manager.get_term("teacher")._joint_ids[:7]),
+            wrist_offset=(0., 0., 0.),
+        )
+        return
     hand_ids, _ = robot.find_bodies(
         [re.escape(name) for name in _HAND_BODY_NAMES], preserve_order=True
     )
@@ -84,6 +96,8 @@ def _hand_keypoints_w(env: ManagerBasedRLEnv, ids: slice | torch.Tensor) -> torc
     body_poses = robot.data.body_link_pose_w[ids][:, env._teacher_body_indices.hand, :]
     positions = body_poses[..., :3]
     orientations = body_poses[..., 3:7]
+    if getattr(env.cfg, "robot_type", "ur5_allegro") == "fr3_inspire":
+        return positions
 
     # 为每个 parent link 构造局部坐标系中的固定 frame 偏移。
     offsets = torch.zeros_like(positions)

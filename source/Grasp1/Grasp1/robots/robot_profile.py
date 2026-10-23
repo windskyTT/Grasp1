@@ -452,3 +452,18 @@ __all__ = [
     "ARM_JOINT_SLICE",
     "HAND_JOINT_SLICE",
 ]
+
+# FR3-Inspire：该URDF没有mimic，7臂轴+12手轴均为独立转动关节。
+FR3_JOINT_NAMES = tuple(f"fr3_joint{i}" for i in range(1, 8))
+FR3_LINK_NAMES = tuple(f"fr3_link{i}" for i in range(1, 8))
+INSPIRE_LINK_NAMES = tuple(f"right_{finger}_{i}" for finger, count in
+                          (("index", 2), ("middle", 2), ("ring", 2), ("little", 2), ("thumb", 4))
+                          for i in range(1, count + 1))
+INSPIRE_JOINT_NAMES = tuple(f"{name}_joint" for name in INSPIRE_LINK_NAMES)
+INSPIRE_HAND_KEYPOINT_NAMES = ("base_link",) + INSPIRE_LINK_NAMES
+INSPIRE_DISTAL_LINK_NAMES = tuple(f"right_{finger}_{i}" for finger, i in
+                                (("index", 2), ("middle", 2), ("ring", 2), ("little", 2), ("thumb", 4)))
+# ADAPTED：仅使用13个真实link原点，没有在URDF外虚构指尖frame。
+# 沿用源普通点/远端点/拇指远端点的相对权重与归一化规则。
+INSPIRE_POINT_WEIGHTS = (0., 1., 4., 1., 4., 1., 4., 1., 4., 1., 1., 1., 8.)
+INSPIRE_CONTACT_WEIGHTS = (0., 1., 3., 1., 3., 1., 3., 1., 3., 2., 2., 2., 12.)
