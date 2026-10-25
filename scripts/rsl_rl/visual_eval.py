@@ -3,6 +3,8 @@
 源allegro_teacher/visual_eval.py:207-208、520-530和Environment.hpp:604-609、1047。
 0.2s源控制周期换为1/60s：抓取70→840步(14s)，抬升30→360步(6s)，
 完整插值80→960步(16s)。源评估只执行插值的30/80，不压缩到6秒内完成。
+抬臂手指按源5Hz、0.015系数更新绝对目标，两个源控制时刻之间保持目标；
+仅恢复目标更新语义，PhysX动力学及源随机单物理步延迟仍非完全等价。
 """
 import argparse
 import random
@@ -54,6 +56,7 @@ def main():
         grasp_steps = round(70 * SOURCE_CONTROL_DT / cfg.control_dt())
         lift_steps = round(30 * SOURCE_CONTROL_DT / cfg.control_dt())
         interpolation_steps = round(80 * SOURCE_CONTROL_DT / cfg.control_dt())
+        finger_control_steps = round(SOURCE_CONTROL_DT / cfg.control_dt())
         cfg.episode_length_s = (grasp_steps + lift_steps) * cfg.control_dt()
         env = RslRlVecEnvWrapper(gym.make(cli_args.TASK, cfg=cfg), clip_actions=agent.clip_actions)
         raw = env.unwrapped
@@ -67,11 +70,13 @@ def main():
         term = raw.action_manager.get_term("teacher")
         robot = raw.scene["robot"]
         arm_ids = term._joint_ids[:6]
+        finger_ids = term._joint_ids[6:]
         theta0 = torch.tensor([0., -1.57, 1.57, 0., 1.57, -1.57], device=env.device)
         original_process = term.process_actions
         lifting = False
         lift_step = 0
         arm_start = robot.data.joint_pos[:, arm_ids].clone()
+        finger_target = robot.data.joint_pos[:, finger_ids].clone()
         alive = torch.ones(args.num_envs, dtype=torch.bool, device=env.device)
 
         def process_actions(actions):
@@ -83,6 +88,15 @@ def main():
                 target = arm_start + (theta0 - arm_start) * min(lift_step / interpolation_steps, 1.)
                 limits = robot.data.joint_pos_limits[:, arm_ids]
                 term.target[alive, :6] = torch.clamp(target, limits[..., 0], limits[..., 1])[alive]
+                # 源Environment.hpp:602-613每0.2s计算q_measured + 0.015*a，
+                # 在整个源控制周期内保持；不能每60Hz步重算q + 0.1*a。
+                if (lift_step - 1) % finger_control_steps == 0:
+                    finger_limits = robot.data.joint_pos_limits[:, finger_ids]
+                    finger_target.copy_(torch.clamp(
+                        robot.data.joint_pos[:, finger_ids] + 0.015 * actions[:, 6:],
+                        finger_limits[..., 0], finger_limits[..., 1],
+                    ))
+                term.target[alive, 6:] = finger_target[alive]
                 # 已异常Reset的环境保留当前关节目标，不拼接为同一次抓取。
                 term.target[~alive] = robot.data.joint_pos[:, term._joint_ids][~alive]
 
@@ -91,6 +105,7 @@ def main():
         attempted = 0
         print(f"[VISUAL_EVAL] object={selected}; completed_updates={infos['completed_updates']}; "
               f"grasp={grasp_steps}, lift={lift_steps}, interpolation={interpolation_steps}; "
+              f"lift_fingers=source_5Hz, scale=0.015, hold_steps={finger_control_steps}; "
               f"GUI={raw.sim.has_gui()}", flush=True)
         for trial in range(args.episodes):
             if not app.is_running():
@@ -117,7 +132,7 @@ def main():
                             lifting = True
                             arm_start.copy_(robot.data.joint_pos[:, arm_ids])
                             print(f"[LIFT] trial={trial + 1}, surviving_grasps={alive.sum().item()}", flush=True)
-                        # 源手指继续使用最后一个相对动作，并非锁定手指关节角。
+                        # 末次手指动作由process_actions按源5Hz设置并保持绝对目标。
                         actions = final_actions.clone()
                     actions[~alive] = 0.
                     obs, _, dones, extras = env.step(actions)

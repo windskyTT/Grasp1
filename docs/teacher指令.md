@@ -6,13 +6,24 @@
 cd /home/windsky/project/Grasp1
 conda activate grasp
 
-python scripts/rsl_rl/train.py 
+python scripts/rsl_rl/train.py \
   --task Grasp1-UR5-Allegro-Teacher-v0 \
   --num_envs 88 \
   --max_iterations 20001 \
   --device cuda:0 \
   --headless
 ```
+```bash
+cd /home/windsky/project/Grasp1
+conda activate grasp
+
+python scripts/rsl_rl/train.py \
+  --task Grasp1-FR3-Inspire-Teacher-v0 \
+  --num_envs 88 \
+  --max_iterations 20001 \
+  --device cuda:0 \
+  --headless
+  ```
 
 默认配置：
 
@@ -29,7 +40,7 @@ python scripts/rsl_rl/train.py
 3070Ti 8GB 如果出现 CUDA 显存不足，可以降低为：
 
 ```bash
-cd /home/windsky/project/Grasp
+cd /home/windsky/project/Grasp1
 conda activate grasp
 
 python scripts/rsl_rl/train.py \
@@ -70,6 +81,19 @@ python scripts/rsl_rl/visual_eval.py \
   --device cuda:0 \
   --real-time
 ```
+```bash
+cd /home/windsky/project/Grasp1
+conda activate grasp
+
+python scripts/rsl_rl/visual_eval.py \
+  --task Grasp1-FR3-Inspire-Teacher-v0 \
+  --checkpoint /home/windsky/project/Grasp1/logs/rsl_rl/grasp1_fr3_inspire_teacher/2026-10-25_21-51-12_133017/model_20000.pt \
+  --num_envs 1 \
+  --episodes 150 \
+  --device cuda:0 \
+  --real-time
+```
+
 
 
 当前确认结果包括 Isaac Lab `v2.3.2`、Isaac Sim 5.1.0、Grasp editable 安装、训练依赖和训练入口静态检查通过。本轮遵守项目限制，没有实际启动训练；如果启动后产生报错，将内容写入 `错误.md` 后再让我读取处理。

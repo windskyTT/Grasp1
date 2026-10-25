@@ -22,7 +22,8 @@ UR5_ACTION_SCALE = 0.00125
 ALLEGRO_ACTION_SCALE = 0.1
 ALLEGRO_STIFFNESS = 3.0
 ALLEGRO_DAMPING = 0.1
-22维动作和153维观测。
+UR5-ALLEGOR 22维动作+153维观测
+FR3-INSPIRE 19维动作+132维观测
 
 # reward设定
 原始 RobustDexGrasp 主要通过物理约束和奖励函数约束运动；
